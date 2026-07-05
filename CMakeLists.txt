@@ -36,6 +36,14 @@ file(GLOB_RECURSE SOURCES
     src/*.h
 )
 
+# ── Windows Resources (icon + version info) ─────────────────────────────────
+if(WIN32)
+    list(APPEND SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.rc")
+endif()
+
+# ── Copy assets to build directory ─────────────────────────────────────────
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})
+
 # ── Executable ────────────────────────────────────────────────────────────────
 add_executable(${PROJECT_NAME} ${SOURCES})
 
@@ -44,6 +52,13 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
+
+# ── Windows Resource compiler include paths ────────────────────────────────
+if(WIN32)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        RESOURCE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+endif()
 
 # ── Link libraries ──────────────────────────────────────────────────────────
 target_link_libraries(${PROJECT_NAME} PRIVATE

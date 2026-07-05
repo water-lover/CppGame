@@ -1,0 +1,38 @@
+/* ── Windows 资源脚本 ────────────────────────────────────────────────────── */
+/* 由 MinGW windres 编译 */
+
+#include "resource.h"
+
+/* ── 程序图标 ────────────────────────────────────────────────────────────── */
+IDI_APP_ICON    ICON    "assets/app.ico"
+IDI_APP_ICON_SM ICON    "assets/app.ico"
+
+/* ── 版本信息 ────────────────────────────────────────────────────────────── */
+VS_VERSION_INFO VERSIONINFO
+    FILEVERSION     VER_MAJOR, VER_MINOR, VER_PATCH, VER_BUILD
+    PRODUCTVERSION  VER_MAJOR, VER_MINOR, VER_PATCH, VER_BUILD
+    FILEFLAGSMASK   0x3fL
+    FILEFLAGS       0x0L
+    FILEOS          0x40004L
+    FILETYPE        0x1L
+    FILESUBTYPE     0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080404B0"
+        BEGIN
+            VALUE "CompanyName",        "CppGame Team"
+            VALUE "FileDescription",    "CppGame - A Desktop 2D Game"
+            VALUE "FileVersion",        "0.1.0.1"
+            VALUE "InternalName",       "CppGame"
+            VALUE "LegalCopyright",     "Copyright (c) 2026"
+            VALUE "OriginalFilename",   "CppGame.exe"
+            VALUE "ProductName",        "CppGame"
+            VALUE "ProductVersion",     "0.1.0.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0804, 1200
+    END
+END
