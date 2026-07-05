@@ -1,0 +1,29 @@
+# Build output
+build/
+out/
+
+# IDE / editor
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# vcpkg manifest install
+vcpkg_installed/
+
+# Windows
+*.exe
+*.pdb
+*.dll
+*.lib
+*.exp
+
+# macOS
+.DS_Store
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake

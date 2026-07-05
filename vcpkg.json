@@ -1,0 +1,21 @@
+{
+    "name": "cpp-game",
+    "version": "0.1.0",
+    "description": "A desktop game built with C++",
+    "homepage": "https://github.com/your-repo/cpp-game",
+
+    "dependencies": [
+        "sfml"
+    ],
+
+    "builtin-baseline": "0e123f1c20f1a981d67c5ce0e053ae6b6eeb1c63",
+
+    "overrides": [],
+    "features": {
+        "tests": {
+            "description": "Build tests",
+            "dependencies": ["catch2"]
+        }
+    },
+    "default-features": []
+}
