@@ -26,12 +26,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # ── Dependencies (from vcpkg) ────────────────────────────────────────────────
-# Add your game library here, e.g.:
-#   find_package(SDL2        REQUIRED)
-#   find_package(SDL2_image  REQUIRED)
-#   find_package(nlohmann_json REQUIRED)
-#
-# Then link them below under target_link_libraries.
+find_package(SFML   COMPONENTS Network Graphics Window Audio System CONFIG REQUIRED)
+find_package(Catch2 CONFIG QUIET)
 
 # ── Sources ───────────────────────────────────────────────────────────────────
 file(GLOB_RECURSE SOURCES
@@ -49,12 +45,14 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     $<INSTALL_INTERFACE:include>
 )
 
-# ── Link libraries (uncomment when you add dependencies) ─────────────────────
-# target_link_libraries(${PROJECT_NAME} PRIVATE
-#     SDL2::SDL2
-#     SDL2::SDL2main
-#     nlohmann_json::nlohmann_json
-# )
+# ── Link libraries ──────────────────────────────────────────────────────────
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    SFML::Network
+    SFML::Graphics
+    SFML::Window
+    SFML::Audio
+    SFML::System
+)
 
 # ── Warnings ──────────────────────────────────────────────────────────────────
 if(MSVC)
@@ -65,3 +63,26 @@ endif()
 
 # ── Install ───────────────────────────────────────────────────────────────────
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+
+# ── Tests (optional) ─────────────────────────────────────────────────────────
+if(Catch2_FOUND)
+    set(TEST_SOURCES
+        tests/test_main.cpp
+        tests/test_game_model.cpp
+        src/Model/GameModel.cpp
+    )
+
+    add_executable(${PROJECT_NAME}_tests ${TEST_SOURCES})
+
+    target_include_directories(${PROJECT_NAME}_tests PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+
+    target_link_libraries(${PROJECT_NAME}_tests PRIVATE
+        Catch2::Catch2WithMain
+    )
+
+    include(CTest)
+    include(Catch)
+    catch_discover_tests(${PROJECT_NAME}_tests)
+endif()

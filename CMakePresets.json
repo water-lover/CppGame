@@ -10,24 +10,30 @@
             "name":        "default",
             "displayName": "Debug (vcpkg)",
             "description": "Debug build with vcpkg manifest mode",
-            "generator":   "Ninja",
+            "generator":   "MinGW Makefiles",
             "binaryDir":   "${sourceDir}/build/debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                "VCPKG_TARGET_TRIPLET": "x64-windows"
+                "CMAKE_CXX_COMPILER":   "C:/Windows/mingw64/bin/g++.exe",
+                "CMAKE_MAKE_PROGRAM":   "C:/Windows/mingw64/bin/mingw32-make.exe",
+                "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
+                "VCPKG_DISABLE_AUTO_PROXY": "ON"
             }
         },
         {
             "name":        "release",
             "displayName": "Release (vcpkg)",
             "description": "Release build with optimizations",
-            "generator":   "Ninja",
+            "generator":   "MinGW Makefiles",
             "binaryDir":   "${sourceDir}/build/release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                "VCPKG_TARGET_TRIPLET": "x64-windows"
+                "CMAKE_CXX_COMPILER":   "C:/Windows/mingw64/bin/g++.exe",
+                "CMAKE_MAKE_PROGRAM":   "C:/Windows/mingw64/bin/mingw32-make.exe",
+                "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
+                "VCPKG_DISABLE_AUTO_PROXY": "ON"
             }
         }
     ],
