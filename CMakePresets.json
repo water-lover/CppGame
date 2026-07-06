@@ -18,6 +18,7 @@
                 "CMAKE_CXX_COMPILER":   "C:/Windows/mingw64/bin/g++.exe",
                 "CMAKE_MAKE_PROGRAM":   "C:/Windows/mingw64/bin/mingw32-make.exe",
                 "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
+                "VCPKG_HOST_TRIPLET":   "x64-mingw-dynamic",
                 "VCPKG_DISABLE_AUTO_PROXY": "ON"
             }
         },
@@ -33,6 +34,7 @@
                 "CMAKE_CXX_COMPILER":   "C:/Windows/mingw64/bin/g++.exe",
                 "CMAKE_MAKE_PROGRAM":   "C:/Windows/mingw64/bin/mingw32-make.exe",
                 "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
+                "VCPKG_HOST_TRIPLET":   "x64-mingw-dynamic",
                 "VCPKG_DISABLE_AUTO_PROXY": "ON"
             }
         }

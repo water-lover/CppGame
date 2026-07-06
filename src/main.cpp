@@ -1,49 +1,40 @@
-#include <SFML/Graphics.hpp>
-#include <iostream>
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+#include <QQmlContext>
+#include <QtQuick>
 
 #include "Model/GameModel.hpp"
 #include "ViewModel/GameViewModel.hpp"
-#include "View/GameView.hpp"
 
-int main()
+int main(int argc, char *argv[])
 {
-    // ── 创建 SFML 窗口 ────────────────────────────────────────────────
-    sf::RenderWindow window(sf::VideoMode({800, 600}), "CppGame");
-    window.setFramerateLimit(60);
+    // ── Qt 应用程序（无窗口系统依赖） ────────────────────────────────
+    QGuiApplication app(argc, argv);
+    app.setApplicationName("CppGame");
+    app.setApplicationVersion("0.1.0");
 
     // ── MVVM 初始化 ────────────────────────────────────────────────────
     auto model      = std::make_shared<GameModel>();
-    auto viewModel  = std::make_shared<GameViewModel>(model);
-    auto view       = std::make_shared<GameView>(window);
+    auto viewModel  = new GameViewModel(model);   // QObject，Qt 管理生命周期
 
-    viewModel->initialize();
-    view->bindViewModel(viewModel);
+    // ── QML 引擎 ───────────────────────────────────────────────────────
+    QQmlApplicationEngine engine;
 
-    // ── 时钟 ────────────────────────────────────────────────────────────
-    sf::Clock clock;
+    // 将 ViewModel 注入 QML 上下文（名字为 "viewModel_"）
+    engine.rootContext()->setContextProperty("viewModel_", viewModel);
 
-    // ── 主循环 ──────────────────────────────────────────────────────────
-    while (window.isOpen())
-    {
-        float deltaTime = clock.restart().asSeconds();
+    // 加载主 QML 文件（先尝试 qrc，再尝试文件系统）
+    const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
+    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
+        &app, [url](QObject* obj, const QUrl& objUrl) {
+            if (!obj && url == objUrl)
+                QCoreApplication::exit(-1);
+        }, Qt::QueuedConnection);
 
-        // 1. 处理事件
-        while (const auto event = window.pollEvent())
-        {
-            if (event->is<sf::Event::Closed>())
-                window.close();
-        }
+    engine.load(url);
 
-        // 2. 更新 ViewModel（ViewModel 内部更新 Model）
-        viewModel->update(deltaTime);
+    if (engine.rootObjects().isEmpty())
+        return -1;
 
-        // 3. 渲染
-        window.clear(sf::Color::Black);
-
-        view->render();
-
-        window.display();
-    }
-
-    return 0;
+    return app.exec();
 }

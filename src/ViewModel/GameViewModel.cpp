@@ -1,39 +1,46 @@
 #include "ViewModel/GameViewModel.hpp"
 
-GameViewModel::GameViewModel(std::shared_ptr<GameModel> model)
-    : model_(std::move(model)) {}
+GameViewModel::GameViewModel(std::shared_ptr<GameModel> model, QObject* parent)
+    : QObject(parent), model_(std::move(model)) {}
 
-void GameViewModel::initialize() {
-    model_->reset();
-    notifyPropertyChanged("score");
-    notifyPropertyChanged("running");
+int GameViewModel::score() const {
+    return model_ ? model_->getScore() : 0;
 }
 
-void GameViewModel::update(float deltaTime) {
-    model_->update(deltaTime);
-    // 将 Model 数据同步到可观察属性（后续可扩展）
+bool GameViewModel::running() const {
+    return model_ ? model_->isRunning() : false;
 }
-
-void GameViewModel::addPropertyListener(const PropertyCallback& cb) {
-    listeners_.push_back(cb);
-}
-
-void GameViewModel::notifyPropertyChanged(const std::string& propertyName) {
-    for (auto& cb : listeners_) {
-        cb(propertyName);
-    }
-}
-
-int  GameViewModel::getScore()  const { return model_->getScore(); }
-bool GameViewModel::isRunning() const { return model_->isRunning(); }
 
 void GameViewModel::startGame() {
+    if (!model_) return;
     model_->reset();
-    notifyPropertyChanged("score");
-    notifyPropertyChanged("running");
+    emit scoreChanged(model_->getScore());
+    emit runningChanged(model_->isRunning());
+    emit gameStarted();
 }
 
 void GameViewModel::quitGame() {
+    if (!model_) return;
     model_->setRunning(false);
-    notifyPropertyChanged("running");
+    emit runningChanged(false);
+    emit gameOver();
+}
+
+void GameViewModel::addScore(int points) {
+    if (!model_ || !model_->isRunning()) return;
+    model_->addScore(points);
+    emit scoreChanged(model_->getScore());
+}
+
+void GameViewModel::resetGame() {
+    if (!model_) return;
+    model_->reset();
+    emit scoreChanged(model_->getScore());
+    emit runningChanged(model_->isRunning());
+}
+
+void GameViewModel::tick(float deltaTime) {
+    if (!model_) return;
+    model_->update(deltaTime);
+    // 在此同步其他属性
 }
