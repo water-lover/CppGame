@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QDir>
+#include <QFileInfo>
 #include <QtQuick>
 
 #include "Model/GameModel.hpp"
@@ -9,12 +10,19 @@
 
 int main(int argc, char *argv[])
 {
-    // ── 确保 Qt 能找到平台插件（plugins/platforms/qwindows.dll） ────
-    // 优先使用可执行文件所在目录下的 plugins/ 目录
-    QString pluginDir = QCoreApplication::applicationDirPath() + "/plugins";
-    if (QDir(pluginDir).exists()) {
-        qputenv("QT_QPA_PLATFORM_PLUGIN_PATH", pluginDir.toLocal8Bit());
-        qputenv("QT_PLUGIN_PATH", pluginDir.toLocal8Bit());
+    // ═══════════════════════════════════════════════════════════════════
+    //  设置 Qt 平台插件路径（必须在 QGuiApplication 创建之前！）
+    //  不能用 QCoreApplication::applicationDirPath() 因为 App 还未创建，
+    //  改用 argv[0] 获取 exe 所在目录。
+    // ═══════════════════════════════════════════════════════════════════
+    if (argc > 0 && argv[0]) {
+        QString exePath = QString::fromLocal8Bit(argv[0]);
+        QFileInfo fi(exePath);
+        QString pluginDir = fi.absolutePath() + QStringLiteral("/plugins");
+        if (QDir(pluginDir).exists()) {
+            qputenv("QT_QPA_PLATFORM_PLUGIN_PATH", pluginDir.toLocal8Bit());
+            qputenv("QT_PLUGIN_PATH", pluginDir.toLocal8Bit());
+        }
     }
 
     // ── Qt 应用程序 ────────────────────────────────────────────────────
@@ -29,10 +37,8 @@ int main(int argc, char *argv[])
     // ── QML 引擎 ───────────────────────────────────────────────────────
     QQmlApplicationEngine engine;
 
-    // 将 ViewModel 注入 QML 上下文（名字为 "viewModel_"）
     engine.rootContext()->setContextProperty("viewModel_", viewModel);
 
-    // 加载主 QML 文件（先尝试 qrc，再尝试文件系统）
     const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
         &app, [url](QObject* obj, const QUrl& objUrl) {
