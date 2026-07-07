@@ -1,7 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Particles 2.15
-import CppGame 1.0
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  CppGame — 打靶小游戏
@@ -20,7 +19,7 @@ ApplicationWindow {
     color: "#0a0a1a"
 
     // ── ViewModel 绑定（由 C++ 注入） ──────────────────────────────────
-    property GameViewModel vm: viewModel_
+    property var vm: viewModel_
 
     // ── 游戏计时器（驱动 C++ 游戏循环） ────────────────────────────────
     Timer {
@@ -58,7 +57,6 @@ ApplicationWindow {
                 xVariation: 5
             }
             acceleration: PointDirection { y: 20 }
-            Tracer { color: "#ffffff"; system: starSystem }
         }
 
         // ── 顶部信息栏 ────────────────────────────────────────────────
