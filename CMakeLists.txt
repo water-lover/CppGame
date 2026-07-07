@@ -74,11 +74,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt5::Gamepad
 )
 
-# ── Copy QML runtime files to output ────────────────────────────────────────
-# Qt5's QML engine needs to find the QML files at runtime.
-# In production, they are embedded via qrc. For development, we copy them.
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/qml DESTINATION ${CMAKE_BINARY_DIR})
-
 # ── Warnings ──────────────────────────────────────────────────────────────────
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /W4 /utf-8)

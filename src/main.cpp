@@ -1,6 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QDir>
 #include <QtQuick>
 
 #include "Model/GameModel.hpp"
@@ -8,7 +9,15 @@
 
 int main(int argc, char *argv[])
 {
-    // ── Qt 应用程序（无窗口系统依赖） ────────────────────────────────
+    // ── 确保 Qt 能找到平台插件（plugins/platforms/qwindows.dll） ────
+    // 优先使用可执行文件所在目录下的 plugins/ 目录
+    QString pluginDir = QCoreApplication::applicationDirPath() + "/plugins";
+    if (QDir(pluginDir).exists()) {
+        qputenv("QT_QPA_PLATFORM_PLUGIN_PATH", pluginDir.toLocal8Bit());
+        qputenv("QT_PLUGIN_PATH", pluginDir.toLocal8Bit());
+    }
+
+    // ── Qt 应用程序 ────────────────────────────────────────────────────
     QGuiApplication app(argc, argv);
     app.setApplicationName("CppGame");
     app.setApplicationVersion("0.1.0");
