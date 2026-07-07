@@ -3,19 +3,23 @@
 GameViewModel::GameViewModel(std::shared_ptr<GameModel> model, QObject* parent)
     : QObject(parent), model_(std::move(model)) {}
 
-int GameViewModel::score() const {
-    return model_ ? model_->getScore() : 0;
-}
-
-bool GameViewModel::running() const {
-    return model_ ? model_->isRunning() : false;
-}
+int   GameViewModel::score()      const { return model_ ? model_->getScore()     : 0;    }
+bool  GameViewModel::running()    const { return model_ ? model_->isRunning()    : false; }
+float GameViewModel::targetX()    const { return model_ ? model_->getTargetX()   : 0.5f;  }
+float GameViewModel::targetY()    const { return model_ ? model_->getTargetY()   : 0.5f;  }
+float GameViewModel::targetSize() const { return model_ ? model_->getTargetSize(): 0.08f; }
+float GameViewModel::timeLeft()   const { return model_ ? model_->getTimeLeft()  : 0.0f;  }
+int   GameViewModel::level()      const { return model_ ? model_->getLevel()     : 1;     }
+int   GameViewModel::totalTime()  const { return 30; }
 
 void GameViewModel::startGame() {
     if (!model_) return;
     model_->reset();
     emit scoreChanged(model_->getScore());
-    emit runningChanged(model_->isRunning());
+    emit runningChanged(true);
+    emit targetChanged();
+    emit timeChanged(model_->getTimeLeft());
+    emit levelChanged(model_->getLevel());
     emit gameStarted();
 }
 
@@ -26,21 +30,27 @@ void GameViewModel::quitGame() {
     emit gameOver();
 }
 
-void GameViewModel::addScore(int points) {
+void GameViewModel::clickTarget(float mx, float my) {
     if (!model_ || !model_->isRunning()) return;
-    model_->addScore(points);
-    emit scoreChanged(model_->getScore());
-}
-
-void GameViewModel::resetGame() {
-    if (!model_) return;
-    model_->reset();
-    emit scoreChanged(model_->getScore());
-    emit runningChanged(model_->isRunning());
+    bool hit = model_->hitTarget(mx, my);
+    if (hit) {
+        emit scoreChanged(model_->getScore());
+        emit targetChanged();
+        emit levelChanged(model_->getLevel());
+    }
 }
 
 void GameViewModel::tick(float deltaTime) {
     if (!model_) return;
+    bool wasRunning = model_->isRunning();
     model_->update(deltaTime);
-    // 在此同步其他属性
+    bool nowRunning = model_->isRunning();
+
+    emit targetChanged();
+    emit timeChanged(model_->getTimeLeft());
+
+    if (wasRunning && !nowRunning) {
+        emit runningChanged(false);
+        emit gameOver();
+    }
 }
