@@ -1,5 +1,19 @@
 <RCC>
     <qresource prefix="/">
-        <file alias="qml/main.qml">../qml/main.qml</file>
+        <file alias="qml/main.qml">../src/view/main.qml</file>
+        <file alias="qml/StartScreen.qml">../src/view/StartScreen.qml</file>
+        <file alias="qml/GameCanvas.qml">../src/view/GameCanvas.qml</file>
+        <file alias="qml/HUD.qml">../src/view/HUD.qml</file>
+        <file alias="qml/GameOverScreen.qml">../src/view/GameOverScreen.qml</file>
+        <file alias="qml/PlayerPlane.qml">../src/view/PlayerPlane.qml</file>
+        <file alias="qml/EnemyPlane.qml">../src/view/EnemyPlane.qml</file>
+        <file alias="qml/BulletShape.qml">../src/view/BulletShape.qml</file>
+        <file alias="qml/StarField.qml">../src/view/StarField.qml</file>
+    </qresource>
+    <qresource prefix="/images">
+        <file alias="playerShip">images/MyAircraft/Firepower.png</file>
+        <file alias="enemySmall">images/PNG/Enemies/enemyRed3.png</file>
+        <file alias="playerBullet">images/PNG/Lasers/laserBlue16.png</file>
+        <file alias="background">images/Backgrounds/darkPurple.png</file>
     </qresource>
 </RCC>
