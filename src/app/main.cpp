@@ -1,29 +1,21 @@
-#include <QGuiApplication>
+#include <QApplication>
 #include <QFileInfo>
 #include <QDir>
 
 #include "app/AppAgent.hpp"
+#include "common/Logger.hpp"
 
 int main(int argc, char *argv[])
 {
-    // ── 设置 Qt 平台插件路径 ──────────────────────────────────────────
-    if (argc > 0 && argv[0]) {
-        QString exePath = QString::fromLocal8Bit(argv[0]);
-        QFileInfo fi(exePath);
-        QString pluginDir = fi.absolutePath() + QStringLiteral("/plugins");
-        if (QDir(pluginDir).exists()) {
-            qputenv("QT_QPA_PLATFORM_PLUGIN_PATH", pluginDir.toLocal8Bit());
-            qputenv("QT_PLUGIN_PATH", pluginDir.toLocal8Bit());
-        }
-    }
-
     // ── Qt 应用程序 ────────────────────────────────────────────────────
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
     app.setApplicationName(QStringLiteral("ThunderFighter"));
     app.setApplicationVersion(QStringLiteral("0.1.0"));
 
-    // ── 启动游戏 ──────────────────────────────────────────────────────
+    // ── 启动游戏（App 层只做组装，不写逻辑/渲染） ────────────────────
     AppAgent gameApp;
     gameApp.init();
+
+    // 显示窗口并进入事件循环
     return gameApp.run();
 }

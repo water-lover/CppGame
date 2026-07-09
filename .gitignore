@@ -27,3 +27,9 @@ vcpkg_installed/
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
+
+# Reasonix
+.reasonix/
+
+# Embedded git repos (courseware)
+reference/SJDXQcourseware/

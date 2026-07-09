@@ -15,6 +15,7 @@ enum class EntityType {
 enum class GameState {
     Menu,       // 开始菜单
     Playing,    // 游戏中
+    Paused,     // 暂停
     GameOver    // 游戏结束
 };
 

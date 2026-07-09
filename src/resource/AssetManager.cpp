@@ -1,5 +1,4 @@
 #include "resource/AssetManager.hpp"
-#include <QDir>
 #include <QDebug>
 
 AssetManager& AssetManager::instance() {
@@ -7,18 +6,21 @@ AssetManager& AssetManager::instance() {
     return inst;
 }
 
-QPixmap AssetManager::getImage(const QString& key) {
-    auto it = cache_.find(key);
-    if (it != cache_.end())
-        return it->second;
+const QPixmap* AssetManager::getImage(const QString& key) {
+    // ① 检查缓存
+    auto it = m_cache.find(key);
+    if (it != m_cache.end())
+        return &it->second;
 
-    // 从 qrc 资源系统加载
+    // ② 从 QRC 资源系统加载
     QString path = QStringLiteral(":/images/%1").arg(key);
     QPixmap pix(path);
     if (pix.isNull()) {
         qWarning() << "AssetManager: failed to load" << path;
-        return {};
+        return nullptr;
     }
-    cache_[key] = pix;
-    return pix;
+
+    // ③ 存入缓存，返回 const 指针
+    auto result = m_cache.emplace(key, std::move(pix));
+    return &result.first->second;
 }

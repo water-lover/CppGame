@@ -1,8 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
-#include "logic/CollisionSystem.hpp"
-#include "logic/Player.hpp"
-#include "logic/Enemy.hpp"
-#include "logic/Bullet.hpp"
+#include "viewmodel/CollisionSystem.hpp"
+#include "viewmodel/Player.hpp"
+#include "viewmodel/Enemy.hpp"
+#include "viewmodel/Bullet.hpp"
 #include <vector>
 #include <memory>
 

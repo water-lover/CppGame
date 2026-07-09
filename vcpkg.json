@@ -1,15 +1,11 @@
 {
     "name": "cpp-game",
     "version": "0.1.0",
-    "description": "A desktop 2D game built with Qt Quick (QML) and C++",
+    "description": "雷霆战机 — A desktop 2D space shooter with QGraphicsView (pure C++)",
     "homepage": "https://github.com/your-repo/cpp-game",
 
     "dependencies": [
         "catch2",
-        "qt5-base",
-        "qt5-declarative",
-        "qt5-gamepad",
-        "qt5-quickcontrols2",
-        "qt5-graphicaleffects"
+        "qt5-base"
     ]
 }
