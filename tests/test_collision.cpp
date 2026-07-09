@@ -11,7 +11,7 @@ TEST_CASE("Collision - bullet hits enemy", "[collision]") {
     bullets.emplace_back(0.5f, 0.4f, 0.0f, -0.8f, Bullet::Player);
 
     std::vector<std::unique_ptr<Enemy>> enemies;
-    enemies.push_back(std::make_unique<Enemy>(0.5f, 0.42f, 0.25f));
+    enemies.push_back(std::make_unique<Enemy>(0.5f, 0.42f, 0.25f, 1));
 
     // 敌人和子弹在同一位置，应命中
     auto hit = CollisionSystem::checkBulletEnemy(bullets, enemies);
@@ -23,7 +23,7 @@ TEST_CASE("Collision - bullet misses enemy", "[collision]") {
     bullets.emplace_back(0.1f, 0.1f, 0.0f, -0.8f, Bullet::Player);
 
     std::vector<std::unique_ptr<Enemy>> enemies;
-    enemies.push_back(std::make_unique<Enemy>(0.9f, 0.9f, 0.25f));
+    enemies.push_back(std::make_unique<Enemy>(0.9f, 0.9f, 0.25f, 1));
 
     auto hit = CollisionSystem::checkBulletEnemy(bullets, enemies);
     CHECK(hit.size() == 0);
@@ -34,7 +34,7 @@ TEST_CASE("Collision - enemy hits player", "[collision]") {
     player.setPos({0.5f, 0.5f});
 
     std::vector<std::unique_ptr<Enemy>> enemies;
-    enemies.push_back(std::make_unique<Enemy>(0.5f, 0.48f, 0.25f));
+    enemies.push_back(std::make_unique<Enemy>(0.5f, 0.48f, 0.25f, 1));
 
     int hitIdx = CollisionSystem::checkEnemyPlayer(enemies, player);
     CHECK(hitIdx >= 0);
@@ -47,7 +47,7 @@ TEST_CASE("Collision - invincible player not hit", "[collision]") {
     CHECK(player.isInvincible());
 
     std::vector<std::unique_ptr<Enemy>> enemies;
-    enemies.push_back(std::make_unique<Enemy>(0.5f, 0.48f, 0.25f));
+    enemies.push_back(std::make_unique<Enemy>(0.5f, 0.48f, 0.25f, 1));
 
     // 无敌期间不受伤
     int hitIdx = CollisionSystem::checkEnemyPlayer(enemies, player);

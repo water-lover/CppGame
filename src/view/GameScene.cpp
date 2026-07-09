@@ -49,6 +49,21 @@ void GameScene::drawBackground(QPainter* painter, const QRectF& /*rect*/) {
     }
 }
 
+namespace {
+
+/// 安全绘制精灵图片（空指针检查）
+inline void drawPixmapAt(QPainter* painter, const QPixmap* img,
+                         float cx, float cy, float size)
+{
+    if (img && !img->isNull()) {
+        painter->drawPixmap(
+            QRectF(cx - size / 2, cy - size / 2, size, size),
+            *img, img->rect());
+    }
+}
+
+} // anonymous namespace
+
 // ═══════════════════════════════════════════════════════════════════
 // 前景绘制 — 遍历 AirMap 渲染所有精灵
 // ═══════════════════════════════════════════════════════════════════
@@ -66,39 +81,43 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
 
         switch (actor.type) {
         case ActorType::Player:
-            if (m_pPlayerImg && !m_pPlayerImg->isNull()) {
-                float sz = PLAYER_SIZE * SCREEN_WIDTH;
-                painter->drawPixmap(
-                    QRectF(px - sz / 2, py - sz / 2, sz, sz),
-                    *m_pPlayerImg,
-                    m_pPlayerImg->rect()
-                );
-            }
+            drawPixmapAt(painter, m_pPlayerImg, px, py, PLAYER_SIZE * SCREEN_WIDTH);
             break;
 
         case ActorType::EnemySmall:
-            if (m_pEnemyImg && !m_pEnemyImg->isNull()) {
-                float sz = ENEMY_SIZE * SCREEN_WIDTH;
-                painter->drawPixmap(
-                    QRectF(px - sz / 2, py - sz / 2, sz, sz),
-                    *m_pEnemyImg,
-                    m_pEnemyImg->rect()
-                );
-            }
+            drawPixmapAt(painter, m_pEnemyImg, px, py, ENEMY_SIZE * SCREEN_WIDTH);
+            break;
+
+        case ActorType::EnemyMedium:
+            drawPixmapAt(painter, m_pEnemyMediumImg, px, py, ENEMY_SIZE * SCREEN_WIDTH * 1.4f);
+            break;
+
+        case ActorType::EnemyLarge:
+            drawPixmapAt(painter, m_pEnemyLargeImg, px, py, ENEMY_SIZE * SCREEN_WIDTH * 1.8f);
+            break;
+
+        case ActorType::Boss:
+            drawPixmapAt(painter, m_pBossImg, px, py, ENEMY_SIZE * SCREEN_WIDTH * 3.0f);
             break;
 
         case ActorType::PlayerBullet:
+            drawPixmapAt(painter, m_pBulletImg, px, py, BULLET_SIZE * SCREEN_WIDTH);
+            break;
+
         case ActorType::EnemyBullet:
-            if (m_pBulletImg && !m_pBulletImg->isNull()) {
-                // 使用源图原生尺寸，配合 SmoothPixmapTransform 渲染
-                // 逻辑大小由 BULLET_SIZE 控制，在 fitInView 中保持比例
-                float sz = BULLET_SIZE * SCREEN_WIDTH;
-                painter->drawPixmap(
-                    QRectF(px - sz / 2, py - sz / 2, sz, sz),
-                    *m_pBulletImg,
-                    m_pBulletImg->rect()
-                );
-            }
+            drawPixmapAt(painter, m_pEnemyBulletImg, px, py, BULLET_SIZE * SCREEN_WIDTH);
+            break;
+
+        case ActorType::PowerUpHp:
+            drawPixmapAt(painter, m_pPowerUpHpImg, px, py, ENEMY_SIZE * SCREEN_WIDTH);
+            break;
+
+        case ActorType::PowerUpFire:
+            drawPixmapAt(painter, m_pPowerUpFireImg, px, py, ENEMY_SIZE * SCREEN_WIDTH);
+            break;
+
+        case ActorType::PowerUpShield:
+            drawPixmapAt(painter, m_pPowerUpShieldImg, px, py, ENEMY_SIZE * SCREEN_WIDTH);
             break;
         }
     }

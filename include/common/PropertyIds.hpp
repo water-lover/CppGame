@@ -12,6 +12,11 @@ enum : uint32_t {
     PROP_ID_SCORE,              // 分数变化
     PROP_ID_LIVES,              // 生命变化
     PROP_ID_GAME_STATE,         // 游戏状态变化（Playing / GameOver / ...）
+    PROP_ID_MAP_OFFSET,         // 地图滚动偏移变化（星空背景用）
+    PROP_ID_BOSS_HEALTH,        // BOSS 血量变化
+    PROP_ID_WAVE,               // 波次变化
+    PROP_ID_SKILL_COOLDOWN,     // 技能冷却进度变化
+    PROP_ID_WEAPON_LEVEL,       // 武器等级变化
 };
 
 #endif // PROPERTYIDS_HPP

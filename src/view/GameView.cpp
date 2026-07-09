@@ -5,6 +5,7 @@
 #include "view/ModeSelectScreen.hpp"
 #include "view/GameOverScreen.hpp"
 #include "view/PauseOverlay.hpp"
+#include "view/BossHealthBar.hpp"
 
 #include <QGraphicsView>
 #include <QVBoxLayout>
@@ -35,7 +36,7 @@ GameView::GameView(QWidget* parent)
     m_modeSelectScreen = new ModeSelectScreen(this);
     m_pageStack->addWidget(m_modeSelectScreen);  // index 1
 
-    // 页面 2: 游戏页面（QGraphicsView + HUD 叠加）
+    // 页面 2: 游戏页面（QGraphicsView + BOSS 血条，HUD 在场景中绘制）
     m_gamePage = new QWidget(this);
     {
         QVBoxLayout* layout = new QVBoxLayout(m_gamePage);
@@ -49,7 +50,12 @@ GameView::GameView(QWidget* parent)
         m_graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         m_graphicsView->setRenderHint(QPainter::SmoothPixmapTransform);
         m_graphicsView->setFocusPolicy(Qt::NoFocus);
-        m_graphicsView->setBackgroundBrush(QColor(10, 10, 30));  // 黑边替代白边
+        m_graphicsView->setBackgroundBrush(QColor(10, 10, 30));
+
+        // BOSS 血条（叠加在 QGraphicsView 上方，默认隐藏）
+        m_bossHealthBar = new BossHealthBar(m_gamePage);
+        m_bossHealthBar->setVisible(false);
+        m_bossHealthBar->raise();
 
         layout->addWidget(m_graphicsView);
     }
@@ -125,6 +131,34 @@ void GameView::setBackgroundPixmap(const QPixmap* p) noexcept {
     if (m_scene) m_scene->setBackgroundPixmap(p);
 }
 
+void GameView::setEnemyMediumPixmap(const QPixmap* p) noexcept {
+    if (m_scene) m_scene->setEnemyMediumPixmap(p);
+}
+
+void GameView::setEnemyLargePixmap(const QPixmap* p) noexcept {
+    if (m_scene) m_scene->setEnemyLargePixmap(p);
+}
+
+void GameView::setBossPixmap(const QPixmap* p) noexcept {
+    if (m_scene) m_scene->setBossPixmap(p);
+}
+
+void GameView::setEnemyBulletPixmap(const QPixmap* p) noexcept {
+    if (m_scene) m_scene->setEnemyBulletPixmap(p);
+}
+
+void GameView::setPowerUpHpPixmap(const QPixmap* p) noexcept {
+    if (m_scene) m_scene->setPowerUpHpPixmap(p);
+}
+
+void GameView::setPowerUpFirePixmap(const QPixmap* p) noexcept {
+    if (m_scene) m_scene->setPowerUpFirePixmap(p);
+}
+
+void GameView::setPowerUpShieldPixmap(const QPixmap* p) noexcept {
+    if (m_scene) m_scene->setPowerUpShieldPixmap(p);
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // 命令绑定 setter
 // ═══════════════════════════════════════════════════════════════════
@@ -189,10 +223,12 @@ void GameView::keyReleaseEvent(QKeyEvent* e) {
 void GameView::resizeEvent(QResizeEvent* e) {
     QWidget::resizeEvent(e);
     m_pageStack->setGeometry(0, 0, width(), height());
-    // QStackedWidget 会自动管理子页面大小，不需要手动循环
     if (m_graphicsView) {
-        // 场景按 800x600 比例适应
         m_graphicsView->fitInView(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Qt::KeepAspectRatio);
+    }
+    if (m_bossHealthBar && m_gamePage) {
+        m_bossHealthBar->setGeometry(0, 0, m_gamePage->width(), 20);
+        m_bossHealthBar->raise();
     }
 }
 
@@ -219,6 +255,18 @@ void GameView::onPropertyChanged(uint32_t id) {
 
     case PROP_ID_GAME_STATE:
         updatePage();
+        break;
+
+    case PROP_ID_BOSS_HEALTH:
+        if (m_pBossHp && m_pBossMaxHp) {
+            m_bossHealthBar->setHp(*m_pBossHp);
+            m_bossHealthBar->setMaxHp(*m_pBossMaxHp);
+            m_bossHealthBar->setVisible(*m_pBossMaxHp > 0);
+        }
+        break;
+
+    case PROP_ID_WAVE:
+        m_scene->update();
         break;
 
     default:

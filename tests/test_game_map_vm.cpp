@@ -13,6 +13,7 @@
 #include <vector>
 #include <algorithm>
 #include "viewmodel/GameMapVM.hpp"
+#include "viewmodel/AircraftStats.hpp"
 #include "common/Constants.hpp"
 #include "common/Actor.hpp"
 #include "common/AirMap.hpp"
@@ -47,7 +48,8 @@ static void startAndWarmUp(GameMapVM& vm) {
     auto startCmd = vm.getStartGameCommand();
     startCmd();
     // 等待超过 SPAWN_INTERVAL 确保第一波敌机出现
-    tickN(vm, static_cast<int>(SPAWN_INTERVAL / FRAME_DURATION) + 10);
+    // 乘以 2 避免浮点 SPAWN_INTERVAL/FRAME_DURATION 截断导致时间不足
+    tickN(vm, static_cast<int>(SPAWN_INTERVAL / FRAME_DURATION) * 2);
 }
 
 // ── 测试用例 ─────────────────────────────────────────────────────────────────
@@ -335,4 +337,137 @@ TEST_CASE("GameMapVM - enemies are removed when off screen", "[gamemap][cleanup]
 
     // 不会 crash 即可（清理逻辑在内部执行）
     CHECK_NOTHROW(vm.getMap()->size());
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  迭代 3 新增测试：战机选择 / 技能 / 暂停 / 模式选择
+// ═══════════════════════════════════════════════════════════════════
+
+TEST_CASE("GameMapVM - selectAircraft changes aircraft type", "[gamemap][iter3][aircraft]") {
+    GameMapVM vm;
+
+    // 默认是 Thunder（枚举值 0）
+    CHECK(vm.getAircraftType() == 0);
+
+    // 选择烈焰号
+    auto selectCmd = vm.getSelectAircraftCommand();
+    selectCmd(static_cast<int>(AircraftType::Flame));
+    CHECK(vm.getAircraftType() == static_cast<int>(AircraftType::Flame));
+
+    // 选择冰霜号
+    selectCmd(static_cast<int>(AircraftType::Frost));
+    CHECK(vm.getAircraftType() == static_cast<int>(AircraftType::Frost));
+}
+
+TEST_CASE("GameMapVM - selectAircraft with invalid type is ignored", "[gamemap][iter3][aircraft][boundary]") {
+    GameMapVM vm;
+    auto selectCmd = vm.getSelectAircraftCommand();
+
+    // 无效类型（负数）
+    selectCmd(-1);
+    CHECK(vm.getAircraftType() == 0);  // 保持默认
+
+    // 无效类型（超出范围）
+    selectCmd(99);
+    CHECK(vm.getAircraftType() == 0);
+}
+
+TEST_CASE("GameMapVM - skill system starts ready", "[gamemap][iter3][skill]") {
+    GameMapVM vm;
+    auto startCmd = vm.getStartGameCommand();
+    startCmd();
+
+    // 开始游戏后技能就绪（默认雷霆号）
+    CHECK(vm.isSkillReady() == true);
+    CHECK(vm.isSkillActive() == false);
+    CHECK(vm.getSkillCooldownPercent() == 0.0f);
+}
+
+TEST_CASE("GameMapVM - useSkill activates and goes on cooldown", "[gamemap][iter3][skill]") {
+    GameMapVM vm;
+    auto startCmd = vm.getStartGameCommand();
+    startCmd();
+
+    auto skillCmd = vm.getUseSkillCommand();
+    skillCmd();  // 释放技能
+
+    // 雷霆号技能冷却 15s，持续 0s
+    CHECK(vm.isSkillReady() == false);
+    CHECK(vm.getSkillCooldownPercent() > 0.0f);
+}
+
+TEST_CASE("GameMapVM - useSkill before start does nothing", "[gamemap][iter3][skill][boundary]") {
+    GameMapVM vm;
+    auto skillCmd = vm.getUseSkillCommand();
+
+    // 未开始游戏时释放技能 → 不会崩溃
+    CHECK_NOTHROW(skillCmd());
+}
+
+TEST_CASE("GameMapVM - initial weapon level is 1", "[gamemap][iter3][weapon]") {
+    GameMapVM vm;
+    CHECK(vm.getWeaponLevel() == 1);
+
+    auto startCmd = vm.getStartGameCommand();
+    startCmd();
+    CHECK(vm.getWeaponLevel() == 1);
+}
+
+TEST_CASE("GameMapVM - pause toggles between Playing and Paused", "[gamemap][iter3][pause]") {
+    GameMapVM vm;
+    auto startCmd = vm.getStartGameCommand();
+    startCmd();
+    CHECK(vm.getGameState() == GameState::Playing);
+
+    auto pauseCmd = vm.getPauseCommand();
+
+    // 暂停
+    pauseCmd();
+    CHECK(vm.getGameState() == GameState::Paused);
+
+    // 继续
+    pauseCmd();
+    CHECK(vm.getGameState() == GameState::Playing);
+
+    // 再次暂停
+    pauseCmd();
+    CHECK(vm.getGameState() == GameState::Paused);
+}
+
+TEST_CASE("GameMapVM - pause before start does nothing", "[gamemap][iter3][pause][boundary]") {
+    GameMapVM vm;
+    auto pauseCmd = vm.getPauseCommand();
+
+    // Menu 状态调用 pause → 不应改变状态
+    CHECK(vm.getGameState() == GameState::Menu);
+    pauseCmd();
+    CHECK(vm.getGameState() == GameState::Menu);
+}
+
+TEST_CASE("GameMapVM - startGame emits new iteration 3 signals", "[gamemap][iter3][signal]") {
+    GameMapVM vm;
+    SignalRecorder rec;
+    QObject::connect(&vm, &GameMapVM::propertyChanged,
+                     &vm, [&rec](uint32_t id) { rec(id); });
+
+    auto startCmd = vm.getStartGameCommand();
+    startCmd();
+
+    // 迭代 3 新信号：PROP_ID_SKILL_COOLDOWN, PROP_ID_WEAPON_LEVEL
+    CHECK(rec.contains(PROP_ID_SKILL_COOLDOWN));
+    CHECK(rec.contains(PROP_ID_WEAPON_LEVEL));
+}
+
+TEST_CASE("GameMapVM - weapon level stays 1 after start", "[gamemap][iter3][weapon]") {
+    GameMapVM vm;
+    auto startCmd = vm.getStartGameCommand();
+    startCmd();
+
+    CHECK(vm.getWeaponLevel() == 1);
+
+    // 运行一些 tick
+    tickN(vm, 100);
+    // 武器等级未升级前保持 1
+    CHECK(vm.getWeaponLevel() >= 1);
+    CHECK(vm.getWeaponLevel() <= 5);
 }

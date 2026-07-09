@@ -10,7 +10,12 @@
         <file alias="enemyMedium">images/PNG/Enemies/enemyBlack1.png</file>
         <file alias="enemyLarge">images/PNG/Enemies/enemyBlack5.png</file>
 
-        <!-- ── 迭代2：BOSS ─────────────────────── -->
+        <!-- ── 迭代3：5架战机独立图片 ──────────── -->
+        <file alias="thunderShip">images/MyAircraft/Firepower.png</file>
+        <file alias="flameShip">images/MyAircraft/Flame.png</file>
+        <file alias="frostShip">images/MyAircraft/Frost.png</file>
+        <file alias="phantomShip">images/MyAircraft/Speed.png</file>
+        <file alias="fortressShip">images/MyAircraft/Defense.png</file>
         <file alias="bossShip">images/PNG/Sprites/Ships/spaceShips_009.png</file>
         <file alias="bossRocket">images/PNG/Sprites/Rockets/spaceRockets_001.png</file>
 

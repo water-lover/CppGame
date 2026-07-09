@@ -44,6 +44,9 @@ private:
     int       m_bridgeScore     = 0;
     int       m_bridgeLives     = 3;
     int       m_bridgeHighScore = 0;
+    int       m_bridgeWave      = 0;
+    int       m_bridgeBossHp    = 0;
+    int       m_bridgeBossMaxHp = 0;
     GameState m_bridgeState     = GameState::Menu;
 };
 

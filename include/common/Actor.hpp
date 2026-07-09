@@ -6,6 +6,9 @@
 enum class ActorType {
     Player,
     EnemySmall,
+    EnemyMedium,
+    EnemyLarge,
+    Boss,
     PlayerBullet,
     EnemyBullet,
     PowerUpHp,      // 回血包道具

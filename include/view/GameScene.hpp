@@ -30,7 +30,14 @@ public:
     void setMap(const AirMap* map) noexcept { m_pMap = map; }
     void setPlayerPixmap(const QPixmap* p) noexcept { m_pPlayerImg = p; }
     void setEnemySmallPixmap(const QPixmap* p) noexcept { m_pEnemyImg = p; }
+    void setEnemyMediumPixmap(const QPixmap* p) noexcept { m_pEnemyMediumImg = p; }
+    void setEnemyLargePixmap(const QPixmap* p) noexcept { m_pEnemyLargeImg = p; }
+    void setBossPixmap(const QPixmap* p) noexcept { m_pBossImg = p; }
     void setBulletPixmap(const QPixmap* p) noexcept { m_pBulletImg = p; }
+    void setEnemyBulletPixmap(const QPixmap* p) noexcept { m_pEnemyBulletImg = p; }
+    void setPowerUpHpPixmap(const QPixmap* p) noexcept { m_pPowerUpHpImg = p; }
+    void setPowerUpFirePixmap(const QPixmap* p) noexcept { m_pPowerUpFireImg = p; }
+    void setPowerUpShieldPixmap(const QPixmap* p) noexcept { m_pPowerUpShieldImg = p; }
     void setBackgroundPixmap(const QPixmap* p) noexcept { m_pBgImg = p; }
 
     // ── HUD 数据注入（在场景坐标中直接绘制，避免 QWidget 覆盖层尺寸问题） ─
@@ -56,7 +63,14 @@ private:
     const AirMap*   m_pMap       = nullptr;
     const QPixmap*  m_pPlayerImg = nullptr;
     const QPixmap*  m_pEnemyImg  = nullptr;
+    const QPixmap*  m_pEnemyMediumImg = nullptr;
+    const QPixmap*  m_pEnemyLargeImg  = nullptr;
+    const QPixmap*  m_pBossImg   = nullptr;
     const QPixmap*  m_pBulletImg = nullptr;
+    const QPixmap*  m_pEnemyBulletImg = nullptr;
+    const QPixmap*  m_pPowerUpHpImg    = nullptr;
+    const QPixmap*  m_pPowerUpFireImg  = nullptr;
+    const QPixmap*  m_pPowerUpShieldImg = nullptr;
     const QPixmap*  m_pBgImg     = nullptr;
     // ── HUD 指针 ────────────────────────────────────────────────
     const int* m_pScore     = nullptr;

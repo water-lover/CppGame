@@ -22,6 +22,7 @@ class StartScreen;
 class GameOverScreen;
 class ModeSelectScreen;
 class PauseOverlay;
+class BossHealthBar;
 
 /// 游戏主视图 — 纯 C++ QWidget
 ///
@@ -61,12 +62,23 @@ public:
     /// 设置背景图片
     void setBackgroundPixmap(const QPixmap* p) noexcept;
 
+    /// 迭代3 新图片
+    void setEnemyMediumPixmap(const QPixmap* p) noexcept;
+    void setEnemyLargePixmap(const QPixmap* p) noexcept;
+    void setBossPixmap(const QPixmap* p) noexcept;
+    void setEnemyBulletPixmap(const QPixmap* p) noexcept;
+    void setPowerUpHpPixmap(const QPixmap* p) noexcept;
+    void setPowerUpFirePixmap(const QPixmap* p) noexcept;
+    void setPowerUpShieldPixmap(const QPixmap* p) noexcept;
+
     // 分数/生命指针（转发给 GameScene 直接在场景中绘制 HUD）
     void setScorePtr(const int* p)   noexcept { m_pScore = p; if (m_scene) m_scene->setHudScore(p); }
     void setLivesPtr(const int* p)   noexcept { m_pLives = p; if (m_scene) m_scene->setHudLives(p); }
     void setHighScorePtr(const int* p) noexcept { m_pHighScore = p; if (m_scene) m_scene->setHudHighScore(p); }
     void setGameStatePtr(const GameState* p) noexcept { m_pGameState = p; }
     void setWavePtr(const int* p)    noexcept { m_pWave = p; if (m_scene) m_scene->setHudWave(p); }
+    void setBossHpPtr(const int* p)    noexcept { m_pBossHp = p; }
+    void setBossMaxHpPtr(const int* p) noexcept { m_pBossMaxHp = p; }
 
     // ════════════════════════════════════════════════════════════════
     // ② 命令绑定 — 接收 std::function 命令（由 App 注入）
@@ -120,6 +132,9 @@ private:
     // 页面 4: 暂停覆盖层
     PauseOverlay*   m_pauseOverlay = nullptr;
 
+    // ── BOSS 血条（叠加在游戏页面上方） ───────────────────────
+    BossHealthBar*  m_bossHealthBar = nullptr;
+
     // ── 属性指针（const T* 只读） ────────────────────────────────
     const AirMap*   m_pMap        = nullptr;
     const QPixmap*  m_pPlayerImg  = nullptr;
@@ -130,6 +145,8 @@ private:
     const int*      m_pLives      = nullptr;
     const int*      m_pHighScore  = nullptr;
     const int*      m_pWave       = nullptr;
+    const int*      m_pBossHp     = nullptr;
+    const int*      m_pBossMaxHp  = nullptr;
     const GameState* m_pGameState = nullptr;
 
     // ── 命令（std::function，不知道实现者） ──────────────────────

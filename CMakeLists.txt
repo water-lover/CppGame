@@ -56,8 +56,18 @@ add_library(thf_viewmodel OBJECT
     src/viewmodel/Bullet.cpp
     src/viewmodel/CollisionSystem.cpp
     src/viewmodel/ScoreManager.cpp
+    src/viewmodel/AircraftStats.cpp
+    src/viewmodel/SkillSystem.cpp
+    src/viewmodel/WaveManager.cpp
+    src/viewmodel/PowerUpManager.cpp
+    src/viewmodel/Boss.cpp
     include/viewmodel/SpiritVM.hpp
     include/viewmodel/GameMapVM.hpp
+    include/viewmodel/AircraftStats.hpp
+    include/viewmodel/SkillSystem.hpp
+    include/viewmodel/WaveManager.hpp
+    include/viewmodel/PowerUpManager.hpp
+    include/viewmodel/Boss.hpp
 )
 target_include_directories(thf_viewmodel PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(thf_viewmodel PUBLIC thf_common Qt5::Core Qt5::Gui)
@@ -77,6 +87,7 @@ add_library(thf_view OBJECT
     src/view/ModeSelectScreen.cpp
     src/view/GameOverScreen.cpp
     src/view/PauseOverlay.cpp
+    src/view/BossHealthBar.cpp
     include/view/GameView.hpp
     include/view/GameScene.hpp
     include/view/HudOverlay.hpp
@@ -84,6 +95,7 @@ add_library(thf_view OBJECT
     include/view/ModeSelectScreen.hpp
     include/view/GameOverScreen.hpp
     include/view/PauseOverlay.hpp
+    include/view/BossHealthBar.hpp
     include/view/PlayerItem.hpp
     include/view/EnemyItem.hpp
     include/view/BulletItem.hpp
@@ -155,6 +167,11 @@ if(Catch2_FOUND)
         tests/test_player.cpp
         tests/test_collision.cpp
         tests/test_game_map_vm.cpp
+        tests/test_aircraft_stats.cpp
+        tests/test_skill_system.cpp
+        tests/test_wave_manager.cpp
+        tests/test_power_up.cpp
+        tests/test_boss.cpp
         $<TARGET_OBJECTS:thf_common>
         $<TARGET_OBJECTS:thf_viewmodel>
     )

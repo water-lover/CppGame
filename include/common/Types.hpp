@@ -30,4 +30,11 @@ enum class Direction {
     Right
 };
 
+// ── GameMode ────────────────────────────────────────────────────────────────
+/// 游戏模式
+enum class GameMode {
+    Campaign,   // 闯关模式（7 关）
+    Endless     // 无尽模式
+};
+
 #endif // TYPES_HPP
