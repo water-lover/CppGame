@@ -161,7 +161,16 @@ void GameMapVM::tickImpl(float dt) {
         fireChange(PROP_ID_WEAPON_LEVEL);
     }
 
-    // 11. 清理
+    // 10. 碰撞后：检查 BOSS 是否死亡（必须在 cleanup 之前）
+    for (const auto& e : m_enemies) {
+        auto* boss = dynamic_cast<Boss*>(e.get());
+        if (boss && boss->isDead()) {
+            m_waveMgr.notifyBossDefeated();
+            break;
+        }
+    }
+
+    // 11. 道具拾取
     cleanupEntities();
 
     // 12. 更新波次/BOSS 状态

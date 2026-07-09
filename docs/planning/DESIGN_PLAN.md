@@ -777,9 +777,43 @@ void Boss::updatePhase() {
 
 ---
 
-新增：AircraftStats（5架属性模板）、SkillSystem（5种主动技能）、战机选择界面、HUD 技能CD显示、Space 放技能。
+### 迭代 4 — 关卡选关 + 7 关独立设计 🗺️
 
-### 迭代 4 — 5 战机 + 技能系统 🚀
+**UI 新增：**
+
+- **LevelSelectScreen** — 关卡选择界面：1~7 关可点击图标，已解锁关卡高亮，未解锁锁定
+- 每关显示：关卡名、难度星级、BOSS 名称
+- 闯关模式流程改为：Start → ModeSelect → **LevelSelect** → Game → GameOver
+
+**每关独立设计（原 WaveManager 改为关卡驱动，不再自动递进）：**
+
+| 关卡 | 主题 | 敌机配置 | BOSS | 设计要点 |
+|---|---|---|---|---|
+| 第1关 | 初入战场 | 小型机×3波 | 轻型BOSS(100HP) | 新手关，敌机稀疏，让玩家熟悉操作 |
+| 第2关 | 空中走廊 | 小型+中型混编×3波 | 中型BOSS(200HP) | 首次出现中型机，BOSS 有双发攻击 |
+| 第3关 | 雷云风暴 | 中型为主×4波 | 中型BOSS(200HP) | 敌机密度提升，BOSS 三发散弹 |
+| 第4关 | 敌军要塞 | 中型+大型混编×4波 | 重型BOSS(350HP) | 出现大型机，BOSS 召唤小怪 |
+| 第5关 | 暗夜突袭 | 大量小型+精英×4波 | 重型BOSS(350HP) | 精英机首次出现，BOSS 瞄准弹 |
+| 第6关 | 火力封锁 | 全类型高密度×5波 | 装甲BOSS(500HP) | 高密度混编，BOSS 全屏弹幕 |
+| 第7关 | 最终决战 | 最强配置×5波 | 装甲BOSS(500HP) | 精英+大型为主，BOSS 螺旋弹幕+召唤 |
+
+**ViewModel 改动：**
+
+- WaveManager 增加 `setLevelConfig(int levelId)` 方法（从关卡表读取配置）
+- GameMapVM 新增 `startLevel(int levelId)` 命令
+- 每关独立配置（敌机类型分布、波次数量、生成间隔）
+
+**View 改动：**
+
+- 新建 `LevelSelectScreen.hpp/cpp` — 7 个可点击关卡图标，滚动或分页展示
+- 每关按钮显示：关卡编号、名称、难度星级
+- GameView 新增页面 index: LevelSelectScreen
+
+**涉及 Agent：** ③ View（主力）、② ViewModel、⑤ App
+
+---
+
+### 迭代 5 — 5 战机 + 技能系统 🚀
 
 新增：AircraftStats（5架属性模板：雷霆/烈焰/冰霜/幻影/堡垒）、SkillSystem（5种主动技能+CD管理）、战机选择界面、HUD 技能CD显示、Space 放技能、技能特效（全屏雷击/火焰喷射/护盾/冲刺/反弹）。
 

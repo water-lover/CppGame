@@ -57,6 +57,9 @@ public:
     bool isEndless() const { return endlessMode_; }
     void setEndless(bool v) { endlessMode_ = v; }
 
+    /// 通知 BOSS 已被击败（由 GameMapVM 在碰撞检测后调用，用于在 cleanup 前标记通关）
+    void notifyBossDefeated() { bossDefeated_ = true; }
+
 private:
     /// 生成一波敌机
     void spawnWave(std::vector<std::unique_ptr<Enemy>>& enemies,
