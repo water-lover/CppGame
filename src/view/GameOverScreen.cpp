@@ -8,7 +8,7 @@
 GameOverScreen::GameOverScreen(QWidget* parent)
     : QWidget(parent)
 {
-    setFixedSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+    // 尺寸由 QStackedWidget 管理，不设 setFixedSize
 
     // ── 布局 ───────────────────────────────────────────────────────
     auto* layout = new QVBoxLayout(this);
@@ -68,14 +68,15 @@ void GameOverScreen::setHighScore(int score) {
 
 void GameOverScreen::paintEvent(QPaintEvent* /*event*/) {
     QPainter painter(this);
+    float w = width(), h = height();
 
     // ── 背景 ───────────────────────────────────────────────────────
-    painter.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, QColor(20, 10, 10));
+    painter.fillRect(0, 0, w, h, QColor(20, 10, 10));
 
     // ── "GAME OVER" 标题 ───────────────────────────────────────────
     painter.setPen(QColor(255, 60, 60));
-    QFont titleFont(QStringLiteral("Microsoft YaHei"), 52, QFont::Bold);
+    QFont titleFont(QStringLiteral("Microsoft YaHei"), static_cast<int>(h * 0.09), QFont::Bold);
     painter.setFont(titleFont);
-    painter.drawText(QRect(0, 100, SCREEN_WIDTH, 70),
+    painter.drawText(QRect(0, h * 0.15, w, h * 0.12),
                      Qt::AlignCenter, QStringLiteral("GAME OVER"));
 }

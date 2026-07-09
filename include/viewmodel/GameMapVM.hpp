@@ -76,6 +76,12 @@ public:
     /// 帧更新（float dt: 增量时间）
     std::function<void(float)> getTickCommand();
 
+    /// 选择游戏模式（int mode: 0=闯关, 1=无尽）
+    std::function<void(int)> getSelectModeCommand();
+
+    /// 暂停/继续
+    std::function<void()> getPauseCommand();
+
     // 属性绑定辅助 — 供 View 直接读取的简单值（非指针形式）
     int   getScoreValue()   const noexcept { return m_scoreMgr.getScore(); }
     int   getLivesValue()   const noexcept { return m_player.getLives(); }
@@ -96,6 +102,8 @@ private:
     void moveDownImpl(int active);
     void moveLeftImpl(int active);
     void moveRightImpl(int active);
+    void selectModeImpl(int mode);
+    void pauseImpl();
 
     // ── 内部工具 ──────────────────────────────────────────────────
     void spawnEnemy();

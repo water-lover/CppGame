@@ -19,12 +19,16 @@ public:
     /// 设置当前生命值
     void setLives(int lives) noexcept { m_lives = lives; update(); }
 
+    /// 设置当前波次/关卡
+    void setWave(int wave) noexcept { m_wave = wave; update(); }
+
 protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
     int m_score = 0;
     int m_lives = 3;
+    int m_wave = 0;
 };
 
 #endif // HUDOVERLAY_HPP

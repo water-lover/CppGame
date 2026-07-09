@@ -19,7 +19,7 @@
 ③ 事件绑定（ViewModel → View）: ViewModel 发出通知，App 中转给 View
 ```
 
-> **📌 PropertyTrigger 等价说明**：老师 ex5 中 ViewModel 继承 `PropertyTrigger`，通过 `fire(PROP_ID_MAP)` 发出通知，View 通过 `add_notification(callback)` 注册回调。<br>> 在 Qt 版本中：ViewModel 继承 `QObject`，通过 `emit propertyChanged(PROP_ID_MAP)` 发出通知，App 通过 `connect()` 将信号连接到 View 的槽函数。<br>> **两种方式的架构意义完全相同**——ViewModel 发出通知时不知道接收者是谁，View 在不知道 ViewModel 具体类的情况下接收通知。
+> **📌 PropertyTrigger 等价说明**：老师 ex5 中 ViewModel 继承 `PropertyTrigger`，通过 `fire(PROP_ID_MAP)` 发出通知，View 通过 `add_notification(callback)` 注册回调。> 在 Qt 版本中：ViewModel 继承 `QObject`，通过 `emit propertyChanged(PROP_ID_MAP)` 发出通知，App 通过 `connect()` 将信号连接到 View 的槽函数。> **两种方式的架构意义完全相同**——ViewModel 发出通知时不知道接收者是谁，View 在不知道 ViewModel 具体类的情况下接收通知。
 
 ---
 
@@ -63,10 +63,10 @@
 
 ### ① Common Agent（公共基础设施层）
 
-| 项目 | 内容 |
-|---|---|
-| **负责文件** | `src/common/` + `include/common/` |
-| **职责** | 系统最底层。所有其他智能体都会用到的基础工具 |
+| 项目         | 内容                                                     |
+| ------------ | -------------------------------------------------------- |
+| **负责文件** | `src/common/` + `include/common/`                        |
+| **职责**     | 系统最底层。所有其他智能体都会用到的基础工具             |
 | **越界限制** | **严禁** `#include` 系统里任何其他智能体的文件。完全独立 |
 
 ```
@@ -85,11 +85,11 @@ src/common/                         include/common/
 
 本游戏采用**逻辑分辨率 800×600** 作为设计基准，所有游戏逻辑（碰撞检测、位置计算）基于此分辨率。
 
-| 维度 | 方案 |
-|---|---|
-| **像素质量** | 替换 Kenney 低分辨率素材为高分辨率（2x/3x）图片；View 层渲染时按逻辑分辨率缩放绘制，素材本身采用更高清的源文件 |
-| **屏幕适应** | 去掉 `setFixedSize()`；用 `fitInView()` 保持宽高比缩放；支持窗口拉伸和全屏模式（F11 切换）；HUD 和界面元素按比例缩放 |
-| **高分屏支持** | 启用 `Qt::HighDpiScaleFactorRoundingPolicy`，确保 4K 屏幕不模糊 |
+| 维度           | 方案                                                                                                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **像素质量**   | 替换 Kenney 低分辨率素材为高分辨率（2x/3x）图片；View 层渲染时按逻辑分辨率缩放绘制，素材本身采用更高清的源文件      |
+| **屏幕适应**   | 去掉`setFixedSize()`；用 `fitInView()` 保持宽高比缩放；支持窗口拉伸和全屏模式（F11 切换）；HUD 和界面元素按比例缩放 |
+| **高分屏支持** | 启用`Qt::HighDpiScaleFactorRoundingPolicy`，确保 4K 屏幕不模糊                                                      |
 
 **Actor.hpp + AirMap.hpp** — 这是 View 唯一能看到的数据结构（对齐老师的 `air_map.h`）。View 通过 `const AirMap*` 指针读取所有精灵的位置和类型来进行绘制，但完全不知道这些数据来自哪些数据类。
 
@@ -136,17 +136,17 @@ enum {
 
 ### ② ViewModel Agent — 核心层
 
-| 项目 | 内容 |
-|---|---|
-| **负责文件** | `src/viewmodel/` + `include/viewmodel/` |
-| **职责** | **游戏的全部数据和规则。** 采用 MVFM 思想，拆分两个 ViewModel 类。<br>• **GameMapVM (Function Model)** — 地图/精灵位置/碰撞/计分/生命/波次，偏向数据<br>• **SpiritVM (ViewModel)** — 精灵图片资源，偏向界面 |
-| **命令模式** | 命令通过 `std::function` 实现，ViewModel 提供 getter 方法返回命令，由 App 注入给 View |
-| **事件通知** | 数据变化时调用 `fire(PROP_ID_XXX)`，由 PropertyTrigger（Qt 中可用 QObject + signal 替代）发出 |
-| **属性暴露** | 通过 getter 方法返回 `const T*` 指针，View 只读访问 |
-| **可读** | ✅ 可读 Common Agent<br>❌ **不可读** View 的任何文件<br>❌ **不可读** Resource 的实现细节（但可通过接口调用 SaveManager） |
-| **可写** | 仅限自己目录下的文件 |
-| **不可碰** | `src/view/` — **绝对不能** include 任何 UI 头文件<br>`src/resource/` — 不直接写文件，通过 Resource 接口调用 |
-| **Qt 限制** | 可以 `#include <QObject>` 用于信号机制，**不能** include 任何 Widgets/Quick 头文件 |
+| 项目         | 内容                                                                                                                                                                                                |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **负责文件** | `src/viewmodel/` + `include/viewmodel/`                                                                                                                                                             |
+| **职责**     | **游戏的全部数据和规则。** 采用 MVFM 思想，拆分两个 ViewModel 类。• **GameMapVM (Function Model)** — 地图/精灵位置/碰撞/计分/生命/波次，偏向数据• **SpiritVM (ViewModel)** — 精灵图片资源，偏向界面 |
+| **命令模式** | 命令通过`std::function` 实现，ViewModel 提供 getter 方法返回命令，由 App 注入给 View                                                                                                                |
+| **事件通知** | 数据变化时调用`fire(PROP_ID_XXX)`，由 PropertyTrigger（Qt 中可用 QObject + signal 替代）发出                                                                                                        |
+| **属性暴露** | 通过 getter 方法返回`const T*` 指针，View 只读访问                                                                                                                                                  |
+| **可读**     | ✅ 可读 Common Agent❌ **不可读** View 的任何文件❌ **不可读** Resource 的实现细节（但可通过接口调用 SaveManager）                                                                                     |
+| **可写**     | 仅限自己目录下的文件                                                                                                                                                                                |
+| **不可碰**   | `src/view/` — **绝对不能** include 任何 UI 头文件`src/resource/` — 不直接写文件，通过 Resource 接口调用                                                                                             |
+| **Qt 限制**  | 可以`#include <QObject>` 用于信号机制，**不能** include 任何 Widgets/Quick 头文件                                                                                                                   |
 
 ```
 src/viewmodel/                      include/viewmodel/
@@ -215,19 +215,20 @@ public:
 
 ### ③ View Agent — 纯 C++（无 QML）
 
-| 项目 | 内容 |
-|---|---|
-| **负责文件** | `src/view/` + `include/view/` |
-| **技术方案** | Qt5 `QGraphicsView` + `QGraphicsScene` + 自定义 `QGraphicsItem` 子类 |
-| **职责** | 使用 QPainter 渲染所有画面、捕获键盘输入、管理界面切换、管理帧循环 QTimer。<br>**纯 C++，无 QML/JS**。对齐老师 ex5：MainWindow 自带 timeout 回调驱动帧循环 |
-| **关键约束** | **绝对不能 `#include` 任何 ViewModel 的头文件！**<br>View **不**认识 ViewModel，只认识：<br>① `const T*` 属性指针（来自 common/ 的数据类型）<br>② `std::function` 命令（由 App 注入）<br>③ `uint32_t` 属性 ID（收到通知后判断哪个属性变了）<br><br>**屏幕适应性**：View 层负责所有坐标转换。游戏逻辑坐标 800×600，View 通过 `fitInView()` 自动缩放适配实际窗口大小。HUD/菜单等覆盖层按百分比定位，不依赖绝对像素。 |
-| **可读** | ✅ 可读 Common Agent（包含数据类型头文件）<br>✅ **可读** ViewModel 的公开头文件？ **不可以！**<br>❌ **不可读** ViewModel 的任何头文件<br>❌ **不可读** Resource 的实现细节 |
-| **可写** | 仅限自己目录下的文件 |
-| **不可碰** | ❌ **不能** include `viewmodel/` 下的任何文件（包括 Player.hpp 等数据类）<br>❌ **不能**直接操作游戏数据<br>❌ **不能**直接读写文件 |
+| 项目         | 内容                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **负责文件** | `src/view/` + `include/view/`                                                                                                                                                                                                                                                                                                                                                              |
+| **技术方案** | Qt5`QGraphicsView` + `QGraphicsScene` + 自定义 `QGraphicsItem` 子类                                                                                                                                                                                                                                                                                                                        |
+| **职责**     | 使用 QPainter 渲染所有画面、捕获键盘输入、管理界面切换、管理帧循环 QTimer。**纯 C++，无 QML/JS**。对齐老师 ex5：MainWindow 自带 timeout 回调驱动帧循环                                                                                                                                                                                                                                     |
+| **关键约束** | **绝对不能 `#include` 任何 ViewModel 的头文件！**View **不**认识 ViewModel，只认识：① `const T*` 属性指针（来自 common/ 的数据类型）② `std::function` 命令（由 App 注入）③ `uint32_t` 属性 ID（收到通知后判断哪个属性变了）**屏幕适应性**：View 层负责所有坐标转换。游戏逻辑坐标 800×600，View 通过 `fitInView()` 自动缩放适配实际窗口大小。HUD/菜单等覆盖层按百分比定位，不依赖绝对像素。 |
+| **可读**     | ✅ 可读 Common Agent（包含数据类型头文件）✅ **可读** ViewModel 的公开头文件？ **不可以！**❌ **不可读** ViewModel 的任何头文件❌ **不可读** Resource 的实现细节                                                                                                                                                                                                                               |
+| **可写**     | 仅限自己目录下的文件                                                                                                                                                                                                                                                                                                                                                                       |
+| **不可碰**   | ❌**不能** include `viewmodel/` 下的任何文件（包括 Player.hpp 等数据类）❌ **不能**直接操作游戏数据❌ **不能**直接读写文件                                                                                                                                                                                                                                                                    |
 
 > ⚠️ **重要**：View 只从 App 处接收 `const T*` 指针和 `std::function` 对象，完全不知道这些对象来自哪个 ViewModel 类。这就是课件所说的"View 层和 ViewModel 层彻底解开了耦合"。
 
 **GameView 自带 QTimer（对齐 ex5 MainWindow 的 Fl::add_timeout）：**
+
 ```cpp
 // GameView 构造函数
 GameView::GameView(QWidget* parent) : QGraphicsView(parent) {
@@ -263,11 +264,11 @@ src/view/                           include/view/
 
 ### ④ Resource Agent（资源与持久化管理层）
 
-| 项目 | 内容 |
-|---|---|
-| **负责文件** | `src/resource/` + `include/resource/` |
-| **职责** | 磁盘 I/O：加载 PNG 图片到 QPixmap（带缓存）、读写最高分/升级数据 JSON 存档 |
-| **越界限制** | • 可读 Common Agent<br>• **不可读** ViewModel 的任何文件<br>• **不可读** View 的任何文件 |
+| 项目         | 内容                                                                             |
+| ------------ | -------------------------------------------------------------------------------- |
+| **负责文件** | `src/resource/` + `include/resource/`                                            |
+| **职责**     | 磁盘 I/O：加载 PNG 图片到 QPixmap（带缓存）、读写最高分/升级数据 JSON 存档       |
+| **越界限制** | • 可读 Common Agent• **不可读** ViewModel 的任何文件• **不可读** View 的任何文件 |
 
 ```
 src/resource/                       include/resource/
@@ -281,14 +282,14 @@ src/resource/                       include/resource/
 
 ### ⑤ App Agent（应用生命周期层）
 
-| 项目 | 内容 |
-|---|---|
-| **负责文件** | `src/app/` + `include/app/` |
-| **职责** | main 函数、创建所有 Agent 实例、**建立三绑定连接**（对齐老师 ex5 AirApp）<br>帧循环由 View 层的 GameView 自行管理（对齐 ex5 的 MainWindow 自带 timeout 回调） |
-| **技术方案** | `QApplication` + `QGraphicsView`，**无** QQmlApplicationEngine |
-| **可读** | ✅ 可读所有 Agent |
-| **可写** | 仅限自己目录下的文件 |
-| **不可碰** | ⚠️ **绝对不能**写游戏逻辑或渲染代码——只做组装和连接 |
+| 项目         | 内容                                                                                                                                                      |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **负责文件** | `src/app/` + `include/app/`                                                                                                                               |
+| **职责**     | main 函数、创建所有 Agent 实例、**建立三绑定连接**（对齐老师 ex5 AirApp）帧循环由 View 层的 GameView 自行管理（对齐 ex5 的 MainWindow 自带 timeout 回调） |
+| **技术方案** | `QApplication` + `QGraphicsView`，**无** QQmlApplicationEngine                                                                                            |
+| **可读**     | ✅ 可读所有 Agent                                                                                                                                          |
+| **可写**     | 仅限自己目录下的文件                                                                                                                                      |
+| **不可碰**   | ⚠️**绝对不能**写游戏逻辑或渲染代码——只做组装和连接                                                                                                         |
 
 ```
 src/app/                            include/app/
@@ -330,11 +331,11 @@ public:
 
 ### ⑥ Test Agent（测试层）
 
-| 项目 | 内容 |
-|---|---|
-| **负责文件** | `tests/` 目录下的所有文件 |
-| **职责** | 单元测试 Common 和 ViewModel 的代码正确性（不启动 Qt 窗口） |
-| **越界限制** | 可读 Common 和 ViewModel，**不能** include View 的任何文件 |
+| 项目         | 内容                                                        |
+| ------------ | ----------------------------------------------------------- |
+| **负责文件** | `tests/` 目录下的所有文件                                   |
+| **职责**     | 单元测试 Common 和 ViewModel 的代码正确性（不启动 Qt 窗口） |
+| **越界限制** | 可读 Common 和 ViewModel，**不能** include View 的任何文件  |
 
 ```
 tests/
@@ -373,6 +374,7 @@ tests/
 **依赖方向**：`Common ← ViewModel ← App → View`，App 是唯一的交汇点。
 
 **关键规则**：View 和 ViewModel 之间**没有直接的头文件依赖**。所有通信通过三种方式：
+
 - `const T*` 指针（数据从 ViewModel 流向 View）
 - `std::function` 命令（操作从 View 流向 ViewModel）
 - 事件通知（通知从 ViewModel 流向 View）
@@ -446,77 +448,121 @@ GameMapVM (ViewModel)                       GameView / GameScene (View)
 
 ### 4.2 五架战机
 
-| 编号 | 名称 | 火力 | 生命 | 速度 | 主动技能 | 效果 |
-|---|---|---|---|---|---|---|
-| ① | **雷霆号** | ★★★ | ★★★ | ★★★ | 雷暴领域 | 全屏雷击 |
-| ② | **烈焰号** | ★★★★★ | ★★ | ★★ | 火焰风暴 | 扇形火焰喷射 |
-| ③ | **冰霜号** | ★★ | ★★★★★ | ★★ | 极寒护盾 | 护盾+冻结敌机 |
-| ④ | **幻影号** | ★★★ | ★★ | ★★★★★ | 时空闪避 | 向前冲刺攻击 |
-| ⑤ | **堡垒号** | ★★ | ★★★★ | ★ | 铁壁阵 | 无敌+反弹子弹 |
+| 编号 | 名称       | 火力  | 生命  | 速度  | 主动技能 | 效果          |
+| ---- | ---------- | ----- | ----- | ----- | -------- | ------------- |
+| ①    | **雷霆号** | ★★★   | ★★★   | ★★★   | 雷暴领域 | 全屏雷击      |
+| ②    | **烈焰号** | ★★★★★ | ★★    | ★★    | 火焰风暴 | 扇形火焰喷射  |
+| ③    | **冰霜号** | ★★    | ★★★★★ | ★★    | 极寒护盾 | 护盾+冻结敌机 |
+| ④    | **幻影号** | ★★★   | ★★    | ★★★★★ | 时空闪避 | 向前冲刺攻击  |
+| ⑤    | **堡垒号** | ★★    | ★★★★  | ★     | 铁壁阵   | 无敌+反弹子弹 |
 
 ### 4.3 闯关模式（7 关）
 
-| 关卡 | 主题 | 敌机 | BOSS | 难度 |
-|---|---|---|---|---|
-| 1 | 初入战场 | 小型机 | 轻型BOSS | ★☆☆ |
-| 2 | 空中走廊 | 小型+中型 | 中型BOSS | ★★☆ |
-| 3 | 雷云风暴 | 中型为主 | 雷电BOSS | ★★☆ |
-| 4 | 敌军要塞 | 中型+大型 | 重型BOSS | ★★★ |
-| 5 | 暗夜突袭 | 大量小型+精英 | 隐形BOSS | ★★★ |
-| 6 | 火力封锁 | 全类型高密度 | 装甲BOSS | ★★★★ |
-| 7 | 最终决战 | 最强配置 | 终极BOSS | ★★★★★ |
+| 关卡 | 主题     | 敌机          | BOSS     | 难度  |
+| ---- | -------- | ------------- | -------- | ----- |
+| 1    | 初入战场 | 小型机        | 轻型BOSS | ★☆☆   |
+| 2    | 空中走廊 | 小型+中型     | 中型BOSS | ★★☆   |
+| 3    | 雷云风暴 | 中型为主      | 雷电BOSS | ★★☆   |
+| 4    | 敌军要塞 | 中型+大型     | 重型BOSS | ★★★   |
+| 5    | 暗夜突袭 | 大量小型+精英 | 隐形BOSS | ★★★   |
+| 6    | 火力封锁 | 全类型高密度  | 装甲BOSS | ★★★★  |
+| 7    | 最终决战 | 最强配置      | 终极BOSS | ★★★★★ |
 
 每一关流程：`小怪波次(3~5波) → BOSS 出现 → 击败 BOSS → 过关结算`
 
 ### 4.4 无尽模式
 
-| 项目 | 内容 |
-|---|---|
-| **玩法** | 无限循环：小怪波次 → BOSS → 小怪波次(更难) → BOSS(更强) → ... |
-| **资源系统** | 击败敌机/BOSS 掉落"星核碎片"，用于永久升级战机 |
-| **升级项目** | 火力等级、生命上限、移动速度、技能冷却缩减、子弹伤害 |
-| **难度递增** | 每通过一轮，敌机生成速度 +10%，敌机生命 +15% |
-| **保存** | 每次升级后存档到本地，下次进游戏继承 |
+| 项目         | 内容                                                          |
+| ------------ | ------------------------------------------------------------- |
+| **玩法**     | 无限循环：小怪波次 → BOSS → 小怪波次(更难) → BOSS(更强) → ... |
+| **资源系统** | 击败敌机/BOSS 掉落"星核碎片"，用于永久升级战机                |
+| **升级项目** | 火力等级、生命上限、移动速度、技能冷却缩减、子弹伤害          |
+| **难度递增** | 每通过一轮，敌机生成速度 +10%，敌机生命 +15%                  |
+| **保存**     | 每次升级后存档到本地，下次进游戏继承                          |
 
 ### 4.5 道具系统（战斗中掉落）
 
-| 道具 | 外观 | 效果 |
-|---|---|---|
-| ❤️ 回血包 | 红色十字 | 恢复 1 格生命 |
+| 道具       | 外观     | 效果                      |
+| ---------- | -------- | ------------------------- |
+| ❤️ 回血包   | 红色十字 | 恢复 1 格生命             |
 | ⚡ 火力加强 | 蓝色闪电 | 武器等级 +1（持续 15 秒） |
-| 🛡️ 护盾 | 金色盾牌 | 获得一次免伤护盾 |
-| ⭐ 星核碎片 | 紫色星星 | 无尽模式专属，用于升级 |
+| 🛡️ 护盾     | 金色盾牌 | 获得一次免伤护盾          |
+| ⭐ 星核碎片 | 紫色星星 | 无尽模式专属，用于升级    |
 
 ### 4.6 操作方式
 
-| 按键 | 功能 |
-|---|---|
-| **W / ↑** | 向上移动 |
-| **A / ←** | 向左移动 |
-| **S / ↓** | 向下移动 |
-| **D / →** | 向右移动 |
+| 按键      | 功能                       |
+| --------- | -------------------------- |
+| **W / ↑** | 向上移动                   |
+| **A / ←** | 向左移动                   |
+| **S / ↓** | 向下移动                   |
+| **D / →** | 向右移动                   |
 | **Space** | 释放主动技能（有冷却时间） |
-| **Esc** | 暂停 |
-| **Enter** | 确认/开始 |
+| **Esc**   | 暂停                       |
+| **Enter** | 确认/开始                  |
 
 ### 4.7 玩家属性
 
-| 属性 | 初始值 | 可升级 |
-|---|---|---|
-| 生命 | 3 | ✅ 每级 +1 上限 |
-| 移动速度 | 归一化 0.6/秒 | ✅ 每级 +0.05 |
-| 武器等级 | 1（最高 5） | ✅ 基础火力可永久升级 |
-| 射击间隔 | 0.2秒 | ✅ 冷却缩减可升级 |
-| 技能冷却 | 15~25秒（战机不同） | ✅ 冷却缩减可升级 |
+| 属性     | 初始值              | 可升级               |
+| -------- | ------------------- | -------------------- |
+| 生命     | 3                   | ✅ 每级 +1 上限       |
+| 移动速度 | 归一化 0.6/秒       | ✅ 每级 +0.05         |
+| 武器等级 | 1（最高 5）         | ✅ 基础火力可永久升级 |
+| 射击间隔 | 0.2秒               | ✅ 冷却缩减可升级     |
+| 技能冷却 | 15~25秒（战机不同） | ✅ 冷却缩减可升级     |
 
 ### 4.8 敌机类型
 
-| 类型 | 生命 | 速度 | 分数 | 说明 |
-|---|---|---|---|---|
-| 小型机 | 1 | 0.2~0.4 | 10 | 直线下飞 |
-| 中型机 | 2 | 0.15~0.3 | 30 | 左右摆动 |
-| 大型机 | 5 | 0.1~0.2 | 50 | 会发射子弹 |
-| BOSS | 50~200 | 0.05~0.1 | 500+ | 多种攻击模式 + 阶段转换 |
+当前迭代 1 仅有小型机（直线下飞），后续迭代逐步扩展敌机种类和攻击模式。
+
+#### 4.8.1 普通敌机
+
+| 类型       | 生命 | 速度      | 分数 | 移动模式           | 攻击方式                              | 外观特征       |
+| ---------- | ---- | --------- | ---- | ------------------ | ------------------------------------- | -------------- |
+| **小型机** | 1    | 0.2~0.4   | 10   | 直线下飞           | ❌ 无攻击，纯碰撞伤害                  | 红色倒三角     |
+| **中型机** | 2    | 0.15~0.3  | 30   | 左右正弦摆动       | ✅ 每 2s 发射 1 发红色子弹（直线向下） | 黑色装甲       |
+| **大型机** | 5    | 0.1~0.2   | 50   | 缓慢下飞，偶尔悬停 | ✅ 每 1.5s 发射 2 发子弹（V 形散射）   | 最大号黑色敌机 |
+| **精英机** | 8    | 0.08~0.15 | 100  | 追踪玩家 X 坐标    | ✅ 每 1s 发射 3 发扇形弹幕             | 金色镶边       |
+
+#### 4.8.2 BOSS 攻击模式
+
+每关 BOSS 拥有 **阶段转换** 机制（血量百分比触发），不同阶段切换攻击模式：
+
+| BOSS                    | 阶段 1（100%~50%）          | 阶段 2（50%~25%）           | 阶段 3（25%~0%）                         |
+| ----------------------- | --------------------------- | --------------------------- | ---------------------------------------- |
+| **轻型BOSS**（第1关）   | 左右平移 + 每 2s 单发       | 加速移动 + 每 1.5s 双发     | —（仅2阶段）                             |
+| **中型BOSS**（第2~3关） | 左右平移 + 每 1.5s 双发     | 8 字形移动 + 每 1s 三发散弹 | 狂乱 + 每 0.8s 五发散弹                  |
+| **重型BOSS**（第4~5关） | 缓慢移动 + 每 1.2s 三发     | 加速 + 召唤 2 架小型机护卫  | 全屏弹幕（12 发圆形扩散）                |
+| **终极BOSS**（第6~7关） | 多种移动 + 每 1s 五发瞄准弹 | 召唤 4 架中型机 + 弹幕      | **全屏弹幕**（24 发螺旋扩散 + 随机落弹） |
+
+BOSS 的通用攻击类型：
+
+| 攻击类型   | 描述                     | 弹道特征                       |
+| ---------- | ------------------------ | ------------------------------ |
+| **单发**   | 一颗红色子弹瞄准玩家位置 | 直线，速度 0.3                 |
+| **双发**   | 两发子弹呈 V 形          | ±15° 夹角，速度 0.3            |
+| **散弹**   | 多发子弹呈扇形           | 3~5 发，±30°，速度 0.25        |
+| **瞄准弹** | 子弹追踪玩家当前位置发射 | 直线，速度 0.35                |
+| **弹幕**   | 大量子弹呈圆形/螺旋扩散  | 8~24 发，360° 或螺旋，速度 0.2 |
+| **召唤**   | BOSS 召唤小型/中型机护卫 | 从屏幕上方两侧入场             |
+
+#### 4.8.3 攻击触发机制
+
+```cpp
+// Enemy 基类攻击接口
+virtual void update(float dt);
+virtual bool canAttack(float dt);  // 根据攻击间隔判断
+virtual void attack(std::vector<Bullet>& bullets);  // 生成子弹
+
+// BOSS 阶段切换
+void Boss::updatePhase() {
+    float hpRatio = (float)m_hp / m_maxHp;
+    if (hpRatio < 0.25f)      setPhase(BossPhase::Phase3);
+    else if (hpRatio < 0.5f)  setPhase(BossPhase::Phase2);
+}
+```
+
+所有敌机子弹统一用 `Bullet` 类，`owner = Enemy`，由 CollisionSystem 统一处理碰撞。
 
 ---
 
@@ -582,27 +628,27 @@ GameMapVM (ViewModel)                       GameView / GameScene (View)
 
 ## 6. 文件修改权限矩阵
 
-| 文件路径 | 归属 Agent | 谁可以修改 |
-|---|---|---|
-| `include/common/PropertyIds.hpp` | ① Common | **仅** ① |
-| `include/common/Constants.hpp` | ① Common | **仅** ① |
-| `include/common/Types.hpp` | ① Common | **仅** ① |
-| `src/viewmodel/GameMapVM.cpp` | ② ViewModel | **仅** ② |
-| `src/viewmodel/SpiritVM.cpp` | ② ViewModel | **仅** ② |
-| `src/viewmodel/Player.cpp` | ② ViewModel | **仅** ② |
-| `src/viewmodel/Enemy.cpp` | ② ViewModel | **仅** ② |
-| `src/viewmodel/CollisionSystem.cpp` | ② ViewModel | **仅** ② |
-| `src/viewmodel/ScoreManager.cpp` | ② ViewModel | **仅** ② |
-| `src/view/GameView.cpp` | ③ View | **仅** ③ |
-| `src/view/PlayerItem.cpp` | ③ View | **仅** ③ |
-| `src/view/EnemyItem.cpp` | ③ View | **仅** ③ |
-| `src/view/HudOverlay.cpp` | ③ View | **仅** ③ |
-| `src/view/StartScreen.cpp` | ③ View | **仅** ③ |
-| `src/resource/AssetManager.cpp` | ④ Resource | **仅** ④ |
-| `src/resource/SaveManager.cpp` | ④ Resource | **仅** ④ |
-| `src/app/AppAgent.cpp` | ⑤ App | **仅** ⑤ |
-| `tests/test_player.cpp` | ⑥ Test | **仅** ⑥ |
-| `CMakeLists.txt` | 所有 Agent | 加新文件时对应 Agent 改 |
+| 文件路径                            | 归属 Agent  | 谁可以修改              |
+| ----------------------------------- | ----------- | ----------------------- |
+| `include/common/PropertyIds.hpp`    | ① Common    | **仅** ①                |
+| `include/common/Constants.hpp`      | ① Common    | **仅** ①                |
+| `include/common/Types.hpp`          | ① Common    | **仅** ①                |
+| `src/viewmodel/GameMapVM.cpp`       | ② ViewModel | **仅** ②                |
+| `src/viewmodel/SpiritVM.cpp`        | ② ViewModel | **仅** ②                |
+| `src/viewmodel/Player.cpp`          | ② ViewModel | **仅** ②                |
+| `src/viewmodel/Enemy.cpp`           | ② ViewModel | **仅** ②                |
+| `src/viewmodel/CollisionSystem.cpp` | ② ViewModel | **仅** ②                |
+| `src/viewmodel/ScoreManager.cpp`    | ② ViewModel | **仅** ②                |
+| `src/view/GameView.cpp`             | ③ View      | **仅** ③                |
+| `src/view/PlayerItem.cpp`           | ③ View      | **仅** ③                |
+| `src/view/EnemyItem.cpp`            | ③ View      | **仅** ③                |
+| `src/view/HudOverlay.cpp`           | ③ View      | **仅** ③                |
+| `src/view/StartScreen.cpp`          | ③ View      | **仅** ③                |
+| `src/resource/AssetManager.cpp`     | ④ Resource  | **仅** ④                |
+| `src/resource/SaveManager.cpp`      | ④ Resource  | **仅** ④                |
+| `src/app/AppAgent.cpp`              | ⑤ App       | **仅** ⑤                |
+| `tests/test_player.cpp`             | ⑥ Test      | **仅** ⑥                |
+| `CMakeLists.txt`                    | 所有 Agent  | 加新文件时对应 Agent 改 |
 
 ---
 
@@ -610,73 +656,73 @@ GameMapVM (ViewModel)                       GameView / GameScene (View)
 
 ### 7.1 玩家战机
 
-| 文件 | 对应战机 |
-|---|---|
+| 文件                                        | 对应战机 |
+| ------------------------------------------- | -------- |
 | `resources/images/MyAircraft/Firepower.png` | ① 雷霆号 |
-| `resources/images/MyAircraft/Flame.png` | ② 烈焰号 |
-| `resources/images/MyAircraft/Frost.png` | ③ 冰霜号 |
-| `resources/images/MyAircraft/Speed.png` | ④ 幻影号 |
-| `resources/images/MyAircraft/Defense.png` | ⑤ 堡垒号 |
+| `resources/images/MyAircraft/Flame.png`     | ② 烈焰号 |
+| `resources/images/MyAircraft/Frost.png`     | ③ 冰霜号 |
+| `resources/images/MyAircraft/Speed.png`     | ④ 幻影号 |
+| `resources/images/MyAircraft/Defense.png`   | ⑤ 堡垒号 |
 
 ### 7.2 敌机
 
-| 角色 | 文件 |
-|---|---|
-| 小型敌机 | `images/PNG/Enemies/enemyRed3.png` |
-| 中型敌机 | `images/PNG/Enemies/enemyBlack1.png` |
-| 大型敌机 | `images/PNG/Enemies/enemyBlack5.png` |
-| BOSS（第7关） | `images/PNG/Sprites/Ships/spaceShips_009.png` |
+| 角色            | 文件                                              |
+| --------------- | ------------------------------------------------- |
+| 小型敌机        | `images/PNG/Enemies/enemyRed3.png`                |
+| 中型敌机        | `images/PNG/Enemies/enemyBlack1.png`              |
+| 大型敌机        | `images/PNG/Enemies/enemyBlack5.png`              |
+| BOSS（第7关）   | `images/PNG/Sprites/Ships/spaceShips_009.png`     |
 | BOSS（第4~6关） | `images/PNG/Sprites/Rockets/spaceRockets_001.png` |
-| BOSS（第2~3关） | `images/PNG/Sprites/Ships/spaceShips_004.png` |
+| BOSS（第2~3关） | `images/PNG/Sprites/Ships/spaceShips_004.png`     |
 
 ### 7.3 子弹
 
-| 角色 | 文件 |
-|---|---|
-| 玩家子弹 | `images/PNG/Lasers/laserBlue16.png` |
-| 敌方子弹 | `images/PNG/Lasers/laserRed01.png` |
+| 角色     | 文件                                                |
+| -------- | --------------------------------------------------- |
+| 玩家子弹 | `images/PNG/Lasers/laserBlue16.png`                 |
+| 敌方子弹 | `images/PNG/Lasers/laserRed01.png`                  |
 | 敌方导弹 | `images/PNG/Sprites/Missiles/spaceMissiles_001.png` |
 
 ### 7.4 特效
 
-| 效果 | 文件 |
-|---|---|
-| 爆炸动画 | `images/PNG/Effects/fire00.png` ~ `fire19.png` |
+| 效果     | 文件                                             |
+| -------- | ------------------------------------------------ |
+| 爆炸动画 | `images/PNG/Effects/fire00.png` ~ `fire19.png`   |
 | 引擎火焰 | `images/PNG/Effects/engine1.png` ~ `engine5.png` |
-| 护盾 | `images/PNG/Effects/shield1~3.png` |
-| 星星粒子 | `images/PNG/Effects/star1~3.png` |
+| 护盾     | `images/PNG/Effects/shield1~3.png`               |
+| 星星粒子 | `images/PNG/Effects/star1~3.png`                 |
 
 ### 7.5 道具
 
-| 道具 | 文件 |
-|---|---|
-| ❤️ 回血包 | `images/PNG/Power-ups/pill_red.png` |
+| 道具       | 文件                                        |
+| ---------- | ------------------------------------------- |
+| ❤️ 回血包   | `images/PNG/Power-ups/pill_red.png`         |
 | ⚡ 火力加强 | `images/PNG/Power-ups/powerupBlue_bolt.png` |
-| 🛡️ 护盾 | `images/PNG/Power-ups/shield_gold.png` |
-| ⭐ 星核碎片 | `images/PNG/Power-ups/star_gold.png` |
+| 🛡️ 护盾     | `images/PNG/Power-ups/shield_gold.png`      |
+| ⭐ 星核碎片 | `images/PNG/Power-ups/star_gold.png`        |
 
 ### 7.6 背景
 
-| 用途 | 文件 |
-|---|---|
+| 用途     | 文件                                |
+| -------- | ----------------------------------- |
 | 游戏背景 | `images/Backgrounds/darkPurple.png` |
 
 ---
 
 ## 8. 迭代重构规划
 
-### 迭代 1 — MVP 最小可玩版 🎯
+### 迭代 1 —  最小可玩版 🎯
 
 **目标**：能"飞起来、打出去、撞上去、死掉重来"的最简闭环。
 
-| 维度 | 内容 |
-|---|---|
-| **ViewModel** | GameMapVM（玩家/敌机/子弹/碰撞/分数/生命）+ SpiritVM（精灵图片） |
-| **View** | GameView + GameScene + PlayerItem + EnemyItem + BulletItem + StarFieldItem + StartScreen + HudOverlay + GameOverScreen |
-| **渲染** | **纯 C++** QGraphicsView + QGraphicsItem，无 QML |
-| **操作** | WASD 移动 + 自动开火 |
-| **命令** | getTickCommand / getMoveUpCommand / getMoveDownCommand / getMoveLeftCommand / getMoveRightCommand / getStartGameCommand — 全部 std::function |
-| **存档** | 最高分读写（SaveManager） |
+| 维度          | 内容                                                                                                                                         |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ViewModel** | GameMapVM（玩家/敌机/子弹/碰撞/分数/生命）+ SpiritVM（精灵图片）                                                                             |
+| **View**      | GameView + GameScene + PlayerItem + EnemyItem + BulletItem + StarFieldItem + StartScreen + HudOverlay + GameOverScreen                       |
+| **渲染**      | **纯 C++** QGraphicsView + QGraphicsItem，无 QML                                                                                             |
+| **操作**      | WASD 移动 + 自动开火                                                                                                                         |
+| **命令**      | getTickCommand / getMoveUpCommand / getMoveDownCommand / getMoveLeftCommand / getMoveRightCommand / getStartGameCommand — 全部 std::function |
+| **存档**      | 最高分读写（SaveManager）                                                                                                                    |
 
 **可交付判断**：打开游戏 → 开始 → WASD移动 → 敌机出现 → 自动射击击落敌机 → 撞敌机扣血 → 命归零 → Game Over → 再来一局
 
@@ -684,35 +730,64 @@ GameMapVM (ViewModel)                       GameView / GameScene (View)
 
 ---
 
-### 迭代 2 — 高画质 + BOSS 战 + 7 关闯关 🏆
+### 迭代 2 — 画面提升 + 屏幕适应 🎨
 
 **像素提升：**
+
 - 替换 Kenney 低分辨率素材为高分辨率 PNG（2x 放大 + 抗锯齿）
 - 开启 `SmoothPixmapTransform` 渲染缩放
 - 替换 5 架战机为自制高分辨率素材
+- SpiritVM 加载高分辨率图片
 
 **屏幕适应：**
+
 - 去掉 `setFixedSize()`，支持任意窗口大小
 - GameView 的 `resizeEvent` 中调用 `fitInView(0, 0, 800, 600, Qt::KeepAspectRatio)`
-- HUD 覆盖层按百分比布局（左上角分数、右上角生命）
+- HUD 覆盖层改为百分比布局（左上角分数、右上角生命、中上波次）
 - 全屏模式（F11 切换）
 - 最小窗口限制 600×450
 
-**新功能：**
-- 中型/大型敌机、BOSS AI、闯关模式(7关波次表)、道具掉落
-- 模式选择界面、BOSS 血条、PauseOverlay
-- 新增 WaveManager、PowerUpManager 到 ViewModel 层
-- 新增 ModeSelectScreen、BossHealthBar 到 View 层
+**UI 新增：**
 
-### 迭代 3 — 5 战机 + 技能系统 🚀
+- 模式选择界面 ModeSelectScreen（闯关/无尽）
+- 暂停覆盖层 PauseOverlay（Esc 暂停/继续）
+
+**涉及 Agent：** ③ View（主力）、④ Resource、① Common
+
+---
+
+### 迭代 3 — BOSS 战 + 7 关闯关 🏆
+
+**ViewModel 核心扩展：**
+
+- **WaveManager** — 波次管理器：7 关关卡表，每关 3~5 波小怪 + BOSS 波；无尽模式难度递增
+- **PowerUpManager** — 道具管理器：掉落概率、道具效果（回血/火力加强/护盾）
+- **Enemy 扩展** — 新增中型机（左右摆动 + 射击）、大型机（V 形散射）、精英机（追踪 + 扇形弹幕）
+- **Boss AI** — 阶段转换（血量%触发），每关 BOSS 不同攻击模式组合（单发/双发/散弹/瞄准弹/全屏弹幕/召唤）
+- **GameMapVM 集成** — 接入 WaveManager/PowerUpManager、BOSS 战触发、关卡过渡
+
+**View 新增：**
+
+- BossHealthBar — BOSS 血条显示
+- 中型机/大型机/精英机/BOSS 绘制
+- 道具掉落渲染（不同颜色图标）
+- 敌方子弹（红色）vs 玩家子弹（蓝色）区分
+
+**涉及 Agent：** ② ViewModel（主力）、③ View、④ Resource、⑤ App
+
+---
 
 新增：AircraftStats（5架属性模板）、SkillSystem（5种主动技能）、战机选择界面、HUD 技能CD显示、Space 放技能。
 
-### 迭代 4 — 无尽模式 + 升级系统 🔄
+### 迭代 4 — 5 战机 + 技能系统 🚀
+
+新增：AircraftStats（5架属性模板：雷霆/烈焰/冰霜/幻影/堡垒）、SkillSystem（5种主动技能+CD管理）、战机选择界面、HUD 技能CD显示、Space 放技能、技能特效（全屏雷击/火焰喷射/护盾/冲刺/反弹）。
+
+### 迭代 5 — 无尽模式 + 升级系统 🔄
 
 新增：星核碎片掉落、升级界面（火力/生命/速度/冷却）、难度递增曲线、升级数据持久化。
 
-### 迭代 5 — 画面精修 + 平衡调整 ✨
+### 迭代 6 — 画面精修 + 平衡调整 ✨
 
 特效增强（爆炸粒子/引擎火焰）、数值平衡、Bug 修复、性能优化、最终版提交。
 

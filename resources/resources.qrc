@@ -1,9 +1,29 @@
 <RCC>
     <qresource prefix="/images">
+        <!-- ── 迭代1：玩家战机 ─────────────────── -->
         <file alias="playerShip">images/MyAircraft/Firepower.png</file>
+
+        <!-- ── 迭代1：敌机 ─────────────────────── -->
         <file alias="enemySmall">images/PNG/Enemies/enemyRed3.png</file>
+
+        <!-- ── 迭代2：新增敌机 ─────────────────── -->
+        <file alias="enemyMedium">images/PNG/Enemies/enemyBlack1.png</file>
+        <file alias="enemyLarge">images/PNG/Enemies/enemyBlack5.png</file>
+
+        <!-- ── 迭代2：BOSS ─────────────────────── -->
+        <file alias="bossShip">images/PNG/Sprites/Ships/spaceShips_009.png</file>
+        <file alias="bossRocket">images/PNG/Sprites/Rockets/spaceRockets_001.png</file>
+
+        <!-- ── 子弹 ────────────────────────────── -->
         <file alias="playerBullet">images/PNG/Lasers/laserBlue16.png</file>
         <file alias="enemyBullet">images/PNG/Lasers/laserRed01.png</file>
+
+        <!-- ── 迭代2：道具 ─────────────────────── -->
+        <file alias="powerUpHp">images/PNG/Power-ups/pill_red.png</file>
+        <file alias="powerUpFire">images/PNG/Power-ups/powerupBlue_bolt.png</file>
+        <file alias="powerUpShield">images/PNG/Power-ups/shield_gold.png</file>
+
+        <!-- ── 背景 ────────────────────────────── -->
         <file alias="background">images/Backgrounds/darkPurple.png</file>
     </qresource>
 </RCC>

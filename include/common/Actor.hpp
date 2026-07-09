@@ -7,7 +7,10 @@ enum class ActorType {
     Player,
     EnemySmall,
     PlayerBullet,
-    EnemyBullet
+    EnemyBullet,
+    PowerUpHp,      // 回血包道具
+    PowerUpFire,    // 火力加强道具
+    PowerUpShield   // 护盾道具
 };
 
 // ── Actor ───────────────────────────────────────────────────────────────────

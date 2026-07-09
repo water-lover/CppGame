@@ -29,37 +29,25 @@ void AppAgent::init() {
     m_gameView = new GameView();          // GameView 内置 QTimer 驱动帧循环
     m_gameView->setWindowTitle(QStringLiteral("雷霆战机 — Thunder Fighter"));
 
-    // ── 2. 通过 Resource Agent 加载所有精灵图片 ────────────────
-    //    App 是唯一接触 Resource 的层，ViewModel 不直接调用 AssetManager
+    // ── 2. 从 Resource Agent 加载图片，注入 SpiritVM（图片中介层） ──
     AssetManager& assets = AssetManager::instance();
-    const QPixmap* playerPixmap   = assets.getImage("playerShip");
-    const QPixmap* enemyPixmap    = assets.getImage("enemySmall");
-    const QPixmap* bulletPixmap   = assets.getImage("playerBullet");
-    const QPixmap* enemyBulletPix = assets.getImage("enemyBullet");
-    const QPixmap* bgPixmap       = assets.getImage("background");
 
-    if (!playerPixmap)  log("AppAgent", "WARNING: playerShip image not found");
-    if (!enemyPixmap)   log("AppAgent", "WARNING: enemySmall image not found");
-    if (!bulletPixmap)  log("AppAgent", "WARNING: playerBullet image not found");
-    if (!bgPixmap)      log("AppAgent", "WARNING: background image not found");
-
-    // ── 3. 将图片注入 SpiritVM（ViewModel 层，作为图片中介） ──
-    m_spriteVM->setPlayerPixmap(playerPixmap);
-    m_spriteVM->setEnemySmallPixmap(enemyPixmap);
-    m_spriteVM->setPlayerBulletPixmap(bulletPixmap);
-    m_spriteVM->setEnemyBulletPixmap(enemyBulletPix);
-    m_spriteVM->setBackgroundPixmap(bgPixmap);
+    m_spriteVM->setPlayerPixmap(assets.getImage("playerShip"));
+    m_spriteVM->setEnemySmallPixmap(assets.getImage("enemySmall"));
+    m_spriteVM->setPlayerBulletPixmap(assets.getImage("playerBullet"));
+    m_spriteVM->setEnemyBulletPixmap(assets.getImage("enemyBullet"));
+    m_spriteVM->setBackgroundPixmap(assets.getImage("background"));
 
     // ═══════════════════════════════════════════════════════════════
-    // ① 属性绑定 — 将 ViewModel 的 const T* 指针注入 View
-    //    View 只读访问，完全不认识 ViewModel
+    // ① 属性绑定 — 从 SpiritVM 获取 const QPixmap* 注入 View
+    //    View 只读访问，完全不认识 SpiritVM
     // ═══════════════════════════════════════════════════════════════
 
     m_gameView->setMap(m_mapVM->getMap());
-    m_gameView->setPlayerPixmap(playerPixmap);
-    m_gameView->setEnemySmallPixmap(enemyPixmap);
-    m_gameView->setBulletPixmap(bulletPixmap);
-    m_gameView->setBackgroundPixmap(bgPixmap);
+    m_gameView->setPlayerPixmap(m_spriteVM->getPlayerPixmap());
+    m_gameView->setEnemySmallPixmap(m_spriteVM->getEnemySmallPixmap());
+    m_gameView->setBulletPixmap(m_spriteVM->getPlayerBulletPixmap());
+    m_gameView->setBackgroundPixmap(m_spriteVM->getBackgroundPixmap());
 
     // 简单值通过桥接变量暴露为 const T*（GameMapVM 返回 int 而非 const int*）
     m_bridgeScore     = m_mapVM->getScore();
@@ -83,6 +71,8 @@ void AppAgent::init() {
     m_gameView->setMoveLeftCommand(m_mapVM->getMoveLeftCommand());
     m_gameView->setMoveRightCommand(m_mapVM->getMoveRightCommand());
     m_gameView->setStartGameCommand(m_mapVM->getStartGameCommand());
+    m_gameView->setSelectModeCommand(m_mapVM->getSelectModeCommand());
+    m_gameView->setPauseCommand(m_mapVM->getPauseCommand());
 
     // ═══════════════════════════════════════════════════════════════
     // ③ 事件绑定 — ViewModel 的 signal → View 的 slot

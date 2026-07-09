@@ -74,12 +74,16 @@ add_library(thf_view OBJECT
     src/view/StarFieldItem.cpp
     src/view/HudOverlay.cpp
     src/view/StartScreen.cpp
+    src/view/ModeSelectScreen.cpp
     src/view/GameOverScreen.cpp
+    src/view/PauseOverlay.cpp
     include/view/GameView.hpp
     include/view/GameScene.hpp
     include/view/HudOverlay.hpp
     include/view/StartScreen.hpp
+    include/view/ModeSelectScreen.hpp
     include/view/GameOverScreen.hpp
+    include/view/PauseOverlay.hpp
     include/view/PlayerItem.hpp
     include/view/EnemyItem.hpp
     include/view/BulletItem.hpp

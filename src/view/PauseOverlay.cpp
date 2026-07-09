@@ -1,0 +1,52 @@
+#include "view/PauseOverlay.hpp"
+#include "common/Constants.hpp"
+
+#include <QPainter>
+#include <QVBoxLayout>
+#include <QFont>
+
+PauseOverlay::PauseOverlay(QWidget* parent)
+    : QWidget(parent)
+{
+    // 尺寸由 QStackedWidget 管理，不设 setFixedSize
+    setAttribute(Qt::WA_TranslucentBackground, true);
+
+    auto* layout = new QVBoxLayout(this);
+    layout->setAlignment(Qt::AlignCenter);
+    layout->addSpacing(200);
+
+    m_resumeBtn = new QPushButton(QStringLiteral("继 续 游 戏"), this);
+    m_resumeBtn->setFixedSize(260, 70);
+    m_resumeBtn->setStyleSheet(
+        "QPushButton {"
+        "  background-color: rgba(0, 120, 215, 220);"
+        "  color: white;"
+        "  font-size: 24px;"
+        "  font-weight: bold;"
+        "  font-family: 'Microsoft YaHei';"
+        "  border: 2px solid white;"
+        "  border-radius: 12px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: rgba(0, 160, 255, 240);"
+        "}"
+    );
+    layout->addWidget(m_resumeBtn, 0, Qt::AlignCenter);
+
+    connect(m_resumeBtn, &QPushButton::clicked, this, &PauseOverlay::resumeClicked);
+}
+
+void PauseOverlay::paintEvent(QPaintEvent* /*event*/) {
+    QPainter painter(this);
+    float w = width(), h = height();
+
+    // ── 半透明黑色遮罩 ────────────────────────────────────────────
+    painter.fillRect(0, 0, w, h, QColor(0, 0, 0, 160));
+
+    // ── "暂停" 文字 ───────────────────────────────────────────────
+    painter.setPen(QColor(255, 255, 255, 220));
+    QFont titleFont(QStringLiteral("Microsoft YaHei"), static_cast<int>(h * 0.07), QFont::Bold);
+    painter.setFont(titleFont);
+    painter.drawText(QRect(0, h * 0.2, w, h * 0.12),
+                     Qt::AlignCenter, QStringLiteral("暂  停"));
+}

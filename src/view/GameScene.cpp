@@ -90,6 +90,8 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
         case ActorType::PlayerBullet:
         case ActorType::EnemyBullet:
             if (m_pBulletImg && !m_pBulletImg->isNull()) {
+                // 使用源图原生尺寸，配合 SmoothPixmapTransform 渲染
+                // 逻辑大小由 BULLET_SIZE 控制，在 fitInView 中保持比例
                 float sz = BULLET_SIZE * SCREEN_WIDTH;
                 painter->drawPixmap(
                     QRectF(px - sz / 2, py - sz / 2, sz, sz),
@@ -99,5 +101,37 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
             }
             break;
         }
+    }
+
+    // ── HUD — 在场景坐标中直接绘制 ──────────────────────────────
+
+    // 分数（左上角，字号 16 保证场景缩放后适中）
+    painter->setPen(QColor(255, 255, 255, 220));
+    QFont hudFont(QStringLiteral("Microsoft YaHei"), 16, QFont::Bold);
+    painter->setFont(hudFont);
+    QString scoreText = QString("SCORE: %1").arg(m_pScore ? *m_pScore : 0);
+    painter->drawText(QRectF(14, 10, 300, 36), Qt::AlignLeft | Qt::AlignVCenter, scoreText);
+
+    // 生命（右上角）
+    painter->setPen(QColor(255, 80, 80, 220));
+    QString livesText;
+    int lives = m_pLives ? *m_pLives : 0;
+    for (int i = 0; i < lives; ++i) livesText += QStringLiteral("♥ ");
+    painter->drawText(QRectF(500, 10, 290, 36), Qt::AlignRight | Qt::AlignVCenter, livesText);
+
+    // 波次（中上方）
+    if (m_pWave && *m_pWave > 0) {
+        painter->setPen(QColor(200, 200, 255, 180));
+        painter->drawText(QRectF(280, 10, 240, 36), Qt::AlignCenter,
+                          QString("WAVE %1").arg(*m_pWave));
+    }
+
+    // 最高分（分数下方，字号 13）
+    if (m_pHighScore && *m_pHighScore > 0) {
+        painter->setPen(QColor(255, 215, 0, 150));
+        QFont hsFont(QStringLiteral("Microsoft YaHei"), 13);
+        painter->setFont(hsFont);
+        painter->drawText(QRectF(14, 44, 300, 26), Qt::AlignLeft | Qt::AlignVCenter,
+                          QString("BEST: %1").arg(*m_pHighScore));
     }
 }

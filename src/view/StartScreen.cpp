@@ -8,7 +8,7 @@
 StartScreen::StartScreen(QWidget* parent)
     : QWidget(parent)
 {
-    setFixedSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+    // 尺寸由 QStackedWidget 管理，不设 setFixedSize
 
     // ── 开始按钮 ───────────────────────────────────────────────────
     m_startButton = new QPushButton(QStringLiteral("开 始 游 戏"), this);
@@ -42,29 +42,31 @@ StartScreen::StartScreen(QWidget* parent)
 
 void StartScreen::paintEvent(QPaintEvent* /*event*/) {
     QPainter painter(this);
+    float w = width();
+    float h = height();
 
     // ── 背景 ───────────────────────────────────────────────────────
-    painter.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, QColor(10, 10, 30));
+    painter.fillRect(0, 0, w, h, QColor(10, 10, 30));
 
     // ── 标题 ───────────────────────────────────────────────────────
     painter.setPen(QColor(255, 215, 0));
-    QFont titleFont(QStringLiteral("Microsoft YaHei"), 48, QFont::Bold);
+    QFont titleFont(QStringLiteral("Microsoft YaHei"), static_cast<int>(h * 0.08), QFont::Bold);
     painter.setFont(titleFont);
-    painter.drawText(QRect(0, 50, SCREEN_WIDTH, 120),
+    painter.drawText(QRect(0, h * 0.08, w, h * 0.18),
                      Qt::AlignCenter, QStringLiteral("雷 霆 战 机"));
 
     painter.setPen(QColor(200, 200, 255, 180));
-    QFont subFont("sans-serif", 18);
+    QFont subFont("sans-serif", static_cast<int>(h * 0.03));
     painter.setFont(subFont);
-    painter.drawText(QRect(0, 160, SCREEN_WIDTH, 40),
+    painter.drawText(QRect(0, h * 0.26, w, h * 0.06),
                      Qt::AlignCenter, QStringLiteral("THUNDER FIGHTER"));
 
     // ── 操作提示 ───────────────────────────────────────────────────
     painter.setPen(QColor(180, 180, 200, 150));
-    QFont tipFont(QStringLiteral("Microsoft YaHei"), 13);
+    QFont tipFont(QStringLiteral("Microsoft YaHei"), static_cast<int>(h * 0.022));
     painter.setFont(tipFont);
-    painter.drawText(QRect(0, 440, SCREEN_WIDTH, 30),
+    painter.drawText(QRect(0, h * 0.73, w, h * 0.05),
                      Qt::AlignCenter, QStringLiteral("WASD / 方向键：移动"));
-    painter.drawText(QRect(0, 465, SCREEN_WIDTH, 30),
+    painter.drawText(QRect(0, h * 0.78, w, h * 0.05),
                      Qt::AlignCenter, QStringLiteral("自动开火  ·  Enter：开始"));
 }

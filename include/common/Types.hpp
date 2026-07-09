@@ -14,6 +14,7 @@ enum class EntityType {
 /// 游戏状态机
 enum class GameState {
     Menu,       // 开始菜单
+    ModeSelect, // 模式选择（闯关/无尽）
     Playing,    // 游戏中
     Paused,     // 暂停
     GameOver    // 游戏结束

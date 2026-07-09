@@ -15,11 +15,13 @@ class QPixmap;
 #include "common/AirMap.hpp"
 #include "common/PropertyIds.hpp"
 #include "common/Types.hpp"
+#include "view/GameScene.hpp"
 
 class GameScene;
-class HudOverlay;
 class StartScreen;
 class GameOverScreen;
+class ModeSelectScreen;
+class PauseOverlay;
 
 /// 游戏主视图 — 纯 C++ QWidget
 ///
@@ -59,11 +61,12 @@ public:
     /// 设置背景图片
     void setBackgroundPixmap(const QPixmap* p) noexcept;
 
-    // 分数/生命指针（HUD 直接读取）
-    void setScorePtr(const int* p)   noexcept { m_pScore = p; }
-    void setLivesPtr(const int* p)   noexcept { m_pLives = p; }
-    void setHighScorePtr(const int* p) noexcept { m_pHighScore = p; }
+    // 分数/生命指针（转发给 GameScene 直接在场景中绘制 HUD）
+    void setScorePtr(const int* p)   noexcept { m_pScore = p; if (m_scene) m_scene->setHudScore(p); }
+    void setLivesPtr(const int* p)   noexcept { m_pLives = p; if (m_scene) m_scene->setHudLives(p); }
+    void setHighScorePtr(const int* p) noexcept { m_pHighScore = p; if (m_scene) m_scene->setHudHighScore(p); }
     void setGameStatePtr(const GameState* p) noexcept { m_pGameState = p; }
+    void setWavePtr(const int* p)    noexcept { m_pWave = p; if (m_scene) m_scene->setHudWave(p); }
 
     // ════════════════════════════════════════════════════════════════
     // ② 命令绑定 — 接收 std::function 命令（由 App 注入）
@@ -75,6 +78,8 @@ public:
     void setMoveLeftCommand(std::function<void(int)>&& cmd);
     void setMoveRightCommand(std::function<void(int)>&& cmd);
     void setStartGameCommand(std::function<void()>&& cmd);
+    void setSelectModeCommand(std::function<void(int)>&& cmd);
+    void setPauseCommand(std::function<void()>&& cmd);
 
     // ════════════════════════════════════════════════════════════════
     // ③ 事件绑定 — 接收 ViewModel 通知
@@ -87,6 +92,7 @@ public slots:
 protected:
     void keyPressEvent(QKeyEvent* e) override;
     void keyReleaseEvent(QKeyEvent* e) override;
+    void resizeEvent(QResizeEvent* e) override;
 
 private:
     /// 帧循环回调
@@ -102,14 +108,17 @@ private:
     QStackedWidget* m_pageStack = nullptr;
 
     // 页面 0: 开始界面
-    StartScreen*    m_startScreen = nullptr;
-    // 页面 1: 游戏页面（含 QGraphicsView + HUD）
+    StartScreen*       m_startScreen = nullptr;
+    // 页面 1: 模式选择界面
+    ModeSelectScreen*  m_modeSelectScreen = nullptr;
+    // 页面 2: 游戏页面（含 QGraphicsView，HUD 在场景中绘制）
     QWidget*        m_gamePage = nullptr;
     QGraphicsView*  m_graphicsView = nullptr;
     GameScene*      m_scene = nullptr;
-    HudOverlay*     m_hud = nullptr;
-    // 页面 2: 游戏结束界面
+    // 页面 3: 游戏结束界面
     GameOverScreen* m_gameOverScreen = nullptr;
+    // 页面 4: 暂停覆盖层
+    PauseOverlay*   m_pauseOverlay = nullptr;
 
     // ── 属性指针（const T* 只读） ────────────────────────────────
     const AirMap*   m_pMap        = nullptr;
@@ -120,6 +129,7 @@ private:
     const int*      m_pScore      = nullptr;
     const int*      m_pLives      = nullptr;
     const int*      m_pHighScore  = nullptr;
+    const int*      m_pWave       = nullptr;
     const GameState* m_pGameState = nullptr;
 
     // ── 命令（std::function，不知道实现者） ──────────────────────
@@ -129,6 +139,8 @@ private:
     std::function<void(int)>   m_moveLeftCommand;
     std::function<void(int)>   m_moveRightCommand;
     std::function<void()>      m_startGameCommand;
+    std::function<void(int)>   m_selectModeCommand;
+    std::function<void()>      m_pauseCommand;
 };
 
 #endif // GAMEVIEW_HPP

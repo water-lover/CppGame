@@ -38,6 +38,14 @@ std::function<void(float)> GameMapVM::getTickCommand() {
     return [this](float dt) { tickImpl(dt); };
 }
 
+std::function<void(int)> GameMapVM::getSelectModeCommand() {
+    return [this](int mode) { selectModeImpl(mode); };
+}
+
+std::function<void()> GameMapVM::getPauseCommand() {
+    return [this]() { pauseImpl(); };
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // 命令实现
 // ═══════════════════════════════════════════════════════════════════
@@ -137,6 +145,37 @@ void GameMapVM::moveUpImpl(int active)    { m_player.moveUp(active != 0); }
 void GameMapVM::moveDownImpl(int active)  { m_player.moveDown(active != 0); }
 void GameMapVM::moveLeftImpl(int active)  { m_player.moveLeft(active != 0); }
 void GameMapVM::moveRightImpl(int active) { m_player.moveRight(active != 0); }
+
+void GameMapVM::selectModeImpl(int mode) {
+    m_state = GameState::Playing;
+    m_player.reset();
+    m_enemies.clear();
+    m_bullets.clear();
+    m_scoreMgr.reset();
+    m_spawnTimer = 0.0f;
+    m_elapsed    = 0.0f;
+    m_lastScore  = 0;
+    m_lastLives  = m_player.getLives();
+    m_lastGameOver = false;
+
+    syncMap();
+
+    fireChange(PROP_ID_MAP);
+    fireChange(PROP_ID_SCORE);
+    fireChange(PROP_ID_LIVES);
+    fireChange(PROP_ID_GAME_STATE);
+
+    log("GameMapVM", "Mode selected: " + std::to_string(mode));
+}
+
+void GameMapVM::pauseImpl() {
+    if (m_state == GameState::Playing) {
+        m_state = GameState::Paused;
+    } else if (m_state == GameState::Paused) {
+        m_state = GameState::Playing;
+    }
+    fireChange(PROP_ID_GAME_STATE);
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // 内部工具
