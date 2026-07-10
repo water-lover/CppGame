@@ -23,7 +23,7 @@ PauseOverlay::PauseOverlay(QWidget* parent)
         "  color: white;"
         "  font-size: 24px;"
         "  font-weight: bold;"
-        "  font-family: 'Microsoft YaHei';"
+        " "
         "  border: 2px solid white;"
         "  border-radius: 12px;"
         "}"
@@ -32,6 +32,27 @@ PauseOverlay::PauseOverlay(QWidget* parent)
         "}"
     );
     layout->addWidget(m_resumeBtn, 0, Qt::AlignCenter);
+
+    layout->addSpacing(15);
+
+    // ── 升级按钮 ────────────────────────────────────────────
+    m_upgradeBtn = new QPushButton(QStringLiteral("升      级"), this);
+    m_upgradeBtn->setFixedSize(260, 60);
+    m_upgradeBtn->setStyleSheet(
+        "QPushButton {"
+        "  background-color: rgba(0, 180, 100, 200);"
+        "  color: white;"
+        "  font-size: 20px;"
+        "  font-weight: bold;"
+        " "
+        "  border: 2px solid #66cc88;"
+        "  border-radius: 12px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: rgba(0, 220, 130, 230);"
+        "}"
+    );
+    layout->addWidget(m_upgradeBtn, 0, Qt::AlignCenter);
 
     layout->addSpacing(15);
 
@@ -44,7 +65,7 @@ PauseOverlay::PauseOverlay(QWidget* parent)
         "  color: white;"
         "  font-size: 20px;"
         "  font-weight: bold;"
-        "  font-family: 'Microsoft YaHei';"
+        " "
         "  border: 2px solid #cc6666;"
         "  border-radius: 12px;"
         "}"
@@ -55,6 +76,7 @@ PauseOverlay::PauseOverlay(QWidget* parent)
     layout->addWidget(m_quitBtn, 0, Qt::AlignCenter);
 
     connect(m_resumeBtn, &QPushButton::clicked, this, &PauseOverlay::resumeClicked);
+    connect(m_upgradeBtn, &QPushButton::clicked, this, &PauseOverlay::upgradeClicked);
     connect(m_quitBtn, &QPushButton::clicked, this, &PauseOverlay::quitLevelClicked);
 }
 
@@ -67,8 +89,10 @@ void PauseOverlay::paintEvent(QPaintEvent* /*event*/) {
 
     // ── "暂停" 文字 ───────────────────────────────────────────────
     painter.setPen(QColor(255, 255, 255, 220));
-    QFont titleFont(QStringLiteral("Microsoft YaHei"), static_cast<int>(h * 0.07), QFont::Bold);
+    QFont titleFont;
+    titleFont.setPixelSize(static_cast<int>(h * 0.09));
+    titleFont.setBold(true);
     painter.setFont(titleFont);
-    painter.drawText(QRect(0, h * 0.2, w, h * 0.12),
+    painter.drawText(QRect(0, h * 0.16, w, h * 0.18),
                      Qt::AlignCenter, QStringLiteral("暂  停"));
 }

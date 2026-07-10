@@ -16,12 +16,15 @@ signals:
     void resumeClicked();
     /// 用户点击"退出关卡"
     void quitLevelClicked();
+    /// 用户点击"升级"
+    void upgradeClicked();
 
 protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
     QPushButton* m_resumeBtn = nullptr;
+    QPushButton* m_upgradeBtn = nullptr;
     QPushButton* m_quitBtn = nullptr;
 };
 

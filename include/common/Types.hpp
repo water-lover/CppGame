@@ -19,6 +19,7 @@ enum class GameState {
     LevelSelect,    // 关卡选择
     Playing,        // 游戏中
     Paused,         // 暂停
+    Upgrade,        // 升级界面
     GameOver        // 游戏结束
 };
 

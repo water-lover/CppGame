@@ -81,6 +81,15 @@ GameView::GameView(QWidget* parent)
     m_pauseOverlay->setGeometry(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     m_pageStack->addWidget(m_pauseOverlay);  // 6
 
+    // ── 升级界面（页面 7） ─────────────────────────────────────
+    m_upgradeScreen = new UpgradeScreen(this);
+    m_pageStack->addWidget(m_upgradeScreen);  // 7
+    // 如命令已在 setUpgradeStatCommand 中提前注入，在此转发
+    if (m_upgradeStatCommand) {
+        auto cpy = m_upgradeStatCommand;
+        m_upgradeScreen->setUpgradeStatCommand(std::move(cpy));
+    }
+
     m_pageStack->setCurrentIndex(0);
 
     // ── 帧循环 ────────────────────────────────────────────────────
@@ -134,6 +143,30 @@ GameView::GameView(QWidget* parent)
 
     connect(m_pauseOverlay, &PauseOverlay::quitLevelClicked, [this]() {
         if (m_quitLevelCommand) m_quitLevelCommand();
+    });
+
+    // ── 暂停 → 升级 ──────────────────────────────────────────
+    connect(m_pauseOverlay, &PauseOverlay::upgradeClicked, [this]() {
+        m_pageStack->setCurrentIndex(7);
+        // 进入时刷新升级界面数据
+        if (m_upgradeScreen && m_pStarCores)
+            m_upgradeScreen->setStarCores(*m_pStarCores);
+        if (m_pUpgradeFireLevel) {
+            m_upgradeScreen->setUpgradeLevel(0, *m_pUpgradeFireLevel);
+            m_upgradeScreen->setUpgradeLevel(1, *m_pUpgradeLivesLevel);
+            m_upgradeScreen->setUpgradeLevel(2, *m_pUpgradeSpeedLevel);
+            m_upgradeScreen->setUpgradeLevel(3, *m_pUpgradeCooldownLevel);
+        }
+        if (m_navigateCommand)
+            m_navigateCommand(static_cast<int>(GameState::Upgrade));
+    });
+
+    // ── 升级 → 返回暂停 ──────────────────────────────────────
+    connect(m_upgradeScreen, &UpgradeScreen::backClicked, [this]() {
+        if (m_navigateCommand)
+            m_navigateCommand(static_cast<int>(GameState::Paused));
+        else
+            m_pageStack->setCurrentIndex(6);
     });
 }
 
@@ -199,6 +232,10 @@ void GameView::setStarCoresPtr(const int* p) noexcept {
     m_pStarCores = p;
     if (m_scene) m_scene->setHudStarCores(p);
 }
+void GameView::setUpgradeFireLevelPtr(const int* p) noexcept { m_pUpgradeFireLevel = p; }
+void GameView::setUpgradeLivesLevelPtr(const int* p) noexcept { m_pUpgradeLivesLevel = p; }
+void GameView::setUpgradeSpeedLevelPtr(const int* p) noexcept { m_pUpgradeSpeedLevel = p; }
+void GameView::setUpgradeCooldownLevelPtr(const int* p) noexcept { m_pUpgradeCooldownLevel = p; }
 
 // ═══════════════════════════════════════════════════════════════════
 // 帧循环
@@ -302,6 +339,24 @@ void GameView::onPropertyChanged(uint32_t id) {
         m_scene->update();
         break;
 
+    case PROP_ID_STAR_CORES:
+        if (m_upgradeScreen && m_pStarCores)
+            m_upgradeScreen->setStarCores(*m_pStarCores);
+        break;
+
+    case PROP_ID_UPGRADE_LEVELS:
+        if (m_upgradeScreen) {
+            if (m_pUpgradeFireLevel)
+                m_upgradeScreen->setUpgradeLevel(0, *m_pUpgradeFireLevel);
+            if (m_pUpgradeLivesLevel)
+                m_upgradeScreen->setUpgradeLevel(1, *m_pUpgradeLivesLevel);
+            if (m_pUpgradeSpeedLevel)
+                m_upgradeScreen->setUpgradeLevel(2, *m_pUpgradeSpeedLevel);
+            if (m_pUpgradeCooldownLevel)
+                m_upgradeScreen->setUpgradeLevel(3, *m_pUpgradeCooldownLevel);
+        }
+        break;
+
     default:
         break;
     }
@@ -320,6 +375,7 @@ void GameView::updatePage() {
     case GameState::AircraftSelect: m_pageStack->setCurrentIndex(3); m_timer->stop(); break;
     case GameState::Playing:     m_pageStack->setCurrentIndex(4); m_timer->start(16); setFocus(); break;
     case GameState::Paused:      m_pageStack->setCurrentIndex(6); m_timer->stop(); break;
+    case GameState::Upgrade:     m_pageStack->setCurrentIndex(7); m_timer->stop(); break;
     case GameState::GameOver:    m_pageStack->setCurrentIndex(5); m_timer->stop();
         if (m_pScore) m_gameOverScreen->setScore(*m_pScore);
         if (m_pHighScore) m_gameOverScreen->setHighScore(*m_pHighScore);

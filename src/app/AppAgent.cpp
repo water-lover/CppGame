@@ -2,7 +2,6 @@
 #include "view/GameView.hpp"
 #include "viewmodel/GameMapVM.hpp"
 #include "viewmodel/SpiritVM.hpp"
-#include "resource/AssetManager.hpp"
 #include "resource/SaveManager.hpp"
 #include "common/Logger.hpp"
 
@@ -29,31 +28,8 @@ void AppAgent::init() {
     m_gameView = new GameView();
     m_gameView->setWindowTitle(QStringLiteral("雷霆战机 — Thunder Fighter"));
 
-    // ── 2. 从 Resource Agent 加载图片，注入 SpiritVM（图片中介层） ──
-    AssetManager& assets = AssetManager::instance();
-
-    // 5 架战机图片
-    m_spriteVM->setAircraftPixmap(AircraftType::Thunder,  assets.getImage("thunderShip"));
-    m_spriteVM->setAircraftPixmap(AircraftType::Flame,    assets.getImage("flameShip"));
-    m_spriteVM->setAircraftPixmap(AircraftType::Frost,    assets.getImage("frostShip"));
-    m_spriteVM->setAircraftPixmap(AircraftType::Phantom,  assets.getImage("phantomShip"));
-    m_spriteVM->setAircraftPixmap(AircraftType::Fortress, assets.getImage("fortressShip"));
-
-    m_spriteVM->setEnemySmallPixmap(assets.getImage("enemySmall"));
-    m_spriteVM->setPlayerBulletPixmap(assets.getImage("playerBullet"));
-    m_spriteVM->setEnemyBulletPixmap(assets.getImage("enemyBullet"));
-    m_spriteVM->setBackgroundPixmap(assets.getImage("background"));
-
-    m_spriteVM->setEnemyMediumPixmap(assets.getImage("enemyMedium"));
-    m_spriteVM->setEnemyLargePixmap(assets.getImage("enemyLarge"));
-    m_spriteVM->setBossPixmap(assets.getImage("bossShip"));
-    m_spriteVM->setBossPixmap2(assets.getImage("bossShip2"));
-    m_spriteVM->setBossPixmap3(assets.getImage("bossShip3"));
-    m_spriteVM->setBossPixmap4(assets.getImage("bossShip4"));
-    m_spriteVM->setEnemyBulletPixmap(assets.getImage("enemyBullet"));
-    m_spriteVM->setPowerUpHpPixmap(assets.getImage("powerUpHp"));
-    m_spriteVM->setPowerUpFirePixmap(assets.getImage("powerUpFire"));
-    m_spriteVM->setPowerUpShieldPixmap(assets.getImage("powerUpShield"));
+    // ── 2. 初始化 SpiritVM（内部调用 AssetManager 加载图片） ───
+    m_spriteVM->initialize();
 
     // ═══════════════════════════════════════════════════════════════
     // ① 属性绑定 — 从 SpiritVM/GameMapVM 获取 const T* 注入 View
@@ -77,8 +53,7 @@ void AppAgent::init() {
     m_gameView->setPowerUpHpPixmap(m_spriteVM->getPowerUpHpPixmap());
     m_gameView->setPowerUpFirePixmap(m_spriteVM->getPowerUpFirePixmap());
     m_gameView->setPowerUpShieldPixmap(m_spriteVM->getPowerUpShieldPixmap());
-
-    // 简单值指针 — 直接从 ViewModel 获取 const T*，无需 App 桥接
+    m_gameView->setPowerUpStarCorePixmap(m_spriteVM->getPowerUpStarCorePixmap());
     // GameMapVM 内部维护缓存，返回指向成员变量的稳定地址
     m_gameView->setScorePtr(m_mapVM->getScorePtr());
     m_gameView->setLivesPtr(m_mapVM->getLivesPtr());
@@ -98,6 +73,11 @@ void AppAgent::init() {
 
     // 迭代 6：星核指针注入（HUD 显示）
     m_gameView->setStarCoresPtr(m_mapVM->getUpgradeStarCoresPtr());
+    // 升级等级指针注入（升级界面显示）
+    m_gameView->setUpgradeFireLevelPtr(m_mapVM->getUpgradeFireLevelPtr());
+    m_gameView->setUpgradeLivesLevelPtr(m_mapVM->getUpgradeLivesLevelPtr());
+    m_gameView->setUpgradeSpeedLevelPtr(m_mapVM->getUpgradeSpeedLevelPtr());
+    m_gameView->setUpgradeCooldownLevelPtr(m_mapVM->getUpgradeCooldownLevelPtr());
 
     // 初始关卡解锁（测试阶段全解锁）
     m_mapVM->setMaxUnlockedLevel(7);
@@ -150,9 +130,13 @@ void AppAgent::init() {
     QObject::connect(m_mapVM, &GameMapVM::saveCampaignRequested,
                      [this](int level) {
                          SaveManager().saveCampaignProgress(level);
+                         // 仅当新关卡比当前最大解锁更高时才更新，确保不锁住已开放关卡
                          if (level > 1) {
-                             m_mapVM->setMaxUnlockedLevel(level);
-                             m_gameView->setLevelSelectMaxUnlocked(level);
+                             int cur = m_mapVM->getMaxUnlockedLevel();
+                             if (level > cur) {
+                                 m_mapVM->setMaxUnlockedLevel(level);
+                                 m_gameView->setLevelSelectMaxUnlocked(level);
+                             }
                          }
                          log("AppAgent", "Campaign progress saved: level " + std::to_string(level));
                      });

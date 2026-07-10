@@ -71,6 +71,10 @@ public:
 
     // 迭代 6：升级系统
     const int* getUpgradeStarCoresPtr()  const noexcept { return m_upgradeMgr.getStarCoresPtr(); }
+    const int* getUpgradeFireLevelPtr()    const noexcept { return m_upgradeMgr.getFireLevelPtr(); }
+    const int* getUpgradeLivesLevelPtr()   const noexcept { return m_upgradeMgr.getLivesLevelPtr(); }
+    const int* getUpgradeSpeedLevelPtr()   const noexcept { return m_upgradeMgr.getSpeedLevelPtr(); }
+    const int* getUpgradeCooldownLevelPtr() const noexcept { return m_upgradeMgr.getCooldownLevelPtr(); }
     void initUpgradeData(int starCores, int packedLevels);
 
     // 迭代 3 新属性
@@ -158,7 +162,7 @@ private:
     void spawnEnemy();
     void checkCollisions();
     void handleEnemyAttacks(float dt);  // 迭代3：敌机攻击
-    void applySkillEffects();       // 迭代3：处理技能效果（持续型）
+    void applySkillEffects(float dt);       // 迭代3：处理技能效果（持续型）
     void handleThunderStrike();     // 全屏雷击
     void handleFlameStorm(float dt);// 扇形火焰
     void handleTimeDash(float dt);  // 冲刺攻击

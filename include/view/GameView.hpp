@@ -76,6 +76,7 @@ public:
     void setPowerUpHpPixmap(const QPixmap* p) noexcept;
     void setPowerUpFirePixmap(const QPixmap* p) noexcept;
     void setPowerUpShieldPixmap(const QPixmap* p) noexcept;
+    void setPowerUpStarCorePixmap(const QPixmap* p) noexcept;
 
     // 分数/生命指针（转发给 GameScene 直接在场景中绘制 HUD）
     void setScorePtr(const int* p)   noexcept { m_pScore = p; if (m_scene) m_scene->setHudScore(p); }
@@ -115,6 +116,10 @@ public:
     void setUpgradeStatCommand(std::function<void(int)>&& cmd);
     void setLevelSelectMaxUnlocked(int level) noexcept;
     void setStarCoresPtr(const int* p) noexcept;
+    void setUpgradeFireLevelPtr(const int* p) noexcept;
+    void setUpgradeLivesLevelPtr(const int* p) noexcept;
+    void setUpgradeSpeedLevelPtr(const int* p) noexcept;
+    void setUpgradeCooldownLevelPtr(const int* p) noexcept;
 
     // ════════════════════════════════════════════════════════════════
     // ③ 事件绑定 — 接收 ViewModel 通知
@@ -180,6 +185,10 @@ private:
     const bool*     m_pLevelCleared = nullptr;
     const int*      m_pCurrentLevel = nullptr;
     const int*      m_pStarCores    = nullptr;
+    const int*      m_pUpgradeFireLevel     = nullptr;
+    const int*      m_pUpgradeLivesLevel    = nullptr;
+    const int*      m_pUpgradeSpeedLevel    = nullptr;
+    const int*      m_pUpgradeCooldownLevel = nullptr;
 
     // ── 命令（std::function，不知道实现者） ──────────────────────
     std::function<void(float)> m_tickCommand;

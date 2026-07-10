@@ -23,6 +23,12 @@ public:
     // ── 星核管理 ──────────────────────────────────────────────────
     int  getStarCores()            const { return m_starCores; }
     const int* getStarCoresPtr()   const { return &m_starCores; }
+
+    // ── 等级指针（供 ViewModel 暴露给 View） ─────────────────────
+    const int* getFireLevelPtr()     const { return &m_fireLevel; }
+    const int* getLivesLevelPtr()    const { return &m_livesLevel; }
+    const int* getSpeedLevelPtr()   const { return &m_speedLevel; }
+    const int* getCooldownLevelPtr() const { return &m_cooldownLevel; }
     void addStarCores(int amount)        { m_starCores += amount; }
     bool spendStarCores(int amount);
 
