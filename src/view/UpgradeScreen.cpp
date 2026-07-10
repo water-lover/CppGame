@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include <QFont>
 #include <QString>
+#include <QResizeEvent>
 
 // ── 升级消耗 ──────────────────────────────────────────────────────
 static int upgradeCost(int currentLevel) {
@@ -32,6 +33,7 @@ UpgradeScreen::UpgradeScreen(QWidget* parent)
     : QWidget(parent)
 {
     setupUI();
+    applyScale();
 }
 
 void UpgradeScreen::setUpgradeStatCommand(std::function<void(int)>&& cmd) {
@@ -80,7 +82,7 @@ void UpgradeScreen::setupUI() {
         slot.infoLabel = new QLabel(this);
         slot.infoLabel->setFixedSize(300, 50);
         slot.infoLabel->setStyleSheet(
-            "color: white; font-size: 14px;"
+            "color: white;"
             "padding: 4px 10px;"
         );
         row->addWidget(slot.infoLabel);
@@ -112,7 +114,6 @@ void UpgradeScreen::setupUI() {
         "QPushButton {"
         "  background-color: rgba(100, 100, 100, 180);"
         "  color: white;"
-        "  font-size: 18px;"
         "  font-weight: bold;"
         " "
         "  border: 2px solid #888;"
@@ -152,7 +153,7 @@ void UpgradeScreen::refreshSlot(UpgradeSlot& slot) {
         slot.btn->setStyleSheet(
             "QPushButton {"
             "  background-color: rgba(80, 80, 80, 150);"
-            "  color: #FFD700; font-size: 16px; font-weight: bold;"
+            "  color: #FFD700; font-weight: bold;"
             " "
             "  border: 2px solid #FFD700; border-radius: 8px;"
             "}"
@@ -163,7 +164,7 @@ void UpgradeScreen::refreshSlot(UpgradeSlot& slot) {
         slot.btn->setStyleSheet(
             "QPushButton {"
             "  background-color: rgba(0, 120, 215, 220);"
-            "  color: white; font-size: 16px; font-weight: bold;"
+            "  color: white; font-weight: bold;"
             " "
             "  border: 2px solid white; border-radius: 8px;"
             "}"
@@ -177,7 +178,7 @@ void UpgradeScreen::refreshSlot(UpgradeSlot& slot) {
         slot.btn->setStyleSheet(
             "QPushButton {"
             "  background-color: rgba(60, 60, 60, 150);"
-            "  color: #666; font-size: 16px; font-weight: bold;"
+            "  color: #666; font-weight: bold;"
             " "
             "  border: 2px solid #444; border-radius: 8px;"
             "}"
@@ -185,8 +186,6 @@ void UpgradeScreen::refreshSlot(UpgradeSlot& slot) {
         slot.btn->setText(QStringLiteral("升  级"));
     }
 }
-
-// ── 绘制背景 ──────────────────────────────────────────────────────
 
 void UpgradeScreen::paintEvent(QPaintEvent* /*event*/) {
     QPainter painter(this);
@@ -241,4 +240,51 @@ void UpgradeScreen::paintEvent(QPaintEvent* /*event*/) {
     painter.drawText(QRect(0, static_cast<int>(h * 0.19f), static_cast<int>(w), static_cast<int>(h * 0.07f)),
                      Qt::AlignCenter,
                      QString("星核碎片  ★  %1").arg(m_starCores));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 缩放适应
+// ═══════════════════════════════════════════════════════════════════
+
+void UpgradeScreen::resizeEvent(QResizeEvent* event) {
+    QWidget::resizeEvent(event);
+    applyScale();
+}
+
+void UpgradeScreen::applyScale() {
+    if (width() < 1 || height() < 1) return;
+
+    float sx = static_cast<float>(width())  / SCREEN_WIDTH;
+    float sy = static_cast<float>(height()) / SCREEN_HEIGHT;
+    m_scale = std::min(sx, sy);
+
+    for (auto& slot : m_slots) {
+        slot.infoLabel->setFixedSize(
+            static_cast<int>(300 * m_scale),
+            static_cast<int>(50 * m_scale));
+
+        slot.btn->setFixedSize(
+            static_cast<int>(120 * m_scale),
+            static_cast<int>(45 * m_scale));
+
+        QFont bf = slot.btn->font();
+        bf.setPixelSize(static_cast<int>(16 * m_scale));
+        slot.btn->setFont(bf);
+
+        QFont lf = slot.infoLabel->font();
+        lf.setPixelSize(static_cast<int>(14 * m_scale));
+        slot.infoLabel->setFont(lf);
+    }
+
+    m_backBtn->setFixedSize(
+        static_cast<int>(200 * m_scale),
+        static_cast<int>(50 * m_scale));
+    QFont bf = m_backBtn->font();
+    bf.setPixelSize(static_cast<int>(18 * m_scale));
+    m_backBtn->setFont(bf);
+
+    auto* layout = qobject_cast<QVBoxLayout*>(this->layout());
+    if (layout) {
+        layout->setSpacing(static_cast<int>(6 * m_scale));
+    }
 }

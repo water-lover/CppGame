@@ -35,6 +35,7 @@ signals:
 
 protected:
     void paintEvent(QPaintEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
 
 private:
     struct UpgradeSlot {
@@ -47,7 +48,9 @@ private:
 
     void setupUI();
     void refreshSlot(UpgradeSlot& slot);
+    void applyScale();
 
+    float m_scale = 1.0f;
     std::function<void(int)> m_upgradeStatCommand;
     int m_starCores = 0;
     int m_levels[4] = {};  // Fire, Lives, Speed, Cooldown
