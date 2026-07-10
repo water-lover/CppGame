@@ -31,7 +31,6 @@ static const char* levelEffectDesc(int type, int level) {
 UpgradeScreen::UpgradeScreen(QWidget* parent)
     : QWidget(parent)
 {
-    setFixedSize(SCREEN_WIDTH, SCREEN_HEIGHT);
     setupUI();
 }
 
@@ -58,7 +57,7 @@ void UpgradeScreen::setupUI() {
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setAlignment(Qt::AlignCenter);
     mainLayout->setSpacing(6);
-    mainLayout->addSpacing(100);
+    mainLayout->addStretch(1);
 
     const char* names[] = { "火  力", "生  命", "速  度", "冷  却" };
     const char* descs[] = {
@@ -81,7 +80,7 @@ void UpgradeScreen::setupUI() {
         slot.infoLabel = new QLabel(this);
         slot.infoLabel->setFixedSize(300, 50);
         slot.infoLabel->setStyleSheet(
-            "color: white; font-size: 14px; font-family: 'Microsoft YaHei';"
+            "color: white; font-size: 14px;"
             "padding: 4px 10px;"
         );
         row->addWidget(slot.infoLabel);
@@ -104,7 +103,7 @@ void UpgradeScreen::setupUI() {
     // 刷新初始显示
     for (auto& slot : m_slots) refreshSlot(slot);
 
-    mainLayout->addSpacing(30);
+    mainLayout->addStretch(1);
 
     // ── 返回按钮 ─────────────────────────────────────────────────
     m_backBtn = new QPushButton(QStringLiteral("返  回"), this);
@@ -115,7 +114,7 @@ void UpgradeScreen::setupUI() {
         "  color: white;"
         "  font-size: 18px;"
         "  font-weight: bold;"
-        "  font-family: 'Microsoft YaHei';"
+        " "
         "  border: 2px solid #888;"
         "  border-radius: 10px;"
         "}"
@@ -154,7 +153,7 @@ void UpgradeScreen::refreshSlot(UpgradeSlot& slot) {
             "QPushButton {"
             "  background-color: rgba(80, 80, 80, 150);"
             "  color: #FFD700; font-size: 16px; font-weight: bold;"
-            "  font-family: 'Microsoft YaHei';"
+            " "
             "  border: 2px solid #FFD700; border-radius: 8px;"
             "}"
         );
@@ -165,7 +164,7 @@ void UpgradeScreen::refreshSlot(UpgradeSlot& slot) {
             "QPushButton {"
             "  background-color: rgba(0, 120, 215, 220);"
             "  color: white; font-size: 16px; font-weight: bold;"
-            "  font-family: 'Microsoft YaHei';"
+            " "
             "  border: 2px solid white; border-radius: 8px;"
             "}"
             "QPushButton:hover {"
@@ -179,7 +178,7 @@ void UpgradeScreen::refreshSlot(UpgradeSlot& slot) {
             "QPushButton {"
             "  background-color: rgba(60, 60, 60, 150);"
             "  color: #666; font-size: 16px; font-weight: bold;"
-            "  font-family: 'Microsoft YaHei';"
+            " "
             "  border: 2px solid #444; border-radius: 8px;"
             "}"
         );
@@ -191,18 +190,55 @@ void UpgradeScreen::refreshSlot(UpgradeSlot& slot) {
 
 void UpgradeScreen::paintEvent(QPaintEvent* /*event*/) {
     QPainter painter(this);
-    painter.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, QColor(15, 15, 40));
+    float w = width(), h = height();
 
+    // ── 深空渐变背景（覆盖整个 widget）────────────────────────────
+    QLinearGradient grad(0, 0, 0, h);
+    grad.setColorAt(0.0, QColor(10, 10, 40));
+    grad.setColorAt(0.5, QColor(20, 15, 45));
+    grad.setColorAt(1.0, QColor(15, 10, 35));
+    painter.fillRect(0, 0, w, h, grad);
+
+    // ── 星空小点装饰 ──────────────────────────────────────────────
+    painter.setPen(Qt::NoPen);
+    static const struct { float x, y; float size; QColor c; } dots[] = {
+        {0.1f, 0.15f, 1.5f, QColor(200, 220, 255)},
+        {0.3f, 0.08f, 2.0f, QColor(255, 240, 200)},
+        {0.6f, 0.12f, 1.0f, QColor(200, 255, 220)},
+        {0.8f, 0.18f, 1.8f, QColor(255, 200, 220)},
+        {0.9f, 0.05f, 1.2f, QColor(255, 255, 255)},
+        {0.2f, 0.85f, 1.0f, QColor(200, 220, 255)},
+        {0.5f, 0.90f, 1.5f, QColor(255, 240, 200)},
+        {0.75f,0.88f, 1.0f, QColor(200, 255, 220)},
+    };
+    for (auto& d : dots) {
+        painter.setBrush(d.c);
+        painter.drawEllipse(QPointF(d.x * w, d.y * h), d.size, d.size);
+    }
+
+    // ── 标题（按比例定位）──────────────────────────────────────────
+    float titleH = h * 0.12f;
+    float titleY = h * 0.03f;
     painter.setPen(QColor(255, 215, 0));
-    QFont titleFont(QStringLiteral("Microsoft YaHei"), 32, QFont::Bold);
+    QFont titleFont;
+    titleFont.setPixelSize(static_cast<int>(h * 0.06f));
+    titleFont.setBold(true);
     painter.setFont(titleFont);
-    painter.drawText(QRect(0, 30, SCREEN_WIDTH, 60), Qt::AlignCenter,
-                     QStringLiteral("升  级  系  统"));
+    painter.drawText(QRect(0, static_cast<int>(titleY), static_cast<int>(w), static_cast<int>(titleH)),
+                     Qt::AlignCenter, QStringLiteral("升  级  系  统"));
 
-    // 星核数量
+    // ── 装饰线 ────────────────────────────────────────────────────
+    painter.setPen(QPen(QColor(255, 215, 0, 80), 1));
+    float lineY = h * 0.17f;
+    painter.drawLine(QPointF(w * 0.5f - 150, lineY), QPointF(w * 0.5f + 150, lineY));
+
+    // ── 星核数量 ──────────────────────────────────────────────────
     painter.setPen(QColor(100, 200, 255, 220));
-    QFont coresFont(QStringLiteral("Microsoft YaHei"), 18, QFont::Bold);
+    QFont coresFont;
+    coresFont.setPixelSize(static_cast<int>(h * 0.04f));
+    coresFont.setBold(true);
     painter.setFont(coresFont);
-    painter.drawText(QRect(0, 90, SCREEN_WIDTH, 40), Qt::AlignCenter,
+    painter.drawText(QRect(0, static_cast<int>(h * 0.19f), static_cast<int>(w), static_cast<int>(h * 0.07f)),
+                     Qt::AlignCenter,
                      QString("星核碎片  ★  %1").arg(m_starCores));
 }
