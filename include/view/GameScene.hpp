@@ -54,6 +54,7 @@ public:
     void setHudSkillType(const int* p)      noexcept { m_pSkillType = p; }
     void setHudHasShield(const bool* p)     noexcept { m_pHasShield = p; }
     void setHudAircraftName(const char* p)  noexcept { m_pAircraftName = p; }
+    void setHudStarCores(const int* p)      noexcept { m_pStarCores = p; }
 
 protected:
     /// 绘制背景（星空 + 背景图）
@@ -96,6 +97,7 @@ private:
     const int*   m_pSkillType   = nullptr;
     const bool*  m_pHasShield   = nullptr;
     const char*  m_pAircraftName = nullptr;
+    const int*   m_pStarCores    = nullptr;
 };
 
 #endif // GAMESCENE_HPP

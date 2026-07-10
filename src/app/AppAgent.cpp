@@ -96,10 +96,20 @@ void AppAgent::init() {
     m_gameView->setHasShieldPtr(m_mapVM->getHasShieldPtr());
     m_gameView->setAircraftNamePtr(m_mapVM->getAircraftName());
 
+    // 迭代 6：星核指针注入（HUD 显示）
+    m_gameView->setStarCoresPtr(m_mapVM->getUpgradeStarCoresPtr());
+
     // 初始关卡解锁（测试阶段全解锁）
     m_mapVM->setMaxUnlockedLevel(7);
     m_gameView->setLevelSelectMaxUnlocked(7);
     log("AppAgent", "All levels unlocked for testing (7/7)");
+
+    // 迭代 6：从存档读取升级数据
+    {
+        auto upgradeData = SaveManager().loadUpgradeData();
+        m_mapVM->initUpgradeData(upgradeData.starCores, upgradeData.levelsPacked);
+        log("AppAgent", "Upgrade data loaded: cores=" + std::to_string(upgradeData.starCores));
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // ② 命令绑定 — 将 ViewModel 的 std::function 命令注入 View
@@ -120,6 +130,9 @@ void AppAgent::init() {
     m_gameView->setSelectAircraftCommand(m_mapVM->getSelectAircraftCommand());
     m_gameView->setUseSkillCommand(m_mapVM->getUseSkillCommand());
     m_gameView->setNavigateCommand(m_mapVM->getNavigateCommand());
+
+    // 迭代 6：升级命令
+    m_gameView->setUpgradeStatCommand(m_mapVM->getUpgradeStatCommand());
 
     // ═══════════════════════════════════════════════════════════════
     // ③ 事件绑定 — ViewModel → View（App 只做连接，不监听）
@@ -142,6 +155,11 @@ void AppAgent::init() {
                              m_gameView->setLevelSelectMaxUnlocked(level);
                          }
                          log("AppAgent", "Campaign progress saved: level " + std::to_string(level));
+                     });
+    QObject::connect(m_mapVM, &GameMapVM::saveUpgradeRequested,
+                     [](int starCores, int packedLevels) {
+                         SaveManager().saveUpgradeData({starCores, packedLevels});
+                         log("AppAgent", "Upgrade data saved");
                      });
 
     // ── 动态更新（监听 GameState 变化，仅用于战机图片切换）─────

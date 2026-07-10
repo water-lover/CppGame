@@ -160,6 +160,15 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
                           QString("BEST: %1").arg(*m_pHighScore));
     }
 
+    // ── 星核（最高分下方） ──────────────────────────────────────
+    if (m_pStarCores) {
+        painter->setPen(QColor(100, 200, 255, 200));
+        QFont sf(QStringLiteral("Microsoft YaHei"), 13);
+        painter->setFont(sf);
+        painter->drawText(QRectF(14, 70, 200, 26), Qt::AlignLeft | Qt::AlignVCenter,
+                          QString("★ %1").arg(*m_pStarCores));
+    }
+
     // ── 技能状态（右下角） ──────────────────────────────────────
     float sx = 460, sy = 540, sw = 320, sh = 50;
     painter->setFont(QFont(QStringLiteral("Microsoft YaHei"), 12, QFont::Bold));

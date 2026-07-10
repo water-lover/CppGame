@@ -25,6 +25,7 @@ class PauseOverlay;
 class BossHealthBar;
 class LevelSelectScreen;
 class AircraftSelectScreen;
+class UpgradeScreen;
 
 /// 游戏主视图 — 纯 C++ QWidget
 ///
@@ -111,7 +112,9 @@ public:
     void setSelectAircraftCommand(std::function<void(int)>&& cmd);
     void setUseSkillCommand(std::function<void()>&& cmd);
     void setNavigateCommand(std::function<void(int)>&& cmd);
+    void setUpgradeStatCommand(std::function<void(int)>&& cmd);
     void setLevelSelectMaxUnlocked(int level) noexcept;
+    void setStarCoresPtr(const int* p) noexcept;
 
     // ════════════════════════════════════════════════════════════════
     // ③ 事件绑定 — 接收 ViewModel 通知
@@ -155,6 +158,8 @@ private:
     GameOverScreen* m_gameOverScreen = nullptr;
     // 页面 6: 暂停覆盖层
     PauseOverlay*   m_pauseOverlay = nullptr;
+    // 页面 7: 升级界面
+    UpgradeScreen*  m_upgradeScreen = nullptr;
 
     // ── BOSS 血条（叠加在游戏页面上方） ───────────────────────
     BossHealthBar*  m_bossHealthBar = nullptr;
@@ -174,6 +179,7 @@ private:
     const GameState* m_pGameState = nullptr;
     const bool*     m_pLevelCleared = nullptr;
     const int*      m_pCurrentLevel = nullptr;
+    const int*      m_pStarCores    = nullptr;
 
     // ── 命令（std::function，不知道实现者） ──────────────────────
     std::function<void(float)> m_tickCommand;
@@ -194,6 +200,7 @@ private:
     const float* m_pSkillCD     = nullptr;
     const bool*  m_pSkillReady  = nullptr;
     const bool*  m_pSkillActive = nullptr;
+    std::function<void(int)>   m_upgradeStatCommand;
 };
 
 #endif // GAMEVIEW_HPP

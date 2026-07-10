@@ -53,6 +53,9 @@ public:
     /// 获取当前关卡配置
     const WaveConfig& getConfigForLevel(int levelId) const;
 
+    /// 无尽模式当前难度倍率
+    float getEndlessDiffMult() const;
+
     /// 是否为无尽模式
     bool isEndless() const { return endlessMode_; }
     void setEndless(bool v) { endlessMode_ = v; }

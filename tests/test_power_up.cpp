@@ -183,9 +183,9 @@ TEST_CASE("PowerUpManager - all 3 power-up types can be dropped", "[powerup][typ
         if (seenTypes.size() >= 3) break;  // 3 种都找到了
     }
 
-    // 3 种类型都可能出现
+    // 4 种类型都可能出现（StarCore/Hp/Fire/Shield）
     CHECK(seenTypes.size() >= 1);
-    CHECK(seenTypes.size() <= 3);
+    CHECK(seenTypes.size() <= 4);
 }
 
 TEST_CASE("PowerUpManager - DROP_CHANCE constant is 15%", "[powerup][constant]") {

@@ -12,8 +12,18 @@ void Player::reset() {
     m_moveUp = m_moveDown = m_moveLeft = m_moveRight = false;
 
     // 迭代 3：重置武器等级和护盾
-    m_weaponLevel = 1;
+    m_weaponLevel = 1 + static_cast<int>(m_fireBonus);
     m_hasShield   = false;
+}
+
+void Player::setUpgradeBonuses(float fireBonus, int livesBonus, float speedBonus, float cdBonus) {
+    m_fireBonus  = fireBonus;
+    m_livesBonus = livesBonus;
+    m_speedBonus = speedBonus;
+    m_cdBonus    = cdBonus;
+    // 立即应用生命加成
+    m_lives = getMaxLives();
+    m_weaponLevel = 1 + static_cast<int>(m_fireBonus);
 }
 
 void Player::update(float dt) {
@@ -63,7 +73,7 @@ void Player::takeDamage() {
 }
 
 int Player::getMaxLives() const {
-    return AircraftStats::getTemplate(m_aircraftType).baseLives;
+    return AircraftStats::getTemplate(m_aircraftType).baseLives + m_livesBonus;
 }
 
 void Player::heal(int amount) {
@@ -94,5 +104,5 @@ float Player::getFireInterval() const {
 
 float Player::getSpeedValue() const {
     const auto& tmpl = AircraftStats::getTemplate(m_aircraftType);
-    return PLAYER_SPEED * tmpl.speedMultiplier;
+    return PLAYER_SPEED * (tmpl.speedMultiplier + m_speedBonus);
 }

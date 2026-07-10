@@ -54,6 +54,7 @@ public:
 
     /// 设置护盾道具图片
     void setPowerUpShieldPixmap(const QPixmap* p) noexcept { m_pPowerUpShieldImg = p; }
+    void setPowerUpStarCorePixmap(const QPixmap* p) noexcept { m_pPowerUpStarCoreImg = p; }
 
     /// 设置背景图片
     void setBackgroundPixmap(const QPixmap* p)    noexcept { m_pBgImg = p; }
@@ -91,6 +92,7 @@ public:
 
     /// 护盾道具图片
     const QPixmap* getPowerUpShieldPixmap() const noexcept { return m_pPowerUpShieldImg; }
+    const QPixmap* getPowerUpStarCorePixmap() const noexcept { return m_pPowerUpStarCoreImg; }
 
     /// 游戏背景图片
     const QPixmap* getBackgroundPixmap() const noexcept { return m_pBgImg; }
@@ -111,6 +113,7 @@ private:
     const QPixmap* m_pPowerUpHpImg     = nullptr;
     const QPixmap* m_pPowerUpFireImg   = nullptr;
     const QPixmap* m_pPowerUpShieldImg = nullptr;
+    const QPixmap* m_pPowerUpStarCoreImg = nullptr;
     const QPixmap* m_pBgImg            = nullptr;
 };
 

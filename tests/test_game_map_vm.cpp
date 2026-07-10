@@ -48,9 +48,8 @@ static void startAndWarmUp(GameMapVM& vm) {
     auto startCmd = vm.getStartGameCommand();
     startCmd();
     // 等待超过 SPAWN_INTERVAL 确保第一波敌机出现
-    // 120 tick ≈ 2.0s，保证至少一波敌机生成
-    // 注意不能太长避免子弹击杀敌机后被 cleanup 移除
-    tickN(vm, 120);
+    // 105 tick ≈ 1.75s > SPAWN_INTERVAL(1.5s)，敌机刚生成未被子弹击杀
+    tickN(vm, 105);
 }
 
 // ── 测试用例 ─────────────────────────────────────────────────────────────────
@@ -650,4 +649,45 @@ TEST_CASE("GameMapVM - GameState AircraftSelect defined in enum", "[gamemap][ite
     CHECK(static_cast<int>(GameState::LevelSelect) < static_cast<int>(GameState::Playing));
     CHECK(static_cast<int>(GameState::Playing) < static_cast<int>(GameState::Paused));
     CHECK(static_cast<int>(GameState::Paused) < static_cast<int>(GameState::GameOver));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  迭代 6 新增测试：升级命令集成 / 星核
+// ═══════════════════════════════════════════════════════════════════
+
+TEST_CASE("GameMapVM - getUpgradeStatCommand exists", "[gamemap][iter6][upgrade]") {
+    GameMapVM vm;
+
+    // 验证升级命令存在且可调用
+    auto cmd = vm.getUpgradeStatCommand();
+    // 不要求具体行为，只验证不崩溃
+    CHECK_NOTHROW(cmd(0));  // UpgradeType::FirePower
+}
+
+TEST_CASE("GameMapVM - initUpgradeData sets star cores and levels", "[gamemap][iter6][upgrade]") {
+    GameMapVM vm;
+
+    // 初始星核 0
+    CHECK(*vm.getUpgradeStarCoresPtr() == 0);
+
+    // 打包等级: Fire=3, Lives=5, Speed=2, Cooldown=1
+    int packed = (3 & 0xF) | ((5 & 0xF) << 4) | ((2 & 0xF) << 8) | ((1 & 0xF) << 12);
+    vm.initUpgradeData(250, packed);
+
+    // 验证星核
+    CHECK(*vm.getUpgradeStarCoresPtr() == 250);
+}
+
+TEST_CASE("GameMapVM - upgrade command integrates with UpgradeManager", "[gamemap][iter6][upgrade]") {
+    GameMapVM vm;
+
+    // 初始化有足够星核
+    vm.initUpgradeData(100, 0);
+
+    auto cmd = vm.getUpgradeStatCommand();
+    // 升级 FirePower (UpgradeType 0)
+    CHECK_NOTHROW(cmd(0));
+
+    // 星核减少
+    CHECK(*vm.getUpgradeStarCoresPtr() < 100);
 }

@@ -55,6 +55,15 @@ void PowerUpManager::cleanup() {
 }
 
 PowerUpType PowerUpManager::randomDrop(std::mt19937& rng) {
-    std::uniform_int_distribution<int> dist(0, 2);
-    return static_cast<PowerUpType>(dist(rng));
+    // 加权概率：StarCore 40%, Hp 25%, Fire 20%, Shield 15%
+    std::uniform_int_distribution<int> dist(0, 99);
+    int roll = dist(rng);
+    if (roll < 40)
+        return PowerUpType::StarCore;
+    else if (roll < 65)
+        return PowerUpType::Hp;
+    else if (roll < 85)
+        return PowerUpType::Fire;
+    else
+        return PowerUpType::Shield;
 }

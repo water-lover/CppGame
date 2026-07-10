@@ -57,6 +57,9 @@ std::function<void()> GameMapVM::getUseSkillCommand() {
 std::function<void(int)> GameMapVM::getNavigateCommand() {
     return [this](int state) { navigateImpl(state); };
 }
+std::function<void(int)> GameMapVM::getUpgradeStatCommand() {
+    return [this](int type) { upgradeStatImpl(type); };
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // 命令实现
@@ -90,6 +93,14 @@ void GameMapVM::startGameImpl() {
 
     // 初始化技能
     m_skill.init(m_player.getAircraftType());
+
+    // 应用升级加成
+    m_player.setUpgradeBonuses(
+        m_upgradeMgr.getFirePowerBonus(),
+        m_upgradeMgr.getLivesBonus(),
+        m_upgradeMgr.getSpeedBonus(),
+        m_upgradeMgr.getCooldownBonus()
+    );
 
     syncMap();
     fireChange(PROP_ID_MAP);
@@ -175,6 +186,10 @@ void GameMapVM::tickImpl(float dt) {
         case PowerUpType::Shield:
             m_player.setShielded(true);
             break;
+        case PowerUpType::StarCore:
+            m_upgradeMgr.addStarCores(3);  // 拾取星核+3
+            fireChange(PROP_ID_STAR_CORES);
+            break;
         }
         fireChange(PROP_ID_WEAPON_LEVEL);
     }
@@ -184,6 +199,9 @@ void GameMapVM::tickImpl(float dt) {
         auto* boss = dynamic_cast<Boss*>(e.get());
         if (boss && boss->isDead()) {
             m_waveMgr.notifyBossDefeated();
+            // BOSS 星核掉落
+            m_upgradeMgr.addStarCores(STAR_CORE_PER_BOSS);
+            fireChange(PROP_ID_STAR_CORES);
             break;
         }
     }
@@ -372,6 +390,36 @@ void GameMapVM::navigateImpl(int state) {
     fireChange(PROP_ID_GAME_STATE);
 }
 
+void GameMapVM::upgradeStatImpl(int type) {
+    auto ut = static_cast<UpgradeType>(type);
+    if (m_upgradeMgr.upgrade(ut)) {
+        m_player.setUpgradeBonuses(
+            m_upgradeMgr.getFirePowerBonus(),
+            m_upgradeMgr.getLivesBonus(),
+            m_upgradeMgr.getSpeedBonus(),
+            m_upgradeMgr.getCooldownBonus()
+        );
+        fireChange(PROP_ID_UPGRADE_LEVELS);
+        fireChange(PROP_ID_STAR_CORES);
+        fireChange(PROP_ID_LIVES);
+        log("GameMapVM", "Upgrade stat " + std::to_string(type) + " to level " +
+            std::to_string(m_upgradeMgr.getUpgradeLevel(ut)));
+    }
+}
+
+void GameMapVM::initUpgradeData(int starCores, int packedLevels) {
+    m_upgradeMgr.addStarCores(starCores);
+    m_upgradeMgr.unpackLevels(packedLevels);
+    m_player.setUpgradeBonuses(
+        m_upgradeMgr.getFirePowerBonus(),
+        m_upgradeMgr.getLivesBonus(),
+        m_upgradeMgr.getSpeedBonus(),
+        m_upgradeMgr.getCooldownBonus()
+    );
+    log("GameMapVM", "Upgrade data loaded: cores=" + std::to_string(starCores)
+        + " levels=" + std::to_string(packedLevels));
+}
+
 void GameMapVM::pauseImpl() {
     if (m_state == GameState::Playing) {
         m_state = GameState::Paused;
@@ -522,6 +570,9 @@ void GameMapVM::checkCollisions() {
                 m_enemies[ei]->takeDamage();
                 if (m_enemies[ei]->isDead()) {
                     m_scoreMgr.addScore(m_enemies[ei]->getScore());
+                    // 星核掉落
+                    m_upgradeMgr.addStarCores(STAR_CORE_PER_KILL);
+                    fireChange(PROP_ID_STAR_CORES);
                     m_powerUpMgr.onEnemyDestroyed(m_enemies[ei]->getPos(), m_rng);
                 }
                 m_bullets[bi] = Bullet(); // 标记移除
@@ -650,6 +701,7 @@ void GameMapVM::syncMap() {
         case PowerUpType::Hp:     a.type = ActorType::PowerUpHp; break;
         case PowerUpType::Fire:   a.type = ActorType::PowerUpFire; break;
         case PowerUpType::Shield: a.type = ActorType::PowerUpShield; break;
+        case PowerUpType::StarCore: a.type = ActorType::PowerUpStarCore; break;
         }
         a.x = pu.pos.x;
         a.y = pu.pos.y;

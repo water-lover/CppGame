@@ -43,9 +43,37 @@ void WaveManager::update(float dt,
                           float playerY,
                           std::mt19937& rng)
 {
-    if (isLevelComplete(enemies)) return;
+    if (isLevelComplete(enemies)) {
+        if (endlessMode_) {
+            // 无尽模式：推进到下一关
+            int nextLevel = currentLevel_ + 1;
+            if (nextLevel > 7) {
+                // 打完一轮循环
+                endlessLoop_++;
+                nextLevel = 1;
+                log("WaveManager", "Endless wave " + std::to_string(endlessLoop_) +
+                    " started (difficulty: " + std::to_string(getEndlessDiffMult()) + "x)");
+            }
+            // 重置到下一关（不增加 endlessLoop_）
+            currentLevel_   = nextLevel;
+            currentWave_    = 0;
+            enemiesSpawned_ = 0;
+            enemiesPerWave_ = 5;
+            bossSpawned_    = false;
+            bossDefeated_   = false;
+            m_timer         = 0.0f;
+            log("WaveManager", "Endless advancing to level " + std::to_string(currentLevel_));
+        }
+        return;
+    }
 
     const auto& cfg = getConfigForLevel(currentLevel_);
+
+    // 无尽模式：计算当前波次的难度倍率
+    float diffMult = 1.0f;
+    if (endlessMode_) {
+        diffMult = getEndlessDiffMult();
+    }
 
     // BOSS 已生成，等待击败
     if (bossSpawned_) {
@@ -84,10 +112,9 @@ void WaveManager::update(float dt,
 
     // 定时生成敌机
     float interval = cfg.spawnInterval;
-    // 无尽模式：每轮加速 10%
-    if (endlessMode_ && endlessLoop_ > 0) {
-        interval *= (1.0f - endlessLoop_ * 0.05f);
-        if (interval < 0.5f) interval = 0.5f;
+    // 无尽模式：应用难度倍率
+    if (endlessMode_) {
+        interval /= (1.0f + (diffMult - 1.0f) * 0.2f);  // 间隔缩短最多20%
     }
 
     m_timer += dt;
@@ -107,9 +134,12 @@ void WaveManager::spawnWave(std::vector<std::unique_ptr<Enemy>>& enemies,
     auto [type, count] = getEnemyTypeForWave(currentLevel_, currentWave_, enemiesSpawned_);
 
     float speedMult = cfg.enemySpeed;
-    // 无尽模式：每轮速度 +10%
+    int   hpBonus = cfg.enemyHpBonus;
+    // 无尽模式：应用难度倍率
     if (endlessMode_) {
-        speedMult *= (1.0f + endlessLoop_ * 0.1f);
+        float diffMult = getEndlessDiffMult();
+        speedMult *= diffMult;
+        hpBonus = static_cast<int>(cfg.enemyHpBonus * diffMult);
     }
 
     for (int i = 0; i < count; ++i) {
@@ -119,16 +149,16 @@ void WaveManager::spawnWave(std::vector<std::unique_ptr<Enemy>>& enemies,
         std::unique_ptr<Enemy> enemy;
         switch (type) {
         case EnemyType::Medium:
-            enemy = std::make_unique<EnemyMedium>(x, y, ENEMY_SPEED * speedMult, cfg.enemyHpBonus);
+            enemy = std::make_unique<EnemyMedium>(x, y, ENEMY_SPEED * speedMult, hpBonus);
             break;
         case EnemyType::Large:
-            enemy = std::make_unique<EnemyLarge>(x, y, ENEMY_SPEED * speedMult * 0.7f, cfg.enemyHpBonus);
+            enemy = std::make_unique<EnemyLarge>(x, y, ENEMY_SPEED * speedMult * 0.7f, hpBonus);
             break;
         case EnemyType::Elite:
-            enemy = std::make_unique<EnemyElite>(x, y, ENEMY_SPEED * speedMult * 0.8f, cfg.enemyHpBonus);
+            enemy = std::make_unique<EnemyElite>(x, y, ENEMY_SPEED * speedMult * 0.8f, hpBonus);
             break;
         default:
-            enemy = std::make_unique<EnemySmall>(x, y, ENEMY_SPEED * speedMult, cfg.enemyHpBonus);
+            enemy = std::make_unique<EnemySmall>(x, y, ENEMY_SPEED * speedMult, hpBonus);
             break;
         }
         enemies.push_back(std::move(enemy));
@@ -186,6 +216,13 @@ bool WaveManager::isLevelComplete(const std::vector<std::unique_ptr<Enemy>>& ene
     }
 
     return false;
+}
+
+float WaveManager::getEndlessDiffMult() const {
+    // loop=1 → 0.5, loop=2 → 1.0, loop=3 → 1.5, loop=4 → 2.0 ...
+    float mult = 0.5f + (endlessLoop_ - 1) * 0.5f;
+    if (mult < 0.5f) mult = 0.5f;
+    return mult;
 }
 
 std::pair<EnemyType, int> WaveManager::getEnemyTypeForWave(int level, int waveIdx, int spawnIdx) const {

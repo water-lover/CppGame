@@ -61,6 +61,7 @@ add_library(thf_viewmodel OBJECT
     src/viewmodel/WaveManager.cpp
     src/viewmodel/PowerUpManager.cpp
     src/viewmodel/Boss.cpp
+    src/viewmodel/UpgradeManager.cpp
     include/viewmodel/SpiritVM.hpp
     include/viewmodel/GameMapVM.hpp
     include/viewmodel/AircraftStats.hpp
@@ -68,6 +69,7 @@ add_library(thf_viewmodel OBJECT
     include/viewmodel/WaveManager.hpp
     include/viewmodel/PowerUpManager.hpp
     include/viewmodel/Boss.hpp
+    include/viewmodel/UpgradeManager.hpp
 )
 target_include_directories(thf_viewmodel PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(thf_viewmodel PUBLIC thf_common Qt5::Core Qt5::Gui)
@@ -90,6 +92,7 @@ add_library(thf_view OBJECT
     src/view/BossHealthBar.cpp
     src/view/LevelSelectScreen.cpp
     src/view/AircraftSelectScreen.cpp
+    src/view/UpgradeScreen.cpp
     include/view/GameView.hpp
     include/view/GameScene.hpp
     include/view/HudOverlay.hpp
@@ -100,6 +103,7 @@ add_library(thf_view OBJECT
     include/view/BossHealthBar.hpp
     include/view/LevelSelectScreen.hpp
     include/view/AircraftSelectScreen.hpp
+    include/view/UpgradeScreen.hpp
     include/view/PlayerItem.hpp
     include/view/EnemyItem.hpp
     include/view/BulletItem.hpp
@@ -189,6 +193,7 @@ if(Catch2_FOUND)
         tests/test_wave_manager.cpp
         tests/test_power_up.cpp
         tests/test_boss.cpp
+        tests/test_upgrade_manager.cpp
         $<TARGET_OBJECTS:thf_common>
         $<TARGET_OBJECTS:thf_viewmodel>
     )

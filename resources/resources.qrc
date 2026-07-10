@@ -30,6 +30,7 @@
         <file alias="powerUpHp">images/PNG/Power-ups/pill_red.png</file>
         <file alias="powerUpFire">images/PNG/Power-ups/powerupBlue_bolt.png</file>
         <file alias="powerUpShield">images/PNG/Power-ups/shield_gold.png</file>
+        <file alias="powerUpStarCore">images/PNG/Power-ups/star_gold.png</file>
 
         <!-- ── 背景 ────────────────────────────── -->
         <file alias="background">images/Backgrounds/darkPurple.png</file>

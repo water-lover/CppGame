@@ -19,6 +19,7 @@
 #include "viewmodel/SkillSystem.hpp"
 #include "viewmodel/WaveManager.hpp"
 #include "viewmodel/PowerUpManager.hpp"
+#include "viewmodel/UpgradeManager.hpp"
 
 /// 游戏地图 ViewModel — 核心 Function Model
 ///
@@ -68,6 +69,10 @@ public:
     const int*      getWeaponLevelPtr()  const noexcept { return &m_lastWeaponLv; }
     const bool*     isLevelClearedPtr()  const noexcept { return &m_levelCleared; }
 
+    // 迭代 6：升级系统
+    const int* getUpgradeStarCoresPtr()  const noexcept { return m_upgradeMgr.getStarCoresPtr(); }
+    void initUpgradeData(int starCores, int packedLevels);
+
     // 迭代 3 新属性
     int   getAircraftType()       const noexcept { return static_cast<int>(m_player.getAircraftType()); }
     const char* getAircraftName() const noexcept {
@@ -112,6 +117,9 @@ public:
     // UI 导航命令（让 ViewModel 控制页面切换，而非 View 直接操作页面栈）
     std::function<void(int)>      getNavigateCommand();
 
+    // 迭代 6：升级命令
+    std::function<void(int)>      getUpgradeStatCommand();
+
     // 迭代 4：通关胜利标记
     bool  isLevelCleared()  const noexcept { return m_levelCleared; }
 
@@ -124,6 +132,7 @@ signals:
     // ── 持久化请求（ViewModel → App，App 再调 SaveManager）──
     void saveHighScoreRequested(int score);
     void saveCampaignRequested(int level);
+    void saveUpgradeRequested(int starCores, int packedLevels);
 
 private:
     // ── 命令实现 ──────────────────────────────────────────────────
@@ -141,6 +150,9 @@ private:
     void selectLevelImpl(int levelId);  // 迭代5：仅存储关卡，等待选战机
     void quitLevelImpl();               // 迭代4：退出关卡
     void navigateImpl(int state);        // UI 导航
+
+    // 迭代 6
+    void upgradeStatImpl(int type);
 
     // ── 内部工具 ──────────────────────────────────────────────────
     void spawnEnemy();
@@ -166,6 +178,9 @@ private:
     WaveManager                 m_waveMgr;      // 迭代 3
     PowerUpManager              m_powerUpMgr;   // 迭代 3
     AirMap                      m_map;
+
+    // 迭代 6：升级系统
+    UpgradeManager              m_upgradeMgr;
 
     float m_spawnTimer  = 0.0f;
     float m_elapsed     = 0.0f;

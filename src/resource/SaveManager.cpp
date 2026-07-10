@@ -53,3 +53,27 @@ void SaveManager::saveCampaignProgress(int level) {
     obj["campaignLevel"] = qBound(1, level, 7);
     saveObject(filePath_, obj);
 }
+
+// ── 升级数据（迭代 6） ────────────────────────────────────────────────
+
+int SaveManager::packLevels(int fire, int lives, int speed, int cooldown) {
+    return (fire    & 0xF)       |
+           ((lives   & 0xF) << 4)  |
+           ((speed   & 0xF) << 8)  |
+           ((cooldown & 0xF) << 12);
+}
+
+SaveManager::UpgradeData SaveManager::loadUpgradeData() {
+    QJsonObject obj = loadObject(filePath_);
+    UpgradeData data;
+    data.starCores    = obj.value("starCores").toInt(0);
+    data.levelsPacked = obj.value("upgradeLevels").toInt(0);
+    return data;
+}
+
+void SaveManager::saveUpgradeData(const UpgradeData& data) {
+    QJsonObject obj = loadObject(filePath_);
+    obj["starCores"]     = data.starCores;
+    obj["upgradeLevels"] = data.levelsPacked;
+    saveObject(filePath_, obj);
+}

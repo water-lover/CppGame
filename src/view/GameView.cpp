@@ -8,6 +8,7 @@
 #include "view/BossHealthBar.hpp"
 #include "view/LevelSelectScreen.hpp"
 #include "view/AircraftSelectScreen.hpp"
+#include "view/UpgradeScreen.hpp"
 
 #include <QGraphicsView>
 #include <QVBoxLayout>
@@ -169,6 +170,17 @@ void GameView::setSelectAircraftCommand(std::function<void(int)>&& cmd) {
 }
 void GameView::setUseSkillCommand(std::function<void()>&& cmd)       { m_useSkillCommand = std::move(cmd); }
 void GameView::setNavigateCommand(std::function<void(int)>&& cmd)    { m_navigateCommand = std::move(cmd); }
+void GameView::setUpgradeStatCommand(std::function<void(int)>&& cmd) {
+    m_upgradeStatCommand = cmd;
+    if (m_upgradeScreen) {
+        auto cpy = m_upgradeStatCommand;
+        m_upgradeScreen->setUpgradeStatCommand(std::move(cpy));
+    }
+}
+void GameView::setStarCoresPtr(const int* p) noexcept {
+    m_pStarCores = p;
+    if (m_scene) m_scene->setHudStarCores(p);
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // 帧循环

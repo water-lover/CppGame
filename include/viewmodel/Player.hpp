@@ -31,6 +31,9 @@ public:
     void moveLeft(bool active);
     void moveRight(bool active);
 
+    // ── 升级加成（迭代 6） ─────────────────────────────────────────
+    void setUpgradeBonuses(float fireBonus, int livesBonus, float speedBonus, float cdBonus);
+
     // ── 生命 ──────────────────────────────────────────────────────
     int  getLives()  const { return m_lives; }
     int  getMaxLives() const;
@@ -67,6 +70,9 @@ public:
     float getSpeedValue() const;
 
 private:
+    // ── 战机类型
+    AircraftType m_aircraftType = AircraftType::Thunder;
+
     Vec2  m_pos;
     int   m_lives        = PLAYER_MAX_LIVES;
     float m_invincibleTimer = 0.0f;
@@ -77,10 +83,13 @@ private:
     bool  m_moveLeft  = false;
     bool  m_moveRight = false;
 
-    // 迭代 3 新增成员
-    AircraftType m_aircraftType = AircraftType::Thunder;  // 默认雷霆号
-    int   m_weaponLevel  = 1;      // 武器等级 1~5
-    bool  m_hasShield    = false;  // 护盾状态（来自道具或技能）
+    // ── 升级加成数据
+    float m_fireBonus   = 0.0f;
+    int   m_livesBonus  = 0;
+    float m_speedBonus  = 0.0f;
+    float m_cdBonus     = 0.0f;     // 来自道具或技能
+    int   m_weaponLevel = 1;        // 武器等级 1~5
+    bool  m_hasShield    = false;    // 道具护盾
     bool  m_skillInvincible = false;  // 技能无敌（与道具护盾分开）
 };
 
