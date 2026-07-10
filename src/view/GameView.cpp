@@ -1,6 +1,5 @@
 #include "view/GameView.hpp"
 #include "view/GameScene.hpp"
-#include "view/HudOverlay.hpp"
 #include "view/StartScreen.hpp"
 #include "view/ModeSelectScreen.hpp"
 #include "view/GameOverScreen.hpp"
@@ -26,10 +25,16 @@ GameView::GameView(QWidget* parent)
     resize(SCREEN_WIDTH, SCREEN_HEIGHT);
     setMinimumSize(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT);
     setFocusPolicy(Qt::StrongFocus);
+    // 禁用输入法，防止中文输入法拦截 S / Space 等按键
+    setAttribute(Qt::WA_InputMethodEnabled, false);
 
     // ── 页面栈 ───────────────────────────────────────────────────
     m_pageStack = new QStackedWidget(this);
-    m_pageStack->setGeometry(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    // 用 layout 管理尺寸，使 QStackedWidget 随 GameView 等比缩放
+    auto* mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
+    mainLayout->addWidget(m_pageStack);
 
     m_startScreen = new StartScreen(this);
     m_pageStack->addWidget(m_startScreen);  // 0
@@ -44,6 +49,7 @@ GameView::GameView(QWidget* parent)
     m_pageStack->addWidget(m_aircraftSelectScreen);  // 3
 
     m_gamePage = new QWidget(this);
+    m_gamePage->setFocusPolicy(Qt::NoFocus);  // 防止抢焦点
     {
         QVBoxLayout* layout = new QVBoxLayout(m_gamePage);
         layout->setContentsMargins(0, 0, 0, 0);
@@ -56,6 +62,10 @@ GameView::GameView(QWidget* parent)
         m_graphicsView->setRenderHint(QPainter::SmoothPixmapTransform);
         m_graphicsView->setFocusPolicy(Qt::NoFocus);
         m_graphicsView->setBackgroundBrush(QColor(10, 10, 30));
+        // 关键：viewport 默认 StrongFocus，点击画面会抢走焦点导致 S/Space 失效
+        m_graphicsView->viewport()->setFocusPolicy(Qt::NoFocus);
+        // 禁用 viewport 输入法，双重保险
+        m_graphicsView->viewport()->setAttribute(Qt::WA_InputMethodEnabled, false);
         m_bossHealthBar = new BossHealthBar(m_gamePage);
         m_bossHealthBar->setVisible(false);
         m_bossHealthBar->raise();
@@ -105,10 +115,17 @@ GameView::GameView(QWidget* parent)
     });
 
     connect(m_gameOverScreen, &GameOverScreen::restartClicked, [this]() {
-        if (m_pLevelCleared && *m_pLevelCleared)
-            m_pageStack->setCurrentIndex(2);
-        else
-            m_pageStack->setCurrentIndex(1);
+        if (m_pLevelCleared && *m_pLevelCleared) {
+            if (m_navigateCommand)
+                m_navigateCommand(static_cast<int>(GameState::LevelSelect));
+            else
+                m_pageStack->setCurrentIndex(2);
+        } else {
+            if (m_navigateCommand)
+                m_navigateCommand(static_cast<int>(GameState::ModeSelect));
+            else
+                m_pageStack->setCurrentIndex(1);
+        }
     });
 
     connect(m_pauseOverlay, &PauseOverlay::resumeClicked, [this]() {
@@ -141,6 +158,7 @@ void GameView::setEnemyBulletPixmap(const QPixmap* p) noexcept { if (m_scene) m_
 void GameView::setPowerUpHpPixmap(const QPixmap* p) noexcept { if (m_scene) m_scene->setPowerUpHpPixmap(p); }
 void GameView::setPowerUpFirePixmap(const QPixmap* p) noexcept { if (m_scene) m_scene->setPowerUpFirePixmap(p); }
 void GameView::setPowerUpShieldPixmap(const QPixmap* p) noexcept { if (m_scene) m_scene->setPowerUpShieldPixmap(p); }
+void GameView::setPowerUpStarCorePixmap(const QPixmap* p) noexcept { if (m_scene) m_scene->setPowerUpStarCorePixmap(p); }
 
 void GameView::setLevelSelectMaxUnlocked(int level) noexcept {
     if (m_levelSelectScreen) m_levelSelectScreen->setMaxUnlockedLevel(level);
@@ -215,6 +233,7 @@ void GameView::keyPressEvent(QKeyEvent* e) {
         break;
     default:
         QWidget::keyPressEvent(e);
+        break;
     }
 }
 
@@ -240,7 +259,7 @@ void GameView::resizeEvent(QResizeEvent* e) {
         m_graphicsView->fitInView(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Qt::KeepAspectRatio);
     }
     if (m_bossHealthBar && m_gamePage) {
-        m_bossHealthBar->setGeometry(0, 0, m_gamePage->width(), 20);
+        m_bossHealthBar->setGeometry(0, 0, m_gamePage->width(), 28);
         m_bossHealthBar->raise();
     }
 }
