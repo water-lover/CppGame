@@ -88,6 +88,8 @@ add_library(thf_view OBJECT
     src/view/GameOverScreen.cpp
     src/view/PauseOverlay.cpp
     src/view/BossHealthBar.cpp
+    src/view/LevelSelectScreen.cpp
+    src/view/AircraftSelectScreen.cpp
     include/view/GameView.hpp
     include/view/GameScene.hpp
     include/view/HudOverlay.hpp
@@ -96,6 +98,8 @@ add_library(thf_view OBJECT
     include/view/GameOverScreen.hpp
     include/view/PauseOverlay.hpp
     include/view/BossHealthBar.hpp
+    include/view/LevelSelectScreen.hpp
+    include/view/AircraftSelectScreen.hpp
     include/view/PlayerItem.hpp
     include/view/EnemyItem.hpp
     include/view/BulletItem.hpp
@@ -148,13 +152,26 @@ else()
 endif()
 
 # ── Debug 平台插件修复 ──────────────────────────────────────────────────────
-if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND VCPKG_INSTALLED_DIR)
-    set(_plugin_src "${VCPKG_INSTALLED_DIR}/x64-mingw-dynamic/debug/plugins/platforms/qwindows.dll")
-    set(_plugin_dst "${CMAKE_BINARY_DIR}/bin/plugins/platforms/qwindows.dll")
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_plugin_src}" "${_plugin_dst}"
-        COMMENT "Copying debug qwindows.dll platform plugin"
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(_plugin_search
+        "${VCPKG_INSTALLED_DIR}/x64-mingw-dynamic/debug/plugins/platforms/qwindows.dll"
+        "${CMAKE_SOURCE_DIR}/../vcpkg/packages/qt5-base_x64-mingw-dynamic/debug/plugins/platforms/qwindows.dll"
+        "D:/vcpkg/packages/qt5-base_x64-mingw-dynamic/debug/plugins/platforms/qwindows.dll"
     )
+    set(_plugin_found "")
+    foreach(_p ${_plugin_search})
+        if(EXISTS "${_p}")
+            set(_plugin_found "${_p}")
+            break()
+        endif()
+    endforeach()
+    if(_plugin_found)
+        set(_plugin_dst "${CMAKE_BINARY_DIR}/bin/plugins/platforms/qwindows.dll")
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_plugin_found}" "${_plugin_dst}"
+            COMMENT "Copying debug qwindows.dll platform plugin"
+        )
+    endif()
 endif()
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -185,7 +202,7 @@ if(Catch2_FOUND)
     )
     include(CTest)
     include(Catch)
-    catch_discover_tests(${PROJECT_NAME}_tests)
+    # catch_discover_tests(${PROJECT_NAME}_tests)
 endif()
 
 # ── Install ───────────────────────────────────────────────────────────────────

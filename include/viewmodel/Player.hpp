@@ -33,6 +33,8 @@ public:
 
     // ── 生命 ──────────────────────────────────────────────────────
     int  getLives()  const { return m_lives; }
+    int  getMaxLives() const;
+    void heal(int amount);
     void takeDamage();
     bool isInvincible() const { return m_invincibleTimer > 0.0f; }
     bool isDead()     const { return m_lives <= 0; }
@@ -40,6 +42,11 @@ public:
     // ── 护盾（冰霜号技能 / 堡垒号技能 / 道具） ──────────────────
     void setShielded(bool shielded) { m_hasShield = shielded; }
     bool hasShield() const { return m_hasShield; }
+    const bool* getHasShieldPtr() const { return &m_hasShield; }
+
+    // ── 技能无敌（与道具护盾分开跟踪） ───────────────────────────
+    void setSkillInvincible(bool v) { m_skillInvincible = v; }
+    bool isSkillInvincible() const { return m_skillInvincible; }
 
     // ── 武器等级 ──────────────────────────────────────────────────
     int  getWeaponLevel()    const { return m_weaponLevel; }
@@ -73,7 +80,8 @@ private:
     // 迭代 3 新增成员
     AircraftType m_aircraftType = AircraftType::Thunder;  // 默认雷霆号
     int   m_weaponLevel  = 1;      // 武器等级 1~5
-    bool  m_hasShield    = false;  // 护盾状态
+    bool  m_hasShield    = false;  // 护盾状态（来自道具或技能）
+    bool  m_skillInvincible = false;  // 技能无敌（与道具护盾分开）
 };
 
 #endif // PLAYER_HPP

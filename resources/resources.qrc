@@ -17,6 +17,9 @@
         <file alias="phantomShip">images/MyAircraft/Speed.png</file>
         <file alias="fortressShip">images/MyAircraft/Defense.png</file>
         <file alias="bossShip">images/PNG/Sprites/Ships/spaceShips_009.png</file>
+        <file alias="bossShip2">images/PNG/Sprites/Ships/spaceShips_001.png</file>
+        <file alias="bossShip3">images/PNG/Sprites/Ships/spaceShips_005.png</file>
+        <file alias="bossShip4">images/PNG/Sprites/Ships/spaceShips_003.png</file>
         <file alias="bossRocket">images/PNG/Sprites/Rockets/spaceRockets_001.png</file>
 
         <!-- ── 子弹 ────────────────────────────── -->

@@ -18,6 +18,11 @@ public:
     /// 设置最高分
     void setHighScore(int score);
 
+    /// 设置通关/失败标记（true=通关胜利，false=死亡失败）
+    /// @param cleared  true=通关，false=死亡
+    /// @param level    当前关卡（1~7），仅 cleared=true 时有效
+    void setLevelCleared(bool cleared, int level = 0);
+
 signals:
     /// 用户点击"再来一局"
     void restartClicked();
@@ -29,6 +34,7 @@ private:
     QLabel* m_scoreLabel = nullptr;
     QLabel* m_highScoreLabel = nullptr;
     QPushButton* m_restartButton = nullptr;
+    QLabel* m_titleLabel = nullptr;
 
     int m_score = 0;
     int m_highScore = 0;

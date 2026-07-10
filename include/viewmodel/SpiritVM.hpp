@@ -36,6 +36,9 @@ public:
 
     /// 设置 BOSS 图片
     void setBossPixmap(const QPixmap* p)          noexcept { m_pBossImg = p; }
+    void setBossPixmap2(const QPixmap* p)         noexcept { m_pBossImg2 = p; }
+    void setBossPixmap3(const QPixmap* p)         noexcept { m_pBossImg3 = p; }
+    void setBossPixmap4(const QPixmap* p)         noexcept { m_pBossImg4 = p; }
 
     /// 设置玩家子弹图片
     void setPlayerBulletPixmap(const QPixmap* p)  noexcept { m_pPlayerBulletImg = p; }
@@ -71,6 +74,8 @@ public:
 
     /// BOSS 图片
     const QPixmap* getBossPixmap()        const noexcept { return m_pBossImg; }
+    /// 根据 BOSS 血量选择对应的 BOSS 外观图片
+    const QPixmap* getBossPixmapForHp(int maxHp) const noexcept;
 
     /// 玩家子弹图片
     const QPixmap* getPlayerBulletPixmap()  const noexcept { return m_pPlayerBulletImg; }
@@ -98,6 +103,9 @@ private:
     const QPixmap* m_pEnemyMediumImg   = nullptr;
     const QPixmap* m_pEnemyLargeImg    = nullptr;
     const QPixmap* m_pBossImg          = nullptr;
+    const QPixmap* m_pBossImg2         = nullptr;
+    const QPixmap* m_pBossImg3         = nullptr;
+    const QPixmap* m_pBossImg4         = nullptr;
     const QPixmap* m_pPlayerBulletImg  = nullptr;
     const QPixmap* m_pEnemyBulletImg   = nullptr;
     const QPixmap* m_pPowerUpHpImg     = nullptr;

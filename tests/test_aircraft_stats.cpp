@@ -65,7 +65,7 @@ TEST_CASE("AircraftStats - Phantom is fastest", "[aircraft][stats]") {
     CHECK(t.fireInterval == 0.15f);    // 极快射速
     CHECK(t.skill == SkillType::TimeDash);
     CHECK(t.skillCooldown == 16.0f);
-    CHECK(t.skillDuration == 0.0f);    // 瞬间冲刺
+    CHECK(t.skillDuration == 0.3f);    // 冲刺持续 0.3s
 }
 
 TEST_CASE("AircraftStats - Fortress is tank with most defense", "[aircraft][stats]") {

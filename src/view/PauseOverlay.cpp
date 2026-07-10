@@ -33,7 +33,29 @@ PauseOverlay::PauseOverlay(QWidget* parent)
     );
     layout->addWidget(m_resumeBtn, 0, Qt::AlignCenter);
 
+    layout->addSpacing(15);
+
+    // ── 退出关卡按钮 ──────────────────────────────────────────
+    m_quitBtn = new QPushButton(QStringLiteral("退 出 关 卡"), this);
+    m_quitBtn->setFixedSize(260, 60);
+    m_quitBtn->setStyleSheet(
+        "QPushButton {"
+        "  background-color: rgba(180, 60, 60, 200);"
+        "  color: white;"
+        "  font-size: 20px;"
+        "  font-weight: bold;"
+        "  font-family: 'Microsoft YaHei';"
+        "  border: 2px solid #cc6666;"
+        "  border-radius: 12px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: rgba(220, 80, 80, 230);"
+        "}"
+    );
+    layout->addWidget(m_quitBtn, 0, Qt::AlignCenter);
+
     connect(m_resumeBtn, &QPushButton::clicked, this, &PauseOverlay::resumeClicked);
+    connect(m_quitBtn, &QPushButton::clicked, this, &PauseOverlay::quitLevelClicked);
 }
 
 void PauseOverlay::paintEvent(QPaintEvent* /*event*/) {

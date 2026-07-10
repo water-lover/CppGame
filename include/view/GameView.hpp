@@ -23,6 +23,8 @@ class GameOverScreen;
 class ModeSelectScreen;
 class PauseOverlay;
 class BossHealthBar;
+class LevelSelectScreen;
+class AircraftSelectScreen;
 
 /// 游戏主视图 — 纯 C++ QWidget
 ///
@@ -66,6 +68,9 @@ public:
     void setEnemyMediumPixmap(const QPixmap* p) noexcept;
     void setEnemyLargePixmap(const QPixmap* p) noexcept;
     void setBossPixmap(const QPixmap* p) noexcept;
+    void setBossPixmap2(const QPixmap* p) noexcept;
+    void setBossPixmap3(const QPixmap* p) noexcept;
+    void setBossPixmap4(const QPixmap* p) noexcept;
     void setEnemyBulletPixmap(const QPixmap* p) noexcept;
     void setPowerUpHpPixmap(const QPixmap* p) noexcept;
     void setPowerUpFirePixmap(const QPixmap* p) noexcept;
@@ -79,6 +84,14 @@ public:
     void setWavePtr(const int* p)    noexcept { m_pWave = p; if (m_scene) m_scene->setHudWave(p); }
     void setBossHpPtr(const int* p)    noexcept { m_pBossHp = p; }
     void setBossMaxHpPtr(const int* p) noexcept { m_pBossMaxHp = p; }
+    void setLevelClearedPtr(const bool* p) noexcept { m_pLevelCleared = p; }
+    void setCurrentLevelPtr(const int* p) noexcept { m_pCurrentLevel = p; }
+    void setSkillCooldownPtr(const float* p) noexcept { m_pSkillCD = p; if (m_scene) m_scene->setHudSkillCooldown(p); }
+    void setSkillReadyPtr(const bool* p) noexcept { m_pSkillReady = p; if (m_scene) m_scene->setHudSkillReady(p); }
+    void setSkillActivePtr(const bool* p) noexcept { m_pSkillActive = p; if (m_scene) m_scene->setHudSkillActive(p); }
+    void setSkillTypePtr(const int* p) noexcept { if (m_scene) m_scene->setHudSkillType(p); }
+    void setHasShieldPtr(const bool* p) noexcept { if (m_scene) m_scene->setHudHasShield(p); }
+    void setAircraftNamePtr(const char* p) noexcept { if (m_scene) m_scene->setHudAircraftName(p); }
 
     // ════════════════════════════════════════════════════════════════
     // ② 命令绑定 — 接收 std::function 命令（由 App 注入）
@@ -92,6 +105,13 @@ public:
     void setStartGameCommand(std::function<void()>&& cmd);
     void setSelectModeCommand(std::function<void(int)>&& cmd);
     void setPauseCommand(std::function<void()>&& cmd);
+    void setStartLevelCommand(std::function<void(int)>&& cmd);
+    void setSelectLevelCommand(std::function<void(int)>&& cmd);
+    void setQuitLevelCommand(std::function<void()>&& cmd);
+    void setSelectAircraftCommand(std::function<void(int)>&& cmd);
+    void setUseSkillCommand(std::function<void()>&& cmd);
+    void setNavigateCommand(std::function<void(int)>&& cmd);
+    void setLevelSelectMaxUnlocked(int level) noexcept;
 
     // ════════════════════════════════════════════════════════════════
     // ③ 事件绑定 — 接收 ViewModel 通知
@@ -121,15 +141,19 @@ private:
 
     // 页面 0: 开始界面
     StartScreen*       m_startScreen = nullptr;
-    // 页面 1: 模式选择界面
+    // 页面 1: 战机选择界面
+    AircraftSelectScreen* m_aircraftSelectScreen = nullptr;
+    // 页面 2: 模式选择界面
     ModeSelectScreen*  m_modeSelectScreen = nullptr;
-    // 页面 2: 游戏页面（含 QGraphicsView，HUD 在场景中绘制）
+    // 页面 3: 关卡选择界面
+    LevelSelectScreen* m_levelSelectScreen = nullptr;
+    // 页面 4: 游戏页面
     QWidget*        m_gamePage = nullptr;
     QGraphicsView*  m_graphicsView = nullptr;
     GameScene*      m_scene = nullptr;
-    // 页面 3: 游戏结束界面
+    // 页面 5: 游戏结束界面
     GameOverScreen* m_gameOverScreen = nullptr;
-    // 页面 4: 暂停覆盖层
+    // 页面 6: 暂停覆盖层
     PauseOverlay*   m_pauseOverlay = nullptr;
 
     // ── BOSS 血条（叠加在游戏页面上方） ───────────────────────
@@ -148,6 +172,8 @@ private:
     const int*      m_pBossHp     = nullptr;
     const int*      m_pBossMaxHp  = nullptr;
     const GameState* m_pGameState = nullptr;
+    const bool*     m_pLevelCleared = nullptr;
+    const int*      m_pCurrentLevel = nullptr;
 
     // ── 命令（std::function，不知道实现者） ──────────────────────
     std::function<void(float)> m_tickCommand;
@@ -158,6 +184,16 @@ private:
     std::function<void()>      m_startGameCommand;
     std::function<void(int)>   m_selectModeCommand;
     std::function<void()>      m_pauseCommand;
+    std::function<void(int)>   m_startLevelCommand;
+    std::function<void(int)>   m_selectLevelCommand;
+    std::function<void()>      m_quitLevelCommand;
+    std::function<void(int)>   m_selectAircraftCommand;
+    std::function<void()>      m_useSkillCommand;
+    std::function<void(int)>   m_navigateCommand;
+    // ── 技能 HUD 指针 ──────────────────────────────────────
+    const float* m_pSkillCD     = nullptr;
+    const bool*  m_pSkillReady  = nullptr;
+    const bool*  m_pSkillActive = nullptr;
 };
 
 #endif // GAMEVIEW_HPP

@@ -53,7 +53,7 @@ static const AircraftTemplate kTemplates[] = {
         SkillType::TimeDash,
         "phantomShip",        // 幻影号图片
         16.0f,               // 技能冷却 16s
-        0.0f                 // 瞬间冲刺
+        0.3f                 // 冲刺持续 0.3s（让特效可见）
     },
     // Fortress — 堡垒号：坦克
     {

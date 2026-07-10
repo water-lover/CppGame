@@ -14,3 +14,13 @@ const QPixmap* SpiritVM::getAircraftPixmap(AircraftType type) const noexcept {
     }
     return nullptr;
 }
+
+const QPixmap* SpiritVM::getBossPixmapForHp(int maxHp) const noexcept {
+    if (maxHp <= 250) {
+        return m_pBossImg2 ? m_pBossImg2 : m_pBossImg;   // 中型BOSS
+    } else if (maxHp <= 400) {
+        return m_pBossImg3 ? m_pBossImg3 : m_pBossImg;   // 重型BOSS
+    } else {
+        return m_pBossImg4 ? m_pBossImg4 : m_pBossImg;   // 装甲BOSS
+    }
+}

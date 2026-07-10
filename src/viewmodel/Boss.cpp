@@ -2,23 +2,26 @@
 #include <cmath>
 
 // ── BOSS 配置表 ───────────────────────────────────────────────────
-// bossId → { maxHp, speed, size }
+// bossId → { maxHp, speed, size, name }
+// 严格对齐 iter4_instructions DESIGN_PLAN
 static const struct {
     int maxHp;
     float speed;
     float size;
     const char* name;
 } k_BossData[] = {
-    { 100, 0.06f, 0.15f, "轻型BOSS" },   // bossId=1 — 第1关
-    { 200, 0.05f, 0.18f, "中型BOSS" },   // bossId=2 — 第2~3关
-    { 350, 0.04f, 0.20f, "重型BOSS" },   // bossId=3 — 第4~5关
-    { 500, 0.03f, 0.22f, "装甲BOSS" },   // bossId=4 — 第6~7关
+    { 200, 0.06f, 0.10f, "中型BOSS" },   // bossId=1 — 第2关 200HP
+    { 350, 0.05f, 0.12f, "重型BOSS" },   // bossId=2 — 第4关 350HP
+    { 500, 0.04f, 0.14f, "装甲BOSS" },   // bossId=3 — 第6关 500HP
+    { 600, 0.03f, 0.15f, "装甲BOSS" },   // bossId=4 — 第7关 600HP
+    { 250, 0.05f, 0.10f, "中型BOSS" },   // bossId=5 — 第3关 250HP
+    { 400, 0.04f, 0.13f, "重型BOSS" },   // bossId=6 — 第5关 400HP
 };
 
 Boss::Boss(float x, float y, int bossId)
     : Enemy(x, y, 0.05f, 50), bossId_(bossId)
 {
-    if (bossId >= 1 && bossId <= 4) {
+    if (bossId >= 1 && bossId <= 6) {
         const auto& d = k_BossData[bossId - 1];
         maxHp_  = d.maxHp;
         hp_     = d.maxHp;
@@ -38,8 +41,8 @@ void Boss::update(float dt) {
     // BOSS 出场动画
     if (spawning_) {
         spawnTimer_ -= dt;
-        if (pos_.y < 0.15f) pos_.y += speed_ * dt * 2.0f;
-        if (spawnTimer_ <= 0.0f) {
+        if (pos_.y < 0.20f) pos_.y += speed_ * dt * 5.0f;
+        if (spawnTimer_ <= 0.0f && pos_.y >= 0.18f) {
             spawning_ = false;
         }
         return;

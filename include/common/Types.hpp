@@ -13,11 +13,13 @@ enum class EntityType {
 // ── GameState ───────────────────────────────────────────────────────────────
 /// 游戏状态机
 enum class GameState {
-    Menu,       // 开始菜单
-    ModeSelect, // 模式选择（闯关/无尽）
-    Playing,    // 游戏中
-    Paused,     // 暂停
-    GameOver    // 游戏结束
+    Menu,           // 开始菜单
+    AircraftSelect, // 战机选择
+    ModeSelect,     // 模式选择（闯关/无尽）
+    LevelSelect,    // 关卡选择
+    Playing,        // 游戏中
+    Paused,         // 暂停
+    GameOver        // 游戏结束
 };
 
 // ── Direction ───────────────────────────────────────────────────────────────

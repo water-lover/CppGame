@@ -26,70 +26,80 @@ void AppAgent::init() {
     // ── 1. 创建所有 Agent 实例 ──────────────────────────────────
     m_mapVM    = new GameMapVM();
     m_spriteVM = new SpiritVM();
-    m_gameView = new GameView();          // GameView 内置 QTimer 驱动帧循环
+    m_gameView = new GameView();
     m_gameView->setWindowTitle(QStringLiteral("雷霆战机 — Thunder Fighter"));
 
     // ── 2. 从 Resource Agent 加载图片，注入 SpiritVM（图片中介层） ──
     AssetManager& assets = AssetManager::instance();
 
-    // 5 架战机图片（通过 AircraftType 索引）
-    m_spriteVM->setAircraftPixmap(AircraftType::Thunder,  assets.getImage("playerShip"));
-    // 剩余战机图片待 QRC 扩展后注入
-    // m_spriteVM->setAircraftPixmap(AircraftType::Flame,    assets.getImage("aircraftFlame"));
-    // m_spriteVM->setAircraftPixmap(AircraftType::Frost,    assets.getImage("aircraftFrost"));
-    // m_spriteVM->setAircraftPixmap(AircraftType::Phantom,  assets.getImage("aircraftSpeed"));
-    // m_spriteVM->setAircraftPixmap(AircraftType::Fortress, assets.getImage("aircraftDefense"));
+    // 5 架战机图片
+    m_spriteVM->setAircraftPixmap(AircraftType::Thunder,  assets.getImage("thunderShip"));
+    m_spriteVM->setAircraftPixmap(AircraftType::Flame,    assets.getImage("flameShip"));
+    m_spriteVM->setAircraftPixmap(AircraftType::Frost,    assets.getImage("frostShip"));
+    m_spriteVM->setAircraftPixmap(AircraftType::Phantom,  assets.getImage("phantomShip"));
+    m_spriteVM->setAircraftPixmap(AircraftType::Fortress, assets.getImage("fortressShip"));
 
     m_spriteVM->setEnemySmallPixmap(assets.getImage("enemySmall"));
     m_spriteVM->setPlayerBulletPixmap(assets.getImage("playerBullet"));
     m_spriteVM->setEnemyBulletPixmap(assets.getImage("enemyBullet"));
     m_spriteVM->setBackgroundPixmap(assets.getImage("background"));
 
-    // ── 迭代 3 新图片：先注入 SpiritVM（图片中介层） ─────
     m_spriteVM->setEnemyMediumPixmap(assets.getImage("enemyMedium"));
     m_spriteVM->setEnemyLargePixmap(assets.getImage("enemyLarge"));
     m_spriteVM->setBossPixmap(assets.getImage("bossShip"));
+    m_spriteVM->setBossPixmap2(assets.getImage("bossShip2"));
+    m_spriteVM->setBossPixmap3(assets.getImage("bossShip3"));
+    m_spriteVM->setBossPixmap4(assets.getImage("bossShip4"));
     m_spriteVM->setEnemyBulletPixmap(assets.getImage("enemyBullet"));
     m_spriteVM->setPowerUpHpPixmap(assets.getImage("powerUpHp"));
     m_spriteVM->setPowerUpFirePixmap(assets.getImage("powerUpFire"));
     m_spriteVM->setPowerUpShieldPixmap(assets.getImage("powerUpShield"));
 
     // ═══════════════════════════════════════════════════════════════
-    // ① 属性绑定 — 从 SpiritVM 获取 const QPixmap* 注入 View
-    //    View 只读访问，完全不认识 SpiritVM
+    // ① 属性绑定 — 从 SpiritVM/GameMapVM 获取 const T* 注入 View
+    //    View 只读访问，完全不认识 SpiritVM/GameMapVM
     // ═══════════════════════════════════════════════════════════════
 
+    // 精灵图片
     m_gameView->setMap(m_mapVM->getMap());
     m_gameView->setPlayerPixmap(m_spriteVM->getAircraftPixmap(AircraftType::Thunder));
     m_gameView->setEnemySmallPixmap(m_spriteVM->getEnemySmallPixmap());
     m_gameView->setBulletPixmap(m_spriteVM->getPlayerBulletPixmap());
     m_gameView->setBackgroundPixmap(m_spriteVM->getBackgroundPixmap());
 
-    // 迭代 3 新图片：从 SpiritVM getter 读取后注入 GameView
     m_gameView->setEnemyMediumPixmap(m_spriteVM->getEnemyMediumPixmap());
     m_gameView->setEnemyLargePixmap(m_spriteVM->getEnemyLargePixmap());
     m_gameView->setBossPixmap(m_spriteVM->getBossPixmap());
+    m_gameView->setBossPixmap2(m_spriteVM->getBossPixmapForHp(200));
+    m_gameView->setBossPixmap3(m_spriteVM->getBossPixmapForHp(350));
+    m_gameView->setBossPixmap4(m_spriteVM->getBossPixmapForHp(500));
     m_gameView->setEnemyBulletPixmap(m_spriteVM->getEnemyBulletPixmap());
     m_gameView->setPowerUpHpPixmap(m_spriteVM->getPowerUpHpPixmap());
     m_gameView->setPowerUpFirePixmap(m_spriteVM->getPowerUpFirePixmap());
     m_gameView->setPowerUpShieldPixmap(m_spriteVM->getPowerUpShieldPixmap());
 
-    // 简单值通过桥接变量暴露为 const T*（GameMapVM 返回 int 而非 const int*）
-    m_bridgeScore     = m_mapVM->getScore();
-    m_bridgeLives     = m_mapVM->getLives();
-    m_bridgeHighScore = m_mapVM->getHighScore();
-    m_bridgeWave      = 0;
-    m_bridgeBossHp    = 0;
-    m_bridgeBossMaxHp = 0;
-    m_bridgeState     = m_mapVM->getGameState();
+    // 简单值指针 — 直接从 ViewModel 获取 const T*，无需 App 桥接
+    // GameMapVM 内部维护缓存，返回指向成员变量的稳定地址
+    m_gameView->setScorePtr(m_mapVM->getScorePtr());
+    m_gameView->setLivesPtr(m_mapVM->getLivesPtr());
+    m_gameView->setHighScorePtr(m_mapVM->getHighScorePtr());
+    m_gameView->setWavePtr(m_mapVM->getWavePtr());
+    m_gameView->setBossHpPtr(m_mapVM->getBossHpPtr());
+    m_gameView->setBossMaxHpPtr(m_mapVM->getBossMaxHpPtr());
+    m_gameView->setGameStatePtr(m_mapVM->getGameStatePtr());
+    m_gameView->setLevelClearedPtr(m_mapVM->isLevelClearedPtr());
+    m_gameView->setCurrentLevelPtr(m_mapVM->getCurrentLevelPtr());
+    m_gameView->setSkillCooldownPtr(m_mapVM->getSkillCooldownPtr());
+    m_gameView->setSkillReadyPtr(m_mapVM->isSkillReadyPtr());
+    m_gameView->setSkillActivePtr(m_mapVM->isSkillActivePtr());
+    m_gameView->setSkillTypePtr(m_mapVM->getSkillTypePtr());
+    m_gameView->setHasShieldPtr(m_mapVM->getHasShieldPtr());
+    m_gameView->setAircraftNamePtr(m_mapVM->getAircraftName());
 
-    m_gameView->setScorePtr(&m_bridgeScore);
-    m_gameView->setLivesPtr(&m_bridgeLives);
-    m_gameView->setHighScorePtr(&m_bridgeHighScore);
-    m_gameView->setWavePtr(&m_bridgeWave);
-    m_gameView->setBossHpPtr(&m_bridgeBossHp);
-    m_gameView->setBossMaxHpPtr(&m_bridgeBossMaxHp);
-    m_gameView->setGameStatePtr(&m_bridgeState);
+    // 初始关卡解锁（测试阶段全解锁）
+    m_mapVM->setMaxUnlockedLevel(7);
+    m_gameView->setLevelSelectMaxUnlocked(7);
+    log("AppAgent", "All levels unlocked for testing (7/7)");
 
     // ═══════════════════════════════════════════════════════════════
     // ② 命令绑定 — 将 ViewModel 的 std::function 命令注入 View
@@ -104,73 +114,48 @@ void AppAgent::init() {
     m_gameView->setStartGameCommand(m_mapVM->getStartGameCommand());
     m_gameView->setSelectModeCommand(m_mapVM->getSelectModeCommand());
     m_gameView->setPauseCommand(m_mapVM->getPauseCommand());
+    m_gameView->setStartLevelCommand(m_mapVM->getStartLevelCommand());
+    m_gameView->setSelectLevelCommand(m_mapVM->getSelectLevelCommand());
+    m_gameView->setQuitLevelCommand(m_mapVM->getQuitLevelCommand());
+    m_gameView->setSelectAircraftCommand(m_mapVM->getSelectAircraftCommand());
+    m_gameView->setUseSkillCommand(m_mapVM->getUseSkillCommand());
+    m_gameView->setNavigateCommand(m_mapVM->getNavigateCommand());
 
     // ═══════════════════════════════════════════════════════════════
-    // ③ 事件绑定 — ViewModel 的 signal → View 的 slot
-    //    App 中转连接，ViewModel 和 View 互不知道对方
+    // ③ 事件绑定 — ViewModel → View（App 只做连接，不监听）
     // ═══════════════════════════════════════════════════════════════
 
-    // App 先接收 propertyChanged → 更新桥接变量（确保 View 读取时已是最新值）
-    QObject::connect(m_mapVM, &GameMapVM::propertyChanged,
-                     [this](uint32_t id) { onViewModelChanged(id); });
-
-    // View 再接收 propertyChanged → 此时桥接变量已更新，读到正确值
     QObject::connect(m_mapVM, &GameMapVM::propertyChanged,
                      m_gameView, &GameView::onPropertyChanged);
 
+    // ── 持久化绑定（ViewModel 发出保存请求 → App 调 SaveManager）─
+    QObject::connect(m_mapVM, &GameMapVM::saveHighScoreRequested,
+                     [](int score) {
+                         SaveManager().saveHighScore(score);
+                         log("AppAgent", "High score saved: " + std::to_string(score));
+                     });
+    QObject::connect(m_mapVM, &GameMapVM::saveCampaignRequested,
+                     [this](int level) {
+                         SaveManager().saveCampaignProgress(level);
+                         if (level > 1) {
+                             m_mapVM->setMaxUnlockedLevel(level);
+                             m_gameView->setLevelSelectMaxUnlocked(level);
+                         }
+                         log("AppAgent", "Campaign progress saved: level " + std::to_string(level));
+                     });
+
+    // ── 动态更新（监听 GameState 变化，仅用于战机图片切换）─────
+    QObject::connect(m_mapVM, &GameMapVM::propertyChanged,
+                     [this](uint32_t id) {
+                         if (id == PROP_ID_GAME_STATE && m_mapVM->getGameState() == GameState::Playing) {
+                             int type = m_mapVM->getAircraftType();
+                             const QPixmap* pix = m_spriteVM->getAircraftPixmap(static_cast<AircraftType>(type));
+                             if (pix) m_gameView->setPlayerPixmap(pix);
+                         }
+                     });
+
     log("AppAgent", "三绑定建立完成");
     log("AppAgent", "=== 初始化完成 ===");
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// 事件通知中转 — 更新桥接变量 + 其他跨层操作
-// ═══════════════════════════════════════════════════════════════════
-
-void AppAgent::onViewModelChanged(uint32_t propertyId) {
-    switch (propertyId) {
-    case PROP_ID_SCORE:
-        m_bridgeScore = m_mapVM->getScore();
-        break;
-
-    case PROP_ID_LIVES:
-        m_bridgeLives = m_mapVM->getLives();
-        break;
-
-    case PROP_ID_GAME_STATE:
-        m_bridgeState = m_mapVM->getGameState();
-        if (m_bridgeState == GameState::GameOver) {
-            // 游戏结束 → 持久化最高分
-            int finalScore = m_mapVM->getScore();
-            int highScore  = m_mapVM->getHighScore();
-            m_bridgeHighScore = highScore;
-
-            SaveManager saveMgr;
-            saveMgr.saveHighScore(highScore);
-
-            // 闯关模式：保存关卡进度
-            if (m_mapVM->getGameMode() == GameMode::Campaign) {
-                int level = m_mapVM->getCurrentLevel();
-                saveMgr.saveCampaignProgress(level);
-                log("AppAgent", "Campaign progress saved: level " + std::to_string(level));
-            }
-
-            log("AppAgent", "Game Over — Score: " + std::to_string(finalScore)
-                + " HighScore: " + std::to_string(highScore));
-        }
-        break;
-
-    case PROP_ID_BOSS_HEALTH:
-        m_bridgeBossHp = m_mapVM->getBossHp();
-        m_bridgeBossMaxHp = m_mapVM->getBossMaxHp();
-        break;
-
-    case PROP_ID_WAVE:
-        m_bridgeWave = m_mapVM->getWave();
-        break;
-
-    default:
-        break;
-    }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -178,9 +163,7 @@ void AppAgent::onViewModelChanged(uint32_t propertyId) {
 // ═══════════════════════════════════════════════════════════════════
 
 int AppAgent::run() {
-    // 显示主窗口
     m_gameView->show();
-
     log("AppAgent", "进入事件循环");
     return qApp->exec();
 }

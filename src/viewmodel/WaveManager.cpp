@@ -7,13 +7,13 @@
 // ── 7 关关卡配置表（对齐 DESIGN_PLAN 4.3 节） ────────────────────
 const WaveConfig LEVEL_TABLE[7] = {
     /* levelId, waveCount, spawnInterval, enemySpeed, hpBonus, hasBoss, bossId */
-    { 1, 3, 1.5f, 1.0f, 0, true, 1 },   // 第1关: 初入战场
-    { 2, 3, 1.4f, 1.1f, 0, true, 2 },   // 第2关: 空中走廊
-    { 3, 4, 1.3f, 1.2f, 1, true, 2 },   // 第3关: 雷云风暴
-    { 4, 4, 1.2f, 1.3f, 1, true, 3 },   // 第4关: 敌军要塞
-    { 5, 5, 1.1f, 1.4f, 2, true, 3 },   // 第5关: 暗夜突袭
-    { 6, 5, 1.0f, 1.5f, 3, true, 4 },   // 第6关: 火力封锁
-    { 7, 5, 0.9f, 1.8f, 5, true, 4 },   // 第7关: 最终决战
+    { 1, 3, 1.5f, 1.0f, 0, false, 1 },  // 第1关: 初入战场 — 🎯 无BOSS！
+    { 2, 3, 1.4f, 1.1f, 0, true,  1 },  // 第2关: 空中走廊 — 中型BOSS(200HP)
+    { 3, 3, 1.3f, 1.2f, 1, true,  5 },  // 第3关: 雷云风暴 — 中型BOSS 250HP
+    { 4, 3, 1.2f, 1.3f, 1, true,  2 },  // 第4关: 敌军要塞 — 重型BOSS 350HP
+    { 5, 3, 1.1f, 1.4f, 2, true,  6 },  // 第5关: 暗夜突袭 — 重型BOSS 400HP
+    { 6, 3, 1.0f, 1.5f, 3, true,  3 },  // 第6关: 火力封锁 — 装甲BOSS(500HP)
+    { 7, 3, 0.9f, 1.8f, 5, true,  4 },  // 第7关: 最终决战 — 装甲BOSS(600HP)
 };
 
 void WaveManager::reset(int levelId) {
@@ -164,10 +164,20 @@ bool WaveManager::isWaveComplete(const std::vector<std::unique_ptr<Enemy>>& enem
 }
 
 bool WaveManager::isLevelComplete(const std::vector<std::unique_ptr<Enemy>>& enemies) const {
-    // BOSS 已被击败
-    if (bossSpawned_ && bossDefeated_) return true;
+    const auto& cfg = getConfigForLevel(currentLevel_);
 
-    // 检查 BOSS 死亡（万一 bossDefeated_ 未更新）
+    // 无 BOSS 关卡：所有波次完成 + 全部敌机消灭/离屏
+    if (!cfg.hasBoss) {
+        if (currentWave_ < cfg.waveCount) return false;
+        if (enemiesSpawned_ > 0) return false;  // 还有敌机待生成
+        for (const auto& e : enemies) {
+            if (e && !e->isDead() && !e->isOffScreen()) return false;
+        }
+        return true;
+    }
+
+    // 有 BOSS 关卡：BOSS 已被击败
+    if (bossSpawned_ && bossDefeated_) return true;
     if (bossSpawned_) {
         for (const auto& e : enemies) {
             auto* boss = dynamic_cast<Boss*>(e.get());
@@ -179,28 +189,61 @@ bool WaveManager::isLevelComplete(const std::vector<std::unique_ptr<Enemy>>& ene
 }
 
 std::pair<EnemyType, int> WaveManager::getEnemyTypeForWave(int level, int waveIdx, int spawnIdx) const {
-    // 根据关卡和波次确定敌机类型和数量
-    // 简单策略：前 2 关只出小型机，第 3 关开始出中型，第 5 关出大型
-    if (level <= 2) {
+    switch (level) {
+    case 1:  // 第1关: 初入战场 — 只有小型机
         return { EnemyType::Small, 1 };
-    } else if (level <= 4) {
-        // 混编小型+中型
+
+    case 2:  // 第2关: 空中走廊 — 小型+中型
         if (spawnIdx % 3 == 0)
             return { EnemyType::Medium, 1 };
         else
             return { EnemyType::Small, 1 };
-    } else if (level <= 6) {
-        // 混编小型+中型+大型
-        int r = spawnIdx % 4;
-        if (r == 0)      return { EnemyType::Medium, 2 };
-        else if (r == 1) return { EnemyType::Large, 1 };
-        else             return { EnemyType::Small, 1 };
-    } else {
-        // 第7关：全类型混编 + 精英
-        int r = spawnIdx % 5;
-        if (r == 0)      return { EnemyType::Elite, 1 };
-        else if (r == 1) return { EnemyType::Large, 2 };
-        else if (r == 2) return { EnemyType::Medium, 2 };
-        else             return { EnemyType::Small, 2 };
+
+    case 3:  // 第3关: 雷云风暴 — 中型为主
+        if (spawnIdx % 2 == 0)
+            return { EnemyType::Medium, 1 };
+        else
+            return { EnemyType::Small, 1 };
+
+    case 4:  // 第4关: 敌军要塞 — 中型+大型
+        if (spawnIdx % 3 == 0)
+            return { EnemyType::Large, 1 };
+        else if (spawnIdx % 3 == 1)
+            return { EnemyType::Medium, 1 };
+        else
+            return { EnemyType::Small, 1 };
+
+    case 5:  // 第5关: 暗夜突袭 — 大量小型+精英
+        if (spawnIdx % 4 == 0)
+            return { EnemyType::Elite, 1 };
+        else
+            return { EnemyType::Small, 2 };
+
+    case 6:  // 第6关: 火力封锁 — 全类型高密度
+        {
+            int r = spawnIdx % 4;
+            if (r == 0)      return { EnemyType::Elite, 1 };
+            else if (r == 1) return { EnemyType::Large, 1 };
+            else if (r == 2) return { EnemyType::Medium, 2 };
+            else             return { EnemyType::Small, 2 };
+        }
+
+    case 7:  // 第7关: 最终决战 — 精英+大型为主
+        {
+            int r = spawnIdx % 5;
+            if (r == 0)      return { EnemyType::Elite, 2 };
+            else if (r == 1) return { EnemyType::Large, 2 };
+            else if (r == 2) return { EnemyType::Medium, 2 };
+            else             return { EnemyType::Small, 2 };
+        }
+
+    default:  // 无尽模式用第7关配置
+        {
+            int r = spawnIdx % 5;
+            if (r == 0)      return { EnemyType::Elite, 1 };
+            else if (r == 1) return { EnemyType::Large, 1 };
+            else if (r == 2) return { EnemyType::Medium, 1 };
+            else             return { EnemyType::Small, 1 };
+        }
     }
 }

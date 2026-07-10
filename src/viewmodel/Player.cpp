@@ -48,15 +48,27 @@ void Player::moveRight(bool active) { m_moveRight = active; }
 void Player::takeDamage() {
     if (isInvincible() || isDead()) return;
 
-    // 护盾抵挡伤害
+    // 技能无敌（主动技能激活期间不受伤害）
+    if (m_skillInvincible) return;
+
+    // 道具护盾抵挡一次伤害
     if (m_hasShield) {
-        m_hasShield = false;  // 消耗护盾
+        m_hasShield = false;
         return;
     }
 
     m_lives--;
     if (m_lives > 0)
         m_invincibleTimer = INVINCIBLE_TIME;
+}
+
+int Player::getMaxLives() const {
+    return AircraftStats::getTemplate(m_aircraftType).baseLives;
+}
+
+void Player::heal(int amount) {
+    int maxLives = getMaxLives();
+    m_lives = (m_lives + amount > maxLives) ? maxLives : m_lives + amount;
 }
 
 bool Player::canFire(float dt) {

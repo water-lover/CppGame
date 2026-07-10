@@ -6,6 +6,7 @@
 
 #include <QPainter>
 #include <QPixmap>
+#include <cmath>
 
 // ═══════════════════════════════════════════════════════════════════
 // 构造 / 析构
@@ -96,9 +97,14 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
             drawPixmapAt(painter, m_pEnemyLargeImg, px, py, ENEMY_SIZE * SCREEN_WIDTH * 1.8f);
             break;
 
-        case ActorType::Boss:
-            drawPixmapAt(painter, m_pBossImg, px, py, ENEMY_SIZE * SCREEN_WIDTH * 3.0f);
+        case ActorType::Boss: {
+            const QPixmap* bossImg = m_pBossImg;
+            if (actor.maxHp <= 250 && m_pBossImg2)       bossImg = m_pBossImg2;
+            else if (actor.maxHp <= 400 && m_pBossImg3)  bossImg = m_pBossImg3;
+            else if (m_pBossImg4)                         bossImg = m_pBossImg4;
+            drawPixmapAt(painter, bossImg, px, py, ENEMY_SIZE * SCREEN_WIDTH * 3.0f);
             break;
+        }
 
         case ActorType::PlayerBullet:
             drawPixmapAt(painter, m_pBulletImg, px, py, BULLET_SIZE * SCREEN_WIDTH);
@@ -152,5 +158,112 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
         painter->setFont(hsFont);
         painter->drawText(QRectF(14, 44, 300, 26), Qt::AlignLeft | Qt::AlignVCenter,
                           QString("BEST: %1").arg(*m_pHighScore));
+    }
+
+    // ── 技能状态（右下角） ──────────────────────────────────────
+    float sx = 460, sy = 540, sw = 320, sh = 50;
+    painter->setFont(QFont(QStringLiteral("Microsoft YaHei"), 12, QFont::Bold));
+    if (m_pSkillActive && *m_pSkillActive) {
+        // 技能激活中 — 金色闪烁
+        painter->setPen(QColor(255, 215, 0, 220));
+        painter->drawText(QRectF(sx, sy, sw, sh), Qt::AlignCenter,
+                          QStringLiteral("✦ 技能激活中 ✦"));
+    } else if (m_pSkillReady && *m_pSkillReady) {
+        // 技能就绪 — 绿色
+        painter->setPen(QColor(0, 255, 100, 220));
+        QString label = m_pAircraftName ? QStringLiteral("[SPACE] 释放技能")
+                                        : QStringLiteral("[SPACE] 技能就绪");
+        painter->drawText(QRectF(sx, sy, sw, sh), Qt::AlignCenter, label);
+    } else if (m_pSkillCD) {
+        // 冷却中 — 灰色，显示百分比
+        int pct = static_cast<int>(*m_pSkillCD * 100.0f);
+        painter->setPen(QColor(150, 150, 150, 200));
+        painter->drawText(QRectF(sx, sy, sw, sh), Qt::AlignCenter,
+                          QString("技能冷却 %1%").arg(pct));
+    }
+
+    // ── 技能激活特效 ────────────────────────────────────────────
+    if (m_pSkillActive && *m_pSkillActive && m_pSkillType) {
+        int skillType = *m_pSkillType;
+        for (size_t i = 0; i < m_pMap->size(); ++i) {
+            const Actor& a = m_pMap->getAt(i);
+            if (a.type == ActorType::Player) {
+                float px = normToPixel(a.x, SCREEN_WIDTH);
+                float py = normToPixel(a.y, SCREEN_HEIGHT);
+                float r = PLAYER_SIZE * SCREEN_WIDTH * 0.8f;
+
+                if (skillType == 0) { // ThunderStrike — 金色闪电光环
+                    painter->setBrush(Qt::NoBrush);
+                    QPen pen(QColor(255, 215, 0, 150), 4);
+                    painter->setPen(pen);
+                    painter->drawEllipse(QPointF(px, py), r, r);
+                    // 内圈
+                    QPen pen2(QColor(255, 255, 200, 80), 2);
+                    painter->setPen(pen2);
+                    painter->drawEllipse(QPointF(px, py), r * 0.6f, r * 0.6f);
+                } else if (skillType == 1) { // FlameStorm — 红色火焰光环
+                    painter->setBrush(QColor(255, 80, 0, 60));
+                    QPen pen(QColor(255, 120, 0, 180), 3);
+                    painter->setPen(pen);
+                    painter->drawEllipse(QPointF(px, py), r * 1.2f, r * 1.2f);
+                    // 外层粒子
+                    painter->setBrush(QColor(255, 200, 50, 100));
+                    painter->setPen(Qt::NoPen);
+                    for (int j = 0; j < 6; ++j) {
+                        float angle = 3.14159f * 2.0f * j / 6.0f;
+                        float ex = px + std::cos(angle) * r * 1.4f;
+                        float ey = py + std::sin(angle) * r * 1.4f;
+                        painter->drawEllipse(QPointF(ex, ey), 4, 4);
+                    }
+                } else if (skillType == 2) { // FrostShield — 蓝色冰晶护盾
+                    painter->setBrush(QColor(100, 200, 255, 40));
+                    QPen pen(QColor(100, 200, 255, 180), 3);
+                    painter->setPen(pen);
+                    painter->drawEllipse(QPointF(px, py), r, r);
+                    // 冰晶菱角
+                    painter->setPen(QPen(QColor(200, 240, 255, 120), 2));
+                    for (int j = 0; j < 4; ++j) {
+                        float angle = 3.14159f * 2.0f * j / 4.0f;
+                        float sx = px + std::cos(angle) * r * 0.7f;
+                        float sy = py + std::sin(angle) * r * 0.7f;
+                        float ex = px + std::cos(angle) * r;
+                        float ey = py + std::sin(angle) * r;
+                        painter->drawLine(QPointF(sx, sy), QPointF(ex, ey));
+                    }
+                } else if (skillType == 4) { // IronWall — 金色铁壁光环
+                    painter->setBrush(QColor(255, 215, 0, 40));
+                    QPen pen(QColor(255, 215, 0, 200), 4);
+                    painter->setPen(pen);
+                    painter->drawEllipse(QPointF(px, py), r * 0.9f, r * 0.9f);
+                    QPen pen2(QColor(255, 180, 0, 100), 2);
+                    painter->setPen(pen2);
+                    painter->drawEllipse(QPointF(px, py), r * 1.1f, r * 1.1f);
+                } else { // TimeDash(3) 或默认 — 蓝色残影
+                    painter->setBrush(Qt::NoBrush);
+                    QPen pen(QColor(100, 200, 255, 100), 2);
+                    painter->setPen(pen);
+                    painter->drawEllipse(QPointF(px, py), r * 0.7f, r * 0.7f);
+                }
+                break;
+            }
+        }
+    }
+
+    // ── 道具护盾指示器（非技能状态下的护盾） ────────────────────
+    if (m_pHasShield && *m_pHasShield
+        && (!m_pSkillActive || !*m_pSkillActive)) {
+        for (size_t i = 0; i < m_pMap->size(); ++i) {
+            const Actor& a = m_pMap->getAt(i);
+            if (a.type == ActorType::Player) {
+                float px = normToPixel(a.x, SCREEN_WIDTH);
+                float py = normToPixel(a.y, SCREEN_HEIGHT);
+                float r = PLAYER_SIZE * SCREEN_WIDTH * 0.5f;
+                painter->setBrush(Qt::NoBrush);
+                QPen pen(QColor(0, 255, 180, 100), 2);
+                painter->setPen(pen);
+                painter->drawEllipse(QPointF(px, py), r, r);
+                break;
+            }
+        }
     }
 }

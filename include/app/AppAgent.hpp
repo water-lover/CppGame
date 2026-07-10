@@ -32,22 +32,10 @@ public:
     int  run();
 
 private:
-    /// 收到 ViewModel 的 propertyChanged 信号后，更新桥接变量
-    void onViewModelChanged(uint32_t propertyId);
-
     // ── 所有 Agent 实例 ──────────────────────────────────────────
     GameMapVM*        m_mapVM     = nullptr;
     SpiritVM*   m_spriteVM  = nullptr;
     GameView*         m_gameView  = nullptr;
-
-    // ── 数据桥接（const T* 属性绑定需要的稳定内存地址） ─────────
-    int       m_bridgeScore     = 0;
-    int       m_bridgeLives     = 3;
-    int       m_bridgeHighScore = 0;
-    int       m_bridgeWave      = 0;
-    int       m_bridgeBossHp    = 0;
-    int       m_bridgeBossMaxHp = 0;
-    GameState m_bridgeState     = GameState::Menu;
 };
 
 #endif // APPAGENT_HPP

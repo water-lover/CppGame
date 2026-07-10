@@ -48,8 +48,9 @@ static void startAndWarmUp(GameMapVM& vm) {
     auto startCmd = vm.getStartGameCommand();
     startCmd();
     // 等待超过 SPAWN_INTERVAL 确保第一波敌机出现
-    // 乘以 2 避免浮点 SPAWN_INTERVAL/FRAME_DURATION 截断导致时间不足
-    tickN(vm, static_cast<int>(SPAWN_INTERVAL / FRAME_DURATION) * 2);
+    // 120 tick ≈ 2.0s，保证至少一波敌机生成
+    // 注意不能太长避免子弹击杀敌机后被 cleanup 移除
+    tickN(vm, 120);
 }
 
 // ── 测试用例 ─────────────────────────────────────────────────────────────────
@@ -470,4 +471,183 @@ TEST_CASE("GameMapVM - weapon level stays 1 after start", "[gamemap][iter3][weap
     // 武器等级未升级前保持 1
     CHECK(vm.getWeaponLevel() >= 1);
     CHECK(vm.getWeaponLevel() <= 5);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  迭代 4 新增测试：关卡选择 / selectMode / startLevel
+// ═══════════════════════════════════════════════════════════════════
+
+TEST_CASE("GameMapVM - selectMode Campaign enters LevelSelect state", "[gamemap][iter4][select]") {
+    GameMapVM vm;
+    auto modeCmd = vm.getSelectModeCommand();
+
+    // Campaign（mode=0）→ LevelSelect
+    modeCmd(0);
+    CHECK(vm.getGameState() == GameState::LevelSelect);
+    CHECK(vm.getGameMode() == GameMode::Campaign);
+}
+
+TEST_CASE("GameMapVM - selectMode Endless starts game directly", "[gamemap][iter4][select]") {
+    GameMapVM vm;
+    auto modeCmd = vm.getSelectModeCommand();
+
+    // Endless（mode=1）→ 设置模式，游戏由 AircraftSelect 确认后启动
+    modeCmd(1);
+    CHECK(vm.getGameMode() == GameMode::Endless);
+}
+
+TEST_CASE("GameMapVM - startLevel transitions to Playing with correct level", "[gamemap][iter4][startlevel]") {
+    GameMapVM vm;
+    auto levelCmd = vm.getStartLevelCommand();
+
+    // 选择第 3 关
+    levelCmd(3);
+    CHECK(vm.getGameState() == GameState::Playing);
+    CHECK(vm.getCurrentLevel() == 3);
+    CHECK(vm.getLives() == PLAYER_MAX_LIVES);
+
+    // 地图有玩家实体
+    const AirMap* map = vm.getMap();
+    REQUIRE(map->size() > 0);
+    CHECK(map->getAt(0).type == ActorType::Player);
+}
+
+TEST_CASE("GameMapVM - startLevel with level 1 works", "[gamemap][iter4][startlevel][boundary]") {
+    GameMapVM vm;
+    auto levelCmd = vm.getStartLevelCommand();
+
+    levelCmd(1);
+    CHECK(vm.getGameState() == GameState::Playing);
+    CHECK(vm.getCurrentLevel() == 1);
+}
+
+TEST_CASE("GameMapVM - startLevel with level 7 works (final level)", "[gamemap][iter4][startlevel][boundary]") {
+    GameMapVM vm;
+    auto levelCmd = vm.getStartLevelCommand();
+
+    levelCmd(7);
+    CHECK(vm.getGameState() == GameState::Playing);
+    CHECK(vm.getCurrentLevel() == 7);
+}
+
+TEST_CASE("GameMapVM - startLevel with invalid level does nothing", "[gamemap][iter4][startlevel][boundary]") {
+    GameMapVM vm;
+    auto levelCmd = vm.getStartLevelCommand();
+
+    // 无效关卡（0）
+    levelCmd(0);
+    CHECK(vm.getGameState() == GameState::Menu);  // 未改变
+
+    // 初始关卡为 1
+    CHECK(vm.getCurrentLevel() == 1);
+}
+
+TEST_CASE("GameMapVM - startLevel with level 8 does nothing", "[gamemap][iter4][startlevel][boundary]") {
+    GameMapVM vm;
+    auto levelCmd = vm.getStartLevelCommand();
+
+    levelCmd(8);
+    CHECK(vm.getGameState() == GameState::Menu);
+    CHECK(vm.getCurrentLevel() == 1);
+}
+
+TEST_CASE("GameMapVM - maxUnlockedLevel getter and setter", "[gamemap][iter4][unlock]") {
+    GameMapVM vm;
+
+    // 初始为 1
+    CHECK(vm.getMaxUnlockedLevel() == 1);
+
+    // 设置
+    vm.setMaxUnlockedLevel(5);
+    CHECK(vm.getMaxUnlockedLevel() == 5);
+
+    vm.setMaxUnlockedLevel(7);
+    CHECK(vm.getMaxUnlockedLevel() == 7);
+}
+
+TEST_CASE("GameMapVM - selectMode then startLevel full flow", "[gamemap][iter4][flow]") {
+    GameMapVM vm;
+    auto modeCmd = vm.getSelectModeCommand();
+    auto levelCmd = vm.getStartLevelCommand();
+
+    // Campaign → LevelSelect
+    modeCmd(0);
+    CHECK(vm.getGameState() == GameState::LevelSelect);
+
+    // 选择第 5 关 → Playing
+    levelCmd(5);
+    CHECK(vm.getGameState() == GameState::Playing);
+    CHECK(vm.getCurrentLevel() == 5);
+    CHECK(vm.getGameMode() == GameMode::Campaign);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  迭代 5 新增测试：战机名称 / AircraftSelect 状态
+// ═══════════════════════════════════════════════════════════════════
+
+TEST_CASE("GameMapVM - getAircraftName returns correct name for default Thunder", "[gamemap][iter5][name]") {
+    GameMapVM vm;
+    // 默认雷霆号
+    CHECK(vm.getAircraftName() == std::string("雷霆号"));
+}
+
+TEST_CASE("GameMapVM - getAircraftName changes after selecting aircraft", "[gamemap][iter5][name]") {
+    GameMapVM vm;
+    auto selectCmd = vm.getSelectAircraftCommand();
+
+    selectCmd(static_cast<int>(AircraftType::Flame));
+    CHECK(vm.getAircraftName() == std::string("烈焰号"));
+
+    selectCmd(static_cast<int>(AircraftType::Frost));
+    CHECK(vm.getAircraftName() == std::string("冰霜号"));
+
+    selectCmd(static_cast<int>(AircraftType::Phantom));
+    CHECK(vm.getAircraftName() == std::string("幻影号"));
+
+    selectCmd(static_cast<int>(AircraftType::Fortress));
+    CHECK(vm.getAircraftName() == std::string("堡垒号"));
+}
+
+TEST_CASE("GameMapVM - getAircraftType returns correct enum value", "[gamemap][iter5][type]") {
+    GameMapVM vm;
+    auto selectCmd = vm.getSelectAircraftCommand();
+
+    CHECK(vm.getAircraftType() == static_cast<int>(AircraftType::Thunder));
+
+    selectCmd(static_cast<int>(AircraftType::Flame));
+    CHECK(vm.getAircraftType() == static_cast<int>(AircraftType::Flame));
+
+    selectCmd(static_cast<int>(AircraftType::Fortress));
+    CHECK(vm.getAircraftType() == static_cast<int>(AircraftType::Fortress));
+}
+
+TEST_CASE("GameMapVM - skill state reflects after aircraft change", "[gamemap][iter5][skill]") {
+    GameMapVM vm;
+    auto selectCmd = vm.getSelectAircraftCommand();
+    auto startCmd = vm.getStartGameCommand();
+
+    // 选择烈焰号（技能冷却 18s，持续 2s）
+    selectCmd(static_cast<int>(AircraftType::Flame));
+    startCmd();
+
+    CHECK(vm.isSkillReady() == true);
+    CHECK(vm.getSkillCooldownPercent() == 0.0f);
+
+    // 释放技能
+    auto skillCmd = vm.getUseSkillCommand();
+    skillCmd();
+
+    CHECK(vm.isSkillReady() == false);
+    CHECK(vm.getSkillCooldownPercent() > 0.0f);
+    CHECK(vm.isSkillActive() == true);  // 烈焰号持续 2s
+}
+
+TEST_CASE("GameMapVM - GameState AircraftSelect defined in enum", "[gamemap][iter5][state]") {
+    // 验证 AircraftSelect 状态存在且值有序
+    CHECK(static_cast<int>(GameState::Menu) < static_cast<int>(GameState::AircraftSelect));
+    CHECK(static_cast<int>(GameState::AircraftSelect) < static_cast<int>(GameState::ModeSelect));
+    CHECK(static_cast<int>(GameState::ModeSelect) < static_cast<int>(GameState::LevelSelect));
+    CHECK(static_cast<int>(GameState::LevelSelect) < static_cast<int>(GameState::Playing));
+    CHECK(static_cast<int>(GameState::Playing) < static_cast<int>(GameState::Paused));
+    CHECK(static_cast<int>(GameState::Paused) < static_cast<int>(GameState::GameOver));
 }

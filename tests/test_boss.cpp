@@ -33,7 +33,7 @@ TEST_CASE("Boss - initial state during spawning", "[boss][init]") {
     // BOSS 在出场阶段（spawning）
     CHECK(boss.isDead() == false);
     CHECK(boss.getBossLevel() == 1);
-    CHECK(boss.getMaxHp() == 100);   // bossId=1 → 轻型 BOSS 100HP
+    CHECK(boss.getMaxHp() == 200);   // bossId=1 → 中型 BOSS 200HP
 
     // 出场期间不能攻击
     CHECK(boss.canAttack(0.016f) == false);
@@ -43,23 +43,23 @@ TEST_CASE("Boss - bossId 2 has correct stats", "[boss][stats]") {
     Boss boss(0.5f, -0.2f, 2);
 
     CHECK(boss.getBossLevel() == 2);
-    CHECK(boss.getMaxHp() == 200);   // 中型 BOSS 200HP
-    CHECK(boss.getSize() == Approx(0.18f));
+    CHECK(boss.getMaxHp() == 350);   // bossId=2 → 重型 BOSS 350HP
+    CHECK(boss.getSize() == Approx(0.12f));
 }
 
 TEST_CASE("Boss - bossId 3 has correct stats", "[boss][stats]") {
     Boss boss(0.5f, -0.2f, 3);
 
     CHECK(boss.getBossLevel() == 3);
-    CHECK(boss.getMaxHp() == 350);   // 重型 BOSS 350HP
-    CHECK(boss.getSize() == Approx(0.20f));
+    CHECK(boss.getMaxHp() == 500);   // bossId=3 → 装甲 BOSS 500HP
+    CHECK(boss.getSize() == Approx(0.14f));
 }
 
 TEST_CASE("Boss - bossId 4 has highest HP", "[boss][stats]") {
     Boss boss(0.5f, -0.2f, 4);
 
     CHECK(boss.getBossLevel() == 4);
-    CHECK(boss.getMaxHp() == 500);   // 装甲 BOSS 500HP
+    CHECK(boss.getMaxHp() == 600);   // bossId=4 → 装甲 BOSS 600HP
 }
 
 TEST_CASE("Boss - invalid bossId defaults to 50 HP", "[boss][stats][boundary]") {
@@ -95,18 +95,18 @@ TEST_CASE("Boss - phase transitions at HP thresholds", "[boss][phase]") {
     Boss boss(0.5f, -0.2f, 1);
     boss.update(1.6f);  // 跳过 spawn
 
-    // Boss 1: maxHp=100
-    // Phase1: HP > 50 (50%)
-    // Phase2: 25 < HP <= 50 (25%~50%)
-    // Phase3: HP <= 25 (≤25%)
+    // Boss 1: maxHp=200
+    // Phase1: HP > 100 (50%)
+    // Phase2: 50 < HP <= 100 (25%~50%)
+    // Phase3: HP <= 50 (≤25%)
 
-    // 造成 50 点伤害 → HP=50 → 应切换到 Phase2
-    damageBoss(boss, 50);
+    // 造成 100 点伤害 → HP=100 → 应切换到 Phase2
+    damageBoss(boss, 100);
     boss.update(0.016f);  // 触发 updatePhase
     CHECK(boss.isDead() == false);
 
-    // 再造成 25 点伤害 → HP=25 → Phase3
-    damageBoss(boss, 25);
+    // 再造成 50 点伤害 → HP=50 → Phase3
+    damageBoss(boss, 50);
     boss.update(0.016f);
     CHECK(boss.isDead() == false);
 
@@ -135,8 +135,8 @@ TEST_CASE("Boss - boss dies correctly", "[boss][death]") {
     for (int i = 0; i < 100; ++i)
         boss.update(0.016f);
 
-    // 造成超过 HP 的伤害（100+）
-    damageBoss(boss, 120);
+    // 造成超过 HP 的伤害（200+）
+    damageBoss(boss, 220);
     boss.update(0.016f);
 
     CHECK(boss.isDead() == true);
@@ -153,12 +153,11 @@ TEST_CASE("Boss - sinusoidal movement after spawn", "[boss][movement]") {
         boss.update(0.016f);
 
     // BOSS 应基本保持在中心附近
-    // 注意：BOSS 出生 y=-0.2，spawn 期间以 0.12/s 上升 1.5s ≈ 0.18
-    // 所以最终 y ≈ -0.02，此为 BOSS 的Y轴固定位置（仅左右摆动）
+    // BOSS 出场：从 y=-0.2 下降到目标 y≈0.20
     CHECK(boss.getPos().x >= 0.1f);
     CHECK(boss.getPos().x <= 0.9f);
-    CHECK(boss.getPos().y >= -0.05f);
-    CHECK(boss.getPos().y <= 0.05f);
+    CHECK(boss.getPos().y >= 0.15f);
+    CHECK(boss.getPos().y <= 0.25f);
 }
 
 TEST_CASE("spawnCircularBarrage - creates correct number of bullets", "[boss][barrage]") {

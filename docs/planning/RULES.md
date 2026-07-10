@@ -54,7 +54,7 @@ ex5: MVVM 拆分 → View 完全不认识 ViewModel → 彻底解耦 ✅
 | 模块 | 允许使用的 Agent |
 |---|---|
 | `Qt5::Core` | ViewModel, View, App, Resource, Test |
-| `Qt5::Gui` | View 仅限（QPainter 渲染需要） |
+| `Qt5::Gui` | View 仅限（QPainter 渲染需要）；**SpiritVM 例外**（管理 QPixmap 精灵图片数据） |
 | `Qt5::Widgets` | View + App（主窗口 + QGraphicsView） |
 
 > `Qt5::Quick` 和 `Qt5::Qml` **本项目不使用**。禁止任何 QML/JavaScript 文件或代码。
@@ -240,7 +240,8 @@ src/app/                        include/app/
 ```
 
 **App 层附加规则（来自课件 FAQ）：**
-- App 层**不能放入**应只属于 ViewModel/Model 内部的业务逻辑
+- App 层**不能放入**应只属于 ViewModel/Model 内部的业务逻辑（如碰撞检测、敌机生成）
+- App 层**可以**做跨 Agent 的轻量编排（如 GameOver 时调用 SaveManager 存盘、从 SpiritVM 获取图片注入 ViewModel），因为 App 是唯一认识所有 Agent 的层
 - App 层**只能**绑定 View 层的通知，**不能**绑定来自其他层的通知
 
 ---

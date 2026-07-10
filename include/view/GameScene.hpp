@@ -33,6 +33,9 @@ public:
     void setEnemyMediumPixmap(const QPixmap* p) noexcept { m_pEnemyMediumImg = p; }
     void setEnemyLargePixmap(const QPixmap* p) noexcept { m_pEnemyLargeImg = p; }
     void setBossPixmap(const QPixmap* p) noexcept { m_pBossImg = p; }
+    void setBossPixmap2(const QPixmap* p) noexcept { m_pBossImg2 = p; }
+    void setBossPixmap3(const QPixmap* p) noexcept { m_pBossImg3 = p; }
+    void setBossPixmap4(const QPixmap* p) noexcept { m_pBossImg4 = p; }
     void setBulletPixmap(const QPixmap* p) noexcept { m_pBulletImg = p; }
     void setEnemyBulletPixmap(const QPixmap* p) noexcept { m_pEnemyBulletImg = p; }
     void setPowerUpHpPixmap(const QPixmap* p) noexcept { m_pPowerUpHpImg = p; }
@@ -45,6 +48,12 @@ public:
     void setHudLives(const int* p)     noexcept { m_pLives = p; }
     void setHudHighScore(const int* p) noexcept { m_pHighScore = p; }
     void setHudWave(const int* p)      noexcept { m_pWave = p; }
+    void setHudSkillCooldown(const float* p) noexcept { m_pSkillCD = p; }
+    void setHudSkillReady(const bool* p)    noexcept { m_pSkillReady = p; }
+    void setHudSkillActive(const bool* p)   noexcept { m_pSkillActive = p; }
+    void setHudSkillType(const int* p)      noexcept { m_pSkillType = p; }
+    void setHudHasShield(const bool* p)     noexcept { m_pHasShield = p; }
+    void setHudAircraftName(const char* p)  noexcept { m_pAircraftName = p; }
 
 protected:
     /// 绘制背景（星空 + 背景图）
@@ -66,6 +75,9 @@ private:
     const QPixmap*  m_pEnemyMediumImg = nullptr;
     const QPixmap*  m_pEnemyLargeImg  = nullptr;
     const QPixmap*  m_pBossImg   = nullptr;
+    const QPixmap*  m_pBossImg2  = nullptr;
+    const QPixmap*  m_pBossImg3  = nullptr;
+    const QPixmap*  m_pBossImg4  = nullptr;
     const QPixmap*  m_pBulletImg = nullptr;
     const QPixmap*  m_pEnemyBulletImg = nullptr;
     const QPixmap*  m_pPowerUpHpImg    = nullptr;
@@ -77,6 +89,13 @@ private:
     const int* m_pLives     = nullptr;
     const int* m_pHighScore = nullptr;
     const int* m_pWave      = nullptr;
+    // ── 技能 HUD 指针 ────────────────────────────────────────────
+    const float* m_pSkillCD     = nullptr;
+    const bool*  m_pSkillReady  = nullptr;
+    const bool*  m_pSkillActive = nullptr;
+    const int*   m_pSkillType   = nullptr;
+    const bool*  m_pHasShield   = nullptr;
+    const char*  m_pAircraftName = nullptr;
 };
 
 #endif // GAMESCENE_HPP

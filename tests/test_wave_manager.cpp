@@ -47,15 +47,15 @@ TEST_CASE("WaveManager - level 1 config matches DESIGN_PLAN", "[wave][table]") {
     CHECK(cfg.spawnInterval == Approx(1.5f));
     CHECK(cfg.enemySpeed == Approx(1.0f));
     CHECK(cfg.enemyHpBonus == 0);
-    CHECK(cfg.hasBoss == true);
-    CHECK(cfg.bossId == 1);            // 轻型 BOSS
+    CHECK(cfg.hasBoss == false);   // 第1关无BOSS（新手关）
+    CHECK(cfg.bossId == 1);
 }
 
 TEST_CASE("WaveManager - level 7 config (final boss)", "[wave][table]") {
     const auto& cfg = LEVEL_TABLE[6];
 
     CHECK(cfg.levelId == 7);
-    CHECK(cfg.waveCount == 5);         // 5 波小怪
+    CHECK(cfg.waveCount == 3);         // 3 波小怪（所有关卡固定）
     CHECK(cfg.spawnInterval == Approx(0.9f));  // 最快生成
     CHECK(cfg.enemySpeed == Approx(1.8f));     // 最快速度
     CHECK(cfg.enemyHpBonus == 5);              // 最多额外血量
@@ -134,7 +134,7 @@ TEST_CASE("WaveManager - update spawns enemies over time", "[wave][spawn]") {
 
 TEST_CASE("WaveManager - BOSS spawns after all waves complete", "[wave][boss]") {
     WaveManager wm;
-    wm.reset(1);
+    wm.reset(2);  // 第2关有BOSS
 
     auto rng = makeRng();
     std::vector<std::unique_ptr<Enemy>> enemies;
@@ -166,7 +166,7 @@ TEST_CASE("WaveManager - BOSS spawns after all waves complete", "[wave][boss]") 
 
 TEST_CASE("WaveManager - isLevelComplete true after BOSS defeated", "[wave][complete]") {
     WaveManager wm;
-    wm.reset(1);
+    wm.reset(2);  // 第2关有BOSS
 
     auto rng = makeRng();
     std::vector<std::unique_ptr<Enemy>> enemies;
@@ -254,13 +254,15 @@ TEST_CASE("WaveManager - isEndless flag works", "[wave][endless]") {
 TEST_CASE("WaveManager - getEnemyTypeForWave returns correct types per level", "[wave][enemytype]") {
     // 通过观察生成的敌机类型来间接测试
     WaveManager wm;
-    wm.reset(5);  // 第 5 关开始出大型机
+    wm.reset(6);  // 第 6 关开始出大型机
 
     auto rng = makeRng();
     std::vector<std::unique_ptr<Enemy>> enemies;
 
+    // 第 6 关混编：有 Large
+    // 快速模拟直到出现 Large 敌机
     bool hasLarge = false;
-    for (int tick = 0; tick < 200; ++tick) {
+    for (int tick = 0; tick < 400; ++tick) {
         wm.update(0.016f, enemies, 0.85f, rng);
         for (auto& e : enemies) {
             if (e->getEnemyType() == EnemyType::Large) {
@@ -271,4 +273,127 @@ TEST_CASE("WaveManager - getEnemyTypeForWave returns correct types per level", "
     }
 
     CHECK(hasLarge == true);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  迭代 4 新增测试：第 1 关无 BOSS / isLevelComplete
+// ═══════════════════════════════════════════════════════════════════
+
+TEST_CASE("WaveManager - level 1 has no boss (hasBoss=false)", "[wave][iter4][noboss]") {
+    const auto& cfg = LEVEL_TABLE[0];
+    CHECK(cfg.levelId == 1);
+    CHECK(cfg.hasBoss == false);  // 第 1 关无 BOSS
+    CHECK(cfg.bossId == 1);       // bossId 预留但不使用
+}
+
+TEST_CASE("WaveManager - level 1 isLevelComplete after wave completion without boss", "[wave][iter4][complete]") {
+    WaveManager wm;
+    wm.reset(1);
+
+    auto rng = makeRng();
+    std::vector<std::unique_ptr<Enemy>> enemies;
+
+    // 第 1 关：3 波，每波 5 只敌机
+    // 不断生成 → 杀死 → 推进波次 → 直到关卡完成
+    bool completed = false;
+    for (int tick = 0; tick < 3000; ++tick) {
+        wm.update(0.016f, enemies, 0.85f, rng);
+
+        // 杀死所有敌机加速波次推进
+        killAllEnemies(enemies);
+
+        if (wm.isLevelComplete(enemies)) {
+            completed = true;
+            break;
+        }
+    }
+
+    CHECK(completed == true);
+}
+
+TEST_CASE("WaveManager - level 2 needs boss defeat for completion", "[wave][iter4][complete]") {
+    WaveManager wm;
+    wm.reset(2);  // 第 2 关有 BOSS
+
+    auto rng = makeRng();
+    std::vector<std::unique_ptr<Enemy>> enemies;
+
+    // 推进到 BOSS 出现
+    bool bossAppeared = false;
+    bool bossKilled = false;
+    for (int tick = 0; tick < 3000; ++tick) {
+        wm.update(0.016f, enemies, 0.85f, rng);
+
+        // 检查 BOSS
+        for (auto& e : enemies) {
+            auto* boss = dynamic_cast<Boss*>(e.get());
+            if (boss && !boss->isDead()) {
+                bossAppeared = true;
+                // 击杀 BOSS
+                while (!boss->isDead()) boss->takeDamage();
+                bossKilled = true;
+            }
+        }
+
+        // 杀死所有小怪
+        killAllEnemies(enemies);
+
+        if (wm.isLevelComplete(enemies)) {
+            CHECK(bossKilled == true);
+            return;
+        }
+    }
+
+    // 如果 3000 tick 内没完成，检查至少 BOSS 出现了
+    CHECK(bossAppeared == true);
+    WARN("Level 2 not completed in 3000 ticks — may need more ticks");
+}
+
+TEST_CASE("WaveManager - isLevelComplete with hasBoss false returns true after waves clear", "[wave][iter4][complete][boundary]") {
+    WaveManager wm;
+    wm.reset(1);
+
+    auto rng = makeRng();
+    std::vector<std::unique_ptr<Enemy>> enemies;
+
+    // 运行足够 tick 完成所有波次
+    for (int tick = 0; tick < 2000; ++tick) {
+        wm.update(0.016f, enemies, 0.85f, rng);
+        killAllEnemies(enemies);
+    }
+
+    // 第 1 关所有波次完成后应标记为完成（无需 BOSS）
+    CHECK(wm.isLevelComplete(enemies) == true);
+}
+
+TEST_CASE("WaveManager - level with boss: isLevelComplete false before boss defeat", "[wave][iter4][complete][boundary]") {
+    WaveManager wm;
+    wm.reset(2);
+
+    auto rng = makeRng();
+    std::vector<std::unique_ptr<Enemy>> enemies;
+
+    // 推进到 BOSS 出现但未击杀
+    bool bossAppeared = false;
+    for (int tick = 0; tick < 2000; ++tick) {
+        wm.update(0.016f, enemies, 0.85f, rng);
+
+        for (auto& e : enemies) {
+            if (dynamic_cast<Boss*>(e.get())) {
+                bossAppeared = true;
+                // BOSS 存活时 isLevelComplete 应返回 false
+                CHECK(wm.isLevelComplete(enemies) == false);
+                return;
+            }
+        }
+
+        killAllEnemies(enemies);
+
+        if (wm.isLevelComplete(enemies)) {
+            // BOSS 还没出现，不应该完成
+            if (!bossAppeared && !dynamic_cast<Boss*>(enemies.empty() ? nullptr : enemies.back().get())) {
+                CHECK(wm.isLevelComplete(enemies) == false);
+            }
+        }
+    }
 }

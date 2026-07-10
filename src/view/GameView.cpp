@@ -6,6 +6,8 @@
 #include "view/GameOverScreen.hpp"
 #include "view/PauseOverlay.hpp"
 #include "view/BossHealthBar.hpp"
+#include "view/LevelSelectScreen.hpp"
+#include "view/AircraftSelectScreen.hpp"
 
 #include <QGraphicsView>
 #include <QVBoxLayout>
@@ -24,25 +26,27 @@ GameView::GameView(QWidget* parent)
     setMinimumSize(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT);
     setFocusPolicy(Qt::StrongFocus);
 
-    // ── 页面栈（随窗口拉伸） ──────────────────────────────────────
+    // ── 页面栈 ───────────────────────────────────────────────────
     m_pageStack = new QStackedWidget(this);
     m_pageStack->setGeometry(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    // 页面 0: 开始界面
     m_startScreen = new StartScreen(this);
-    m_pageStack->addWidget(m_startScreen);  // index 0
+    m_pageStack->addWidget(m_startScreen);  // 0
 
-    // 页面 1: 模式选择界面
     m_modeSelectScreen = new ModeSelectScreen(this);
-    m_pageStack->addWidget(m_modeSelectScreen);  // index 1
+    m_pageStack->addWidget(m_modeSelectScreen);  // 1
 
-    // 页面 2: 游戏页面（QGraphicsView + BOSS 血条，HUD 在场景中绘制）
+    m_levelSelectScreen = new LevelSelectScreen(this);
+    m_pageStack->addWidget(m_levelSelectScreen);  // 2
+
+    m_aircraftSelectScreen = new AircraftSelectScreen(this);
+    m_pageStack->addWidget(m_aircraftSelectScreen);  // 3
+
     m_gamePage = new QWidget(this);
     {
         QVBoxLayout* layout = new QVBoxLayout(m_gamePage);
         layout->setContentsMargins(0, 0, 0, 0);
         layout->setSpacing(0);
-
         m_scene = new GameScene(this);
         m_graphicsView = new QGraphicsView(m_scene, m_gamePage);
         m_graphicsView->setFrameStyle(QFrame::NoFrame);
@@ -51,52 +55,67 @@ GameView::GameView(QWidget* parent)
         m_graphicsView->setRenderHint(QPainter::SmoothPixmapTransform);
         m_graphicsView->setFocusPolicy(Qt::NoFocus);
         m_graphicsView->setBackgroundBrush(QColor(10, 10, 30));
-
-        // BOSS 血条（叠加在 QGraphicsView 上方，默认隐藏）
         m_bossHealthBar = new BossHealthBar(m_gamePage);
         m_bossHealthBar->setVisible(false);
         m_bossHealthBar->raise();
-
         layout->addWidget(m_graphicsView);
     }
-    m_pageStack->addWidget(m_gamePage);  // index 2
+    m_pageStack->addWidget(m_gamePage);  // 4
 
-    // 页面 3: 游戏结束界面
     m_gameOverScreen = new GameOverScreen(this);
     m_gameOverScreen->setGeometry(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    m_pageStack->addWidget(m_gameOverScreen);  // index 3
+    m_pageStack->addWidget(m_gameOverScreen);  // 5
 
-    // 页面 4: 暂停覆盖层
     m_pauseOverlay = new PauseOverlay(this);
     m_pauseOverlay->setGeometry(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    m_pageStack->addWidget(m_pauseOverlay);  // index 4
+    m_pageStack->addWidget(m_pauseOverlay);  // 6
 
-    // 默认显示开始界面
     m_pageStack->setCurrentIndex(0);
 
-    // ── 帧循环（60 FPS） ──────────────────────────────────────────
+    // ── 帧循环 ────────────────────────────────────────────────────
     m_timer = new QTimer(this);
     connect(m_timer, &QTimer::timeout, this, &GameView::tick);
-    // 不 start — 等进入 Playing 时由 updatePage() 启动
 
-    // ── 开始界面 → 模式选择 ──────────────────────────────────────
+    // ── 信号连接 ──────────────────────────────────────────────────
     connect(m_startScreen, &StartScreen::startClicked, [this]() {
-        m_pageStack->setCurrentIndex(1);  // 先切到模式选择
+        m_pageStack->setCurrentIndex(1);
     });
 
-    // ── 模式选择 → 开始游戏 ──────────────────────────────────────
     connect(m_modeSelectScreen, &ModeSelectScreen::modeSelected, [this](int mode) {
+        if (mode == 0)
+            m_pageStack->setCurrentIndex(2);  // Campaign → LevelSelect
+        else
+            m_pageStack->setCurrentIndex(3);  // Endless → AircraftSelect
         if (m_selectModeCommand) m_selectModeCommand(mode);
     });
 
-    // ── 游戏结束 → 再来一局（回到模式选择） ──────────────────────
-    connect(m_gameOverScreen, &GameOverScreen::restartClicked, [this]() {
-        m_pageStack->setCurrentIndex(1);  // 回到模式选择
+    connect(m_levelSelectScreen, &LevelSelectScreen::levelSelected, [this](int levelId) {
+        m_pageStack->setCurrentIndex(3);  // AircraftSelect
+        if (m_selectLevelCommand) m_selectLevelCommand(levelId);
     });
 
-    // ── 暂停 → 继续 ───────────────────────────────────────────────
+    connect(m_levelSelectScreen, &LevelSelectScreen::backClicked, [this]() {
+        m_pageStack->setCurrentIndex(1);
+    });
+
+    connect(m_aircraftSelectScreen, &AircraftSelectScreen::confirmed, [this]() {
+        m_pageStack->setCurrentIndex(4);  // GamePage
+        if (m_startGameCommand) m_startGameCommand();
+    });
+
+    connect(m_gameOverScreen, &GameOverScreen::restartClicked, [this]() {
+        if (m_pLevelCleared && *m_pLevelCleared)
+            m_pageStack->setCurrentIndex(2);
+        else
+            m_pageStack->setCurrentIndex(1);
+    });
+
     connect(m_pauseOverlay, &PauseOverlay::resumeClicked, [this]() {
         if (m_pauseCommand) m_pauseCommand();
+    });
+
+    connect(m_pauseOverlay, &PauseOverlay::quitLevelClicked, [this]() {
+        if (m_quitLevelCommand) m_quitLevelCommand();
     });
 }
 
@@ -106,57 +125,24 @@ GameView::~GameView() = default;
 // 属性绑定 setter
 // ═══════════════════════════════════════════════════════════════════
 
-void GameView::setMap(const AirMap* map) noexcept {
-    m_pMap = map;
-    if (m_scene) m_scene->setMap(map);
-}
+void GameView::setMap(const AirMap* map) noexcept { m_pMap = map; if (m_scene) m_scene->setMap(map); }
+void GameView::setPlayerPixmap(const QPixmap* p) noexcept { m_pPlayerImg = p; if (m_scene) m_scene->setPlayerPixmap(p); }
+void GameView::setEnemySmallPixmap(const QPixmap* p) noexcept { m_pEnemyImg = p; if (m_scene) m_scene->setEnemySmallPixmap(p); }
+void GameView::setBulletPixmap(const QPixmap* p) noexcept { m_pBulletImg = p; if (m_scene) m_scene->setBulletPixmap(p); }
+void GameView::setBackgroundPixmap(const QPixmap* p) noexcept { m_pBgImg = p; if (m_scene) m_scene->setBackgroundPixmap(p); }
+void GameView::setEnemyMediumPixmap(const QPixmap* p) noexcept { if (m_scene) m_scene->setEnemyMediumPixmap(p); }
+void GameView::setEnemyLargePixmap(const QPixmap* p) noexcept { if (m_scene) m_scene->setEnemyLargePixmap(p); }
+void GameView::setBossPixmap(const QPixmap* p) noexcept { if (m_scene) m_scene->setBossPixmap(p); }
+void GameView::setBossPixmap2(const QPixmap* p) noexcept { if (m_scene) m_scene->setBossPixmap2(p); }
+void GameView::setBossPixmap3(const QPixmap* p) noexcept { if (m_scene) m_scene->setBossPixmap3(p); }
+void GameView::setBossPixmap4(const QPixmap* p) noexcept { if (m_scene) m_scene->setBossPixmap4(p); }
+void GameView::setEnemyBulletPixmap(const QPixmap* p) noexcept { if (m_scene) m_scene->setEnemyBulletPixmap(p); }
+void GameView::setPowerUpHpPixmap(const QPixmap* p) noexcept { if (m_scene) m_scene->setPowerUpHpPixmap(p); }
+void GameView::setPowerUpFirePixmap(const QPixmap* p) noexcept { if (m_scene) m_scene->setPowerUpFirePixmap(p); }
+void GameView::setPowerUpShieldPixmap(const QPixmap* p) noexcept { if (m_scene) m_scene->setPowerUpShieldPixmap(p); }
 
-void GameView::setPlayerPixmap(const QPixmap* p) noexcept {
-    m_pPlayerImg = p;
-    if (m_scene) m_scene->setPlayerPixmap(p);
-}
-
-void GameView::setEnemySmallPixmap(const QPixmap* p) noexcept {
-    m_pEnemyImg = p;
-    if (m_scene) m_scene->setEnemySmallPixmap(p);
-}
-
-void GameView::setBulletPixmap(const QPixmap* p) noexcept {
-    m_pBulletImg = p;
-    if (m_scene) m_scene->setBulletPixmap(p);
-}
-
-void GameView::setBackgroundPixmap(const QPixmap* p) noexcept {
-    m_pBgImg = p;
-    if (m_scene) m_scene->setBackgroundPixmap(p);
-}
-
-void GameView::setEnemyMediumPixmap(const QPixmap* p) noexcept {
-    if (m_scene) m_scene->setEnemyMediumPixmap(p);
-}
-
-void GameView::setEnemyLargePixmap(const QPixmap* p) noexcept {
-    if (m_scene) m_scene->setEnemyLargePixmap(p);
-}
-
-void GameView::setBossPixmap(const QPixmap* p) noexcept {
-    if (m_scene) m_scene->setBossPixmap(p);
-}
-
-void GameView::setEnemyBulletPixmap(const QPixmap* p) noexcept {
-    if (m_scene) m_scene->setEnemyBulletPixmap(p);
-}
-
-void GameView::setPowerUpHpPixmap(const QPixmap* p) noexcept {
-    if (m_scene) m_scene->setPowerUpHpPixmap(p);
-}
-
-void GameView::setPowerUpFirePixmap(const QPixmap* p) noexcept {
-    if (m_scene) m_scene->setPowerUpFirePixmap(p);
-}
-
-void GameView::setPowerUpShieldPixmap(const QPixmap* p) noexcept {
-    if (m_scene) m_scene->setPowerUpShieldPixmap(p);
+void GameView::setLevelSelectMaxUnlocked(int level) noexcept {
+    if (m_levelSelectScreen) m_levelSelectScreen->setMaxUnlockedLevel(level);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -171,6 +157,18 @@ void GameView::setMoveRightCommand(std::function<void(int)>&& cmd){ m_moveRightC
 void GameView::setStartGameCommand(std::function<void()>&& cmd)   { m_startGameCommand = std::move(cmd); }
 void GameView::setSelectModeCommand(std::function<void(int)>&& cmd){ m_selectModeCommand = std::move(cmd); }
 void GameView::setPauseCommand(std::function<void()>&& cmd)       { m_pauseCommand = std::move(cmd); }
+void GameView::setStartLevelCommand(std::function<void(int)>&& cmd){ m_startLevelCommand = std::move(cmd); }
+void GameView::setSelectLevelCommand(std::function<void(int)>&& cmd){ m_selectLevelCommand = std::move(cmd); }
+void GameView::setQuitLevelCommand(std::function<void()>&& cmd)     { m_quitLevelCommand = std::move(cmd); }
+void GameView::setSelectAircraftCommand(std::function<void(int)>&& cmd) {
+    m_selectAircraftCommand = cmd;
+    if (m_aircraftSelectScreen) {
+        auto cpy = m_selectAircraftCommand;
+        m_aircraftSelectScreen->setSelectAircraftCommand(std::move(cpy));
+    }
+}
+void GameView::setUseSkillCommand(std::function<void()>&& cmd)       { m_useSkillCommand = std::move(cmd); }
+void GameView::setNavigateCommand(std::function<void(int)>&& cmd)    { m_navigateCommand = std::move(cmd); }
 
 // ═══════════════════════════════════════════════════════════════════
 // 帧循环
@@ -190,6 +188,9 @@ void GameView::keyPressEvent(QKeyEvent* e) {
     case Qt::Key_S:      case Qt::Key_Down:  if (m_moveDownCommand)  m_moveDownCommand(1);  break;
     case Qt::Key_A:      case Qt::Key_Left:  if (m_moveLeftCommand)  m_moveLeftCommand(1);  break;
     case Qt::Key_D:      case Qt::Key_Right: if (m_moveRightCommand) m_moveRightCommand(1); break;
+    case Qt::Key_Space:
+        if (m_useSkillCommand) m_useSkillCommand();
+        break;
     case Qt::Key_Return: case Qt::Key_Enter:
         if (m_startGameCommand) m_startGameCommand();
         break;
@@ -243,18 +244,19 @@ void GameView::onPropertyChanged(uint32_t id) {
         break;
 
     case PROP_ID_SCORE:
-        if (m_pScore) {
-            m_gameOverScreen->setScore(*m_pScore);
-        }
-        m_scene->update();  // HUD 直接在场景中绘制
+        if (m_pScore) m_gameOverScreen->setScore(*m_pScore);
+        m_scene->update();
         break;
 
     case PROP_ID_LIVES:
-        m_scene->update();  // HUD 直接在场景中绘制
+        m_scene->update();
         break;
 
     case PROP_ID_GAME_STATE:
         updatePage();
+        if (*m_pGameState == GameState::GameOver && m_pLevelCleared && m_pCurrentLevel) {
+            m_gameOverScreen->setLevelCleared(*m_pLevelCleared, *m_pCurrentLevel);
+        }
         break;
 
     case PROP_ID_BOSS_HEALTH:
@@ -280,32 +282,14 @@ void GameView::onPropertyChanged(uint32_t id) {
 
 void GameView::updatePage() {
     if (!m_pGameState) return;
-
     switch (*m_pGameState) {
-    case GameState::Menu:
-        m_pageStack->setCurrentIndex(0);
-        m_timer->stop();
-        break;
-
-    case GameState::ModeSelect:
-        m_pageStack->setCurrentIndex(1);
-        m_timer->stop();
-        break;
-
-    case GameState::Playing:
-        m_pageStack->setCurrentIndex(2);
-        m_timer->start(16);
-        setFocus();
-        break;
-
-    case GameState::Paused:
-        m_pageStack->setCurrentIndex(4);
-        m_timer->stop();
-        break;
-
-    case GameState::GameOver:
-        m_pageStack->setCurrentIndex(3);
-        m_timer->stop();
+    case GameState::Menu:        m_pageStack->setCurrentIndex(0); m_timer->stop(); break;
+    case GameState::ModeSelect:  m_pageStack->setCurrentIndex(1); m_timer->stop(); break;
+    case GameState::LevelSelect: m_pageStack->setCurrentIndex(2); m_timer->stop(); break;
+    case GameState::AircraftSelect: m_pageStack->setCurrentIndex(3); m_timer->stop(); break;
+    case GameState::Playing:     m_pageStack->setCurrentIndex(4); m_timer->start(16); setFocus(); break;
+    case GameState::Paused:      m_pageStack->setCurrentIndex(6); m_timer->stop(); break;
+    case GameState::GameOver:    m_pageStack->setCurrentIndex(5); m_timer->stop();
         if (m_pScore) m_gameOverScreen->setScore(*m_pScore);
         if (m_pHighScore) m_gameOverScreen->setHighScore(*m_pHighScore);
         break;

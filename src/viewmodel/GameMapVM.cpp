@@ -39,11 +39,23 @@ std::function<void(int)> GameMapVM::getSelectModeCommand() {
 std::function<void()> GameMapVM::getPauseCommand() {
     return [this]() { pauseImpl(); };
 }
+std::function<void(int)> GameMapVM::getStartLevelCommand() {
+    return [this](int levelId) { startLevelImpl(levelId); };
+}
+std::function<void(int)> GameMapVM::getSelectLevelCommand() {
+    return [this](int levelId) { selectLevelImpl(levelId); };
+}
+std::function<void()> GameMapVM::getQuitLevelCommand() {
+    return [this]() { quitLevelImpl(); };
+}
 std::function<void(int)> GameMapVM::getSelectAircraftCommand() {
     return [this](int type) { selectAircraftImpl(type); };
 }
 std::function<void()> GameMapVM::getUseSkillCommand() {
     return [this]() { useSkillImpl(); };
+}
+std::function<void(int)> GameMapVM::getNavigateCommand() {
+    return [this](int state) { navigateImpl(state); };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -61,10 +73,15 @@ void GameMapVM::startGameImpl() {
     m_lastLives   = m_player.getLives();
     m_lastGameOver = false;
     m_lastSkillCD  = 0.0f;
+    m_lastSkillReady  = true;
+    m_lastSkillActive = false;
+    m_lastSkillType   = static_cast<int>(m_skill.getType());
     m_lastWeaponLv = m_player.getWeaponLevel();
+    m_cachedHighScore = m_scoreMgr.getHighScore();
     m_flameStormTimer = 0.0f;
     m_isDashing = false;
     m_dashTimer = 0.0f;
+    m_levelCleared = false;
 
     // 初始化波次和道具管理器
     m_waveMgr.reset(m_mode == GameMode::Campaign ? m_currentLevel : 1);
@@ -149,7 +166,8 @@ void GameMapVM::tickImpl(float dt) {
     if (pickupType >= 0) {
         switch (static_cast<PowerUpType>(pickupType)) {
         case PowerUpType::Hp:
-            // 回血（但不超过 maxLives）
+            m_player.heal(1);
+            fireChange(PROP_ID_LIVES);
             break;
         case PowerUpType::Fire:
             m_player.setWeaponLevel(m_player.getWeaponLevel() + 1);
@@ -188,25 +206,26 @@ void GameMapVM::tickImpl(float dt) {
         }
     }
 
-    // 13. 关卡完成 → 进入下一关
-    if (m_waveMgr.isLevelComplete(m_enemies)) {
+    // 13. 闯关完成 → 标记胜利，退出到选关
+    if (m_mode == GameMode::Campaign && m_waveMgr.isLevelComplete(m_enemies)) {
         int nextLevel = m_currentLevel + 1;
+        m_levelCleared = true;
         if (nextLevel > 7) {
-            // 通关后回到模式选择或无尽
-            log("GameMapVM", "All 7 levels cleared!");
-            m_state = GameState::GameOver;  // 暂时以 GameOver 处理
-            fireChange(PROP_ID_GAME_STATE);
-            return;
+            log("GameMapVM", "🎉 All 7 levels cleared! Victory!");
+        } else {
+            log("GameMapVM", "Level " + std::to_string(m_currentLevel) + " cleared!");
         }
-        m_waveMgr.reset(nextLevel);
-        m_currentLevel = nextLevel;
-        m_wave = 0;
-        m_bossHp = 0;
-        m_bossMaxHp = 0;
-        log("GameMapVM", "Advancing to level " + std::to_string(nextLevel));
-        fireChange(PROP_ID_WAVE);
-        fireChange(PROP_ID_BOSS_HEALTH);
+        if (m_scoreMgr.getScore() > m_scoreMgr.getHighScore()) {
+            m_scoreMgr.setHighScore(m_scoreMgr.getScore());
+        }
+        // 发出持久化请求
+        emit saveHighScoreRequested(m_scoreMgr.getHighScore());
+        if (nextLevel <= 7) {
+            emit saveCampaignRequested(nextLevel);
+        }
+        m_state = GameState::GameOver;
         fireChange(PROP_ID_GAME_STATE);
+        return;
     }
 
     // 14. 同步到 AirMap
@@ -223,10 +242,29 @@ void GameMapVM::tickImpl(float dt) {
         m_lastLives = curLives;
         fireChange(PROP_ID_LIVES);
     }
+    int curHigh = m_scoreMgr.getHighScore();
+    if (curHigh != m_cachedHighScore) {
+        m_cachedHighScore = curHigh;
+    }
     float curCD = m_skill.getCooldownPercent();
     if (std::abs(curCD - m_lastSkillCD) > 0.01f) {
         m_lastSkillCD = curCD;
         fireChange(PROP_ID_SKILL_COOLDOWN);
+    }
+    {
+        bool ready = !m_skill.isOnCooldown();
+        if (ready != m_lastSkillReady) {
+            m_lastSkillReady = ready;
+            fireChange(PROP_ID_SKILL_COOLDOWN);
+        }
+    }
+    {
+        bool active = m_skill.isActive();
+        if (active != m_lastSkillActive) {
+            m_lastSkillActive = active;
+            m_lastSkillType = static_cast<int>(m_skill.getType());
+            fireChange(PROP_ID_SKILL_COOLDOWN);
+        }
     }
     int curWL = m_player.getWeaponLevel();
     if (curWL != m_lastWeaponLv) {
@@ -245,6 +283,7 @@ void GameMapVM::tickImpl(float dt) {
         if (isOver) {
             if (m_scoreMgr.getScore() > m_scoreMgr.getHighScore()) {
                 m_scoreMgr.setHighScore(m_scoreMgr.getScore());
+                emit saveHighScoreRequested(m_scoreMgr.getHighScore());
             }
         }
         fireChange(PROP_ID_GAME_STATE);
@@ -258,7 +297,79 @@ void GameMapVM::moveRightImpl(int active) { m_player.moveRight(active != 0); }
 
 void GameMapVM::selectModeImpl(int mode) {
     m_mode = (mode == 0) ? GameMode::Campaign : GameMode::Endless;
-    startGameImpl();
+    if (m_mode == GameMode::Campaign) {
+        m_state = GameState::LevelSelect;
+        fireChange(PROP_ID_GAME_STATE);
+    }
+    // 无尽模式：不开始游戏，等 AircraftSelect 确认后再 startGameImpl
+}
+
+void GameMapVM::startLevelImpl(int levelId) {
+    if (levelId < 1 || levelId > 7) return;
+    m_currentLevel = levelId;
+    m_state = GameState::Playing;
+    m_player.reset();
+    m_enemies.clear();
+    m_bullets.clear();
+    m_scoreMgr.reset();
+    m_elapsed     = 0.0f;
+    m_lastScore   = 0;
+    m_lastLives   = m_player.getLives();
+    m_lastGameOver = false;
+    m_lastSkillCD  = 0.0f;
+    m_lastSkillReady  = true;
+    m_lastSkillActive = false;
+    m_lastSkillType   = static_cast<int>(m_skill.getType());
+    m_lastWeaponLv = m_player.getWeaponLevel();
+    m_cachedHighScore = m_scoreMgr.getHighScore();
+    m_flameStormTimer = 0.0f;
+    m_isDashing = false;
+    m_dashTimer = 0.0f;
+    m_levelCleared = false;
+
+    // ⚠️ 用选定的关卡 ID 初始化波次管理器
+    m_waveMgr.reset(m_currentLevel);
+    m_waveMgr.setEndless(false);
+    m_powerUpMgr.reset();
+    m_skill.init(m_player.getAircraftType());
+
+    syncMap();
+    fireChange(PROP_ID_MAP);
+    fireChange(PROP_ID_SCORE);
+    fireChange(PROP_ID_LIVES);
+    fireChange(PROP_ID_GAME_STATE);
+    fireChange(PROP_ID_SKILL_COOLDOWN);
+    fireChange(PROP_ID_WEAPON_LEVEL);
+    fireChange(PROP_ID_WAVE);
+    fireChange(PROP_ID_BOSS_HEALTH);
+
+    log("GameMapVM", "Level " + std::to_string(levelId) + " started");
+}
+
+void GameMapVM::selectLevelImpl(int levelId) {
+    if (levelId < 1 || levelId > 7) return;
+    m_currentLevel = levelId;
+    log("GameMapVM", "Level " + std::to_string(levelId) + " selected, waiting for aircraft");
+}
+
+void GameMapVM::quitLevelImpl() {
+    if (m_mode == GameMode::Campaign) {
+        m_state = GameState::LevelSelect;
+    } else {
+        m_state = GameState::ModeSelect;
+    }
+    m_enemies.clear();
+    m_bullets.clear();
+    m_player.reset();
+    m_elapsed = 0.0f;
+    fireChange(PROP_ID_GAME_STATE);
+    fireChange(PROP_ID_MAP);
+    log("GameMapVM", "Quit level - back to select");
+}
+
+void GameMapVM::navigateImpl(int state) {
+    m_state = static_cast<GameState>(state);
+    fireChange(PROP_ID_GAME_STATE);
 }
 
 void GameMapVM::pauseImpl() {
@@ -282,11 +393,13 @@ void GameMapVM::useSkillImpl() {
     const auto& tmpl = AircraftStats::getTemplate(m_player.getAircraftType());
     switch (tmpl.skill) {
     case SkillType::ThunderStrike: handleThunderStrike(); break;
-    case SkillType::FrostShield:   m_player.setShielded(true); break;
-    case SkillType::IronWall:      break; // in applySkillEffects
+    case SkillType::FrostShield:   break;
+    case SkillType::IronWall:      break;
     case SkillType::FlameStorm:    break;
     case SkillType::TimeDash:      break;
     }
+    // 所有技能激活期间无敌
+    m_player.setSkillInvincible(true);
     fireChange(PROP_ID_SKILL_COOLDOWN);
 }
 
@@ -312,6 +425,7 @@ void GameMapVM::applySkillEffects() {
     if (!m_skill.isActive()) {
         m_flameStormTimer = 0.0f;
         m_isDashing = false;
+        m_player.setSkillInvincible(false);  // 技能结束，清除无敌
         return;
     }
     const auto& tmpl = AircraftStats::getTemplate(m_player.getAircraftType());
@@ -349,14 +463,36 @@ void GameMapVM::handleFlameStorm(float dt) {
 void GameMapVM::handleTimeDash(float dt) {
     if (!m_isDashing) {
         m_isDashing = true;
-        m_dashTimer = 0.3f;
+        m_dashTimer = 0.5f;  // 延长冲刺时间，特效更明显
+        int hitCount = 0;
         for (auto& e : m_enemies) {
             if (e->isDead()) continue;
             float ex = e->getPos().x, ey = e->getPos().y;
-            if (ey < m_player.getPos().y && ey > m_player.getPos().y - 0.5f &&
-                std::abs(ex - m_player.getPos().x) < 0.15f) {
+            // 前方扇形范围：上下 0.8、左右 0.25
+            if (ey < m_player.getPos().y && ey > m_player.getPos().y - 0.8f &&
+                std::abs(ex - m_player.getPos().x) < 0.25f) {
                 e->takeDamage();
-                if (e->isDead()) m_powerUpMgr.onEnemyDestroyed(e->getPos(), m_rng);
+                if (e->isDead()) {
+                    m_powerUpMgr.onEnemyDestroyed(e->getPos(), m_rng);
+                } else {
+                    // 没死的再补一刀
+                    e->takeDamage();
+                }
+                hitCount++;
+            }
+        }
+        log("GameMapVM", "TimeDash hit " + std::to_string(hitCount) + " enemies");
+    }
+    // 冲刺期间持续发射前方快速弹幕
+    if (m_isDashing) {
+        m_flameStormTimer += dt;
+        if (m_flameStormTimer >= 0.08f) {
+            m_flameStormTimer = 0.0f;
+            Vec2 p = m_player.getPos();
+            for (int i = -1; i <= 1; ++i) {
+                m_bullets.emplace_back(
+                    p.x + i * 0.025f, p.y - m_player.getSize(),
+                    i * 0.2f, -BULLET_SPEED * 1.5f, Bullet::Player);
             }
         }
     }

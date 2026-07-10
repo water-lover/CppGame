@@ -15,7 +15,15 @@ GameOverScreen::GameOverScreen(QWidget* parent)
     layout->setAlignment(Qt::AlignCenter);
     layout->setSpacing(10);
 
-    layout->addSpacing(160);
+    layout->addSpacing(100);
+
+    // 标题标签（通关胜利/死亡失败）
+    m_titleLabel = new QLabel(QStringLiteral("GAME OVER"), this);
+    m_titleLabel->setAlignment(Qt::AlignCenter);
+    m_titleLabel->setStyleSheet("font-size: 36px; font-weight: bold; color: #FF4444; font-family: 'Microsoft YaHei';");
+    layout->addWidget(m_titleLabel);
+
+    layout->addSpacing(20);
 
     // 得分标签
     m_scoreLabel = new QLabel(this);
@@ -54,6 +62,22 @@ GameOverScreen::GameOverScreen(QWidget* parent)
     layout->addWidget(m_restartButton, 0, Qt::AlignCenter);
 
     connect(m_restartButton, &QPushButton::clicked, this, &GameOverScreen::restartClicked);
+}
+
+void GameOverScreen::setLevelCleared(bool cleared, int level) {
+    if (cleared) {
+        if (level >= 7) {
+            m_titleLabel->setText(QStringLiteral("🎉 全 部 通 关 ！"));
+        } else {
+            m_titleLabel->setText(QStringLiteral("第 %1 关  通 关 ！").arg(level));
+        }
+        m_titleLabel->setStyleSheet("font-size: 36px; font-weight: bold; color: #FFD700; font-family: 'Microsoft YaHei';");
+        m_restartButton->setText(QStringLiteral("选 择 下 一 关"));
+    } else {
+        m_titleLabel->setText(QStringLiteral("GAME OVER"));
+        m_titleLabel->setStyleSheet("font-size: 36px; font-weight: bold; color: #FF4444; font-family: 'Microsoft YaHei';");
+        m_restartButton->setText(QStringLiteral("返 回 主 菜 单"));
+    }
 }
 
 void GameOverScreen::setScore(int score) {
