@@ -5,11 +5,11 @@
 
 // id, name, fire★, lives♥, skillCD(s), skill, desc
 const AircraftSelectScreen::CardInfo AircraftSelectScreen::AIRCRAFT[5] = {
-    {0, "雷 霆 号", 4, 6, 13, "全屏雷击",   "均衡旗舰 · 无短板"},
+    {0, "雷 霆 号", 4, 6, 13, "雷暴领域",   "均衡旗舰 · 无短板"},
     {1, "烈 焰 号", 5, 5, 15, "火焰风暴",   "极致火力 · 高输出"},
     {2, "冰 霜 号", 3, 7, 15, "极寒护盾",   "最强生存 · 稳如山"},
     {3, "幻 影 号", 3, 5, 14, "时空闪避",   "极速游击 · 风筝王"},
-    {4, "堡 垒 号", 3, 6, 16, "铁壁 8向反击","钢铁壁垒 · 稳扎稳打"},
+    {4, "堡 垒 号", 3, 6, 16, "铁壁守护",   "钢铁壁垒 · 稳扎稳打"},
 };
 
 static bool isTier5(int idx) { return idx == 0 || idx == 2; }  // 雷霆号+冰霜号
@@ -115,7 +115,7 @@ void AircraftSelectScreen::paintEvent(QPaintEvent* /*event*/) {
                 p.setPen(QColor(130, 200, 255));
                 p.setFont(infoF);
                 p.drawText(QRectF(r.x(), rowY, r.width(), infoSz), Qt::AlignCenter,
-                           QString("技 %1").arg(card.skill));
+                           card.skill);
                 rowY += infoSz;
             }
             {
