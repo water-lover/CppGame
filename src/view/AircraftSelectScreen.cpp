@@ -3,15 +3,16 @@
 #include <QMouseEvent>
 #include <QFont>
 
-// 数据对齐 AircraftStats 数值平衡 v2
-// id, name, fire, lives, speed★, tier(4/5), skill, desc
+// id, name, fire★, lives♥, skillCD(s), skill, desc
 const AircraftSelectScreen::CardInfo AircraftSelectScreen::AIRCRAFT[5] = {
-    {0, "雷 霆 号", 4, 6, 3, 5, "全屏雷击", "均衡旗舰 · 无短板"},
-    {1, "烈 焰 号", 5, 5, 3, 4, "火焰风暴", "极致火力 · 高输出"},
-    {2, "冰 霜 号", 3, 7, 3, 5, "极寒护盾", "最强生存 · 稳如山"},
-    {3, "幻 影 号", 3, 5, 5, 4, "时空闪避", "极速游击 · 风筝王"},
-    {4, "堡 垒 号", 3, 6, 2, 4, "铁壁阵", "钢铁壁垒 · 反击盾"},
+    {0, "雷 霆 号", 4, 6, 13, "全屏雷击",   "均衡旗舰 · 无短板"},
+    {1, "烈 焰 号", 5, 5, 15, "火焰风暴",   "极致火力 · 高输出"},
+    {2, "冰 霜 号", 3, 7, 15, "极寒护盾",   "最强生存 · 稳如山"},
+    {3, "幻 影 号", 3, 5, 14, "时空闪避",   "极速游击 · 风筝王"},
+    {4, "堡 垒 号", 3, 6, 16, "铁壁 8向反击","钢铁壁垒 · 稳扎稳打"},
 };
+
+static bool isTier5(int idx) { return idx == 0 || idx == 2; }  // 雷霆号+冰霜号
 
 AircraftSelectScreen::AircraftSelectScreen(QWidget* parent) : QWidget(parent) {
     setMouseTracking(false);
@@ -32,22 +33,20 @@ void AircraftSelectScreen::paintEvent(QPaintEvent* /*event*/) {
 
     // ── 5 张卡片（第1行3张，第2行2张） ──────────────────────────
     int rows[2] = {3, 2};
-    float cardW = w * 0.22f, cardH = h * 0.34f;
-    float gapX = w * 0.045f, gapY = h * 0.03f;
-    float startY = h * 0.14f;
+    float cardW = w * 0.22f, cardH = h * 0.33f;
+    float gapX = w * 0.045f, gapY = h * 0.035f;
+    float startY = h * 0.15f;
 
-    int nameSz = (int)(cardH * 0.14f);
-    int statSz = (int)(cardH * 0.10f);
-    int descSz = (int)(cardH * 0.10f);
-    int tierSz = (int)(cardH * 0.09f);
+    int nameSz = (int)(cardH * 0.15f);
+    int barSz  = (int)(cardH * 0.11f);
+    int infoSz = (int)(cardH * 0.10f);
 
     QFont nameF; nameF.setPixelSize(nameSz); nameF.setBold(true);
-    QFont statF; statF.setPixelSize(statSz);
-    QFont descF; descF.setPixelSize(descSz);
-    QFont tierF; tierF.setPixelSize(tierSz); tierF.setBold(true);
+    QFont barF;  barF.setPixelSize(barSz);
+    QFont infoF; infoF.setPixelSize(infoSz);
 
-    const QColor tier5Clr(255, 180, 50);   // 5★ 金色
-    const QColor tier4Clr(160, 180, 255);  // 4★ 银蓝
+    const QColor goldClr(255, 180, 50);
+    const QColor dimClr(58, 74, 106);
 
     int idx = 0;
     for (int ri = 0; ri < 2; ++ri) {
@@ -60,7 +59,7 @@ void AircraftSelectScreen::paintEvent(QPaintEvent* /*event*/) {
             float y = startY + ri * (cardH + gapY);
             QRectF r(x, y, cardW, cardH);
             bool sel = (idx == m_selected);
-            bool isTier5 = (card.tier == 5);
+            bool t5 = isTier5(idx);
 
             // ── 卡片背景 + 边框 ──────────────────────────────────
             QLinearGradient bg(x, y, x, y + cardH);
@@ -68,78 +67,69 @@ void AircraftSelectScreen::paintEvent(QPaintEvent* /*event*/) {
                 bg.setColorAt(0, QColor(42, 74, 122));
                 bg.setColorAt(1, QColor(26, 48, 80));
                 p.setPen(QPen(QColor(255, 215, 0), 2));
-            } else if (isTier5) {
-                bg.setColorAt(0, QColor(40, 30, 18));
-                bg.setColorAt(1, QColor(30, 22, 12));
-                p.setPen(QPen(QColor(180, 140, 40), 1));
+            } else if (t5) {
+                bg.setColorAt(0, QColor(38, 30, 20));
+                bg.setColorAt(1, QColor(28, 22, 14));
+                p.setPen(QPen(QColor(160, 130, 50), 1));
             } else {
                 bg.setColorAt(0, QColor(26, 39, 68));
                 bg.setColorAt(1, QColor(15, 26, 48));
-                p.setPen(QPen(QColor(58, 74, 106), 1));
+                p.setPen(QPen(dimClr, 1));
             }
             p.setBrush(bg);
             p.drawRoundedRect(r, 10, 10);
 
-            // 5★ 徽章
-            if (isTier5) {
-                QString badge = QStringLiteral("★★★ ★★");
-                p.setPen(tier5Clr);
-                p.setFont(tierF);
-                p.drawText(QRectF(r.x(), r.y() + 4, r.width(), tierSz),
-                           Qt::AlignCenter, badge);
-            }
-
-            float cy = r.y() + r.height() * 0.06f + (isTier5 ? tierSz : 0);
-            float ch = r.height() * 0.17f;
+            float rowY = r.y() + r.height() * 0.04f;
+            float rowH = r.height() * 0.17f;
 
             // ── 战机名 ────────────────────────────────────────────
-            p.setPen(isTier5 ? tier5Clr : QColor(255, 215, 0));
+            p.setPen(t5 ? goldClr : QColor(255, 215, 0));
             p.setFont(nameF);
-            p.drawText(QRectF(r.x(), cy, r.width(), ch), Qt::AlignCenter, card.name);
+            p.drawText(QRectF(r.x(), rowY, r.width(), rowH), Qt::AlignCenter, card.name);
+            rowY += rowH;
 
-            float rowY = cy + ch;
-
-            // ── 火力 ★ ────────────────────────────────────────────
+            // ── 火力 ★ 条 ────────────────────────────────────────
             {
                 QString s;
-                for (int i = 0; i < card.firePower; ++i) s += QStringLiteral("★");
-                for (int i = card.firePower; i < 5; ++i) s += QStringLiteral("☆");
+                for (int i = 0; i < card.fire; ++i) s += QStringLiteral("★");
+                for (int i = card.fire; i < 5; ++i) s += QStringLiteral("☆");
                 p.setPen(QColor(255, 200, 50));
-                p.setFont(statF);
-                p.drawText(QRectF(r.x(), rowY, r.width(), statSz), Qt::AlignCenter, s);
-                rowY += statSz;
+                p.setFont(barF);
+                p.drawText(QRectF(r.x(), rowY, r.width(), barSz), Qt::AlignCenter, s);
+                rowY += barSz;
             }
 
-            // ── 生命 ♥ ────────────────────────────────────────────
-            {
-                QString hStr;
-                int displayH = (card.lives > 7) ? 7 : card.lives;
-                for (int i = 0; i < displayH; ++i) hStr += QStringLiteral("♥");
-                p.setPen(QColor(255, 107, 107));
-                p.setFont(statF);
-                p.drawText(QRectF(r.x(), rowY, r.width(), statSz), Qt::AlignCenter, hStr);
-                rowY += statSz;
-            }
-
-            // ── 速度 ★ ────────────────────────────────────────────
+            // ── 生命 ♥ 条 ────────────────────────────────────────
             {
                 QString s;
-                for (int i = 0; i < card.speed; ++i) s += QStringLiteral("★");
-                for (int i = card.speed; i < 5; ++i) s += QStringLiteral("☆");
-                p.setPen(QColor(100, 200, 255));
-                p.setFont(statF);
-                p.drawText(QRectF(r.x(), rowY, r.width(), statSz), Qt::AlignCenter, s);
-                rowY += statSz;
+                int nH = (card.lives > 7) ? 7 : card.lives;
+                for (int i = 0; i < nH; ++i) s += QStringLiteral("♥");
+                p.setPen(QColor(255, 107, 107));
+                p.setFont(barF);
+                p.drawText(QRectF(r.x(), rowY, r.width(), barSz), Qt::AlignCenter, s);
+                rowY += barSz;
             }
 
-            // ── 技能名 + 描述 ──────────────────────────────────────
-            p.setPen(QColor(170, 187, 204));
-            p.setFont(descF);
-            p.drawText(QRectF(r.x(), rowY, r.width(), descSz), Qt::AlignCenter, card.skill);
+            // ── 技能名 + CD ──────────────────────────────────────
+            {
+                p.setPen(QColor(130, 200, 255));
+                p.setFont(infoF);
+                p.drawText(QRectF(r.x(), rowY, r.width(), infoSz), Qt::AlignCenter,
+                           QString("技 %1").arg(card.skill));
+                rowY += infoSz;
+            }
+            {
+                p.setPen(QColor(170, 187, 204));
+                p.setFont(infoF);
+                p.drawText(QRectF(r.x(), rowY, r.width(), infoSz), Qt::AlignCenter,
+                           QString("CD %1s").arg(card.cd));
+                rowY += infoSz;
+            }
 
+            // ── 描述 ──────────────────────────────────────────────
             p.setPen(QColor(130, 148, 168));
-            p.setFont(descF);
-            p.drawText(QRectF(r.x(), rowY + descSz, r.width(), descSz), Qt::AlignCenter, card.desc);
+            p.setFont(infoF);
+            p.drawText(QRectF(r.x(), rowY, r.width(), infoSz), Qt::AlignCenter, card.desc);
 
             ++idx;
         }
@@ -162,12 +152,11 @@ void AircraftSelectScreen::paintEvent(QPaintEvent* /*event*/) {
 
 void AircraftSelectScreen::mouseReleaseEvent(QMouseEvent* e) {
     float w = width(), h = height();
-    float cardW = w * 0.22f, cardH = h * 0.34f;
-    float gapX = w * 0.045f, gapY = h * 0.03f;
-    float startY = h * 0.14f;
+    float cardW = w * 0.22f, cardH = h * 0.33f;
+    float gapX = w * 0.045f, gapY = h * 0.035f;
+    float startY = h * 0.15f;
     int rows[2] = {3, 2};
 
-    // 检查确认按钮
     float bw = w * 0.3f, bh = h * 0.065f;
     float bx = (w - bw) * 0.5f, by = h * 0.90f;
     if (QRectF(bx, by, bw, bh).contains(e->pos())) {
@@ -175,7 +164,6 @@ void AircraftSelectScreen::mouseReleaseEvent(QMouseEvent* e) {
         return;
     }
 
-    // 检查卡片点击
     int idx = 0;
     for (int ri = 0; ri < 2; ++ri) {
         int n = rows[ri];

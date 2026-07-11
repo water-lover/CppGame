@@ -24,7 +24,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
-    struct CardInfo { int id; const char* name; int firePower; int lives; int speed; int tier; const char* skill; const char* desc; };
+    struct CardInfo { int id; const char* name; int fire; int lives; int cd; const char* skill; const char* desc; };
     static const CardInfo AIRCRAFT[5];
 
     int m_selected = 0;
