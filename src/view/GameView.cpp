@@ -236,6 +236,12 @@ void GameView::setUpgradeFireLevelPtr(const int* p) noexcept { m_pUpgradeFireLev
 void GameView::setUpgradeLivesLevelPtr(const int* p) noexcept { m_pUpgradeLivesLevel = p; }
 void GameView::setUpgradeSpeedLevelPtr(const int* p) noexcept { m_pUpgradeSpeedLevel = p; }
 void GameView::setUpgradeCooldownLevelPtr(const int* p) noexcept { m_pUpgradeCooldownLevel = p; }
+void GameView::setMaxUnlockedLevelPtr(const int* p) noexcept {
+    m_pMaxUnlockedLevel = p;
+    if (m_pMaxUnlockedLevel) {
+        setLevelSelectMaxUnlocked(*m_pMaxUnlockedLevel);
+    }
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // 帧循环
@@ -342,6 +348,11 @@ void GameView::onPropertyChanged(uint32_t id) {
     case PROP_ID_STAR_CORES:
         if (m_upgradeScreen && m_pStarCores)
             m_upgradeScreen->setStarCores(*m_pStarCores);
+        break;
+
+    case PROP_ID_MAX_UNLOCKED_LEVEL:
+        if (m_pMaxUnlockedLevel)
+            setLevelSelectMaxUnlocked(*m_pMaxUnlockedLevel);
         break;
 
     case PROP_ID_UPGRADE_LEVELS:

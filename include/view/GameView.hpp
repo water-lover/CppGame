@@ -116,6 +116,7 @@ public:
     void setUpgradeStatCommand(std::function<void(int)>&& cmd);
     void setLevelSelectMaxUnlocked(int level) noexcept;
     void setStarCoresPtr(const int* p) noexcept;
+    void setMaxUnlockedLevelPtr(const int* p) noexcept;
     void setUpgradeFireLevelPtr(const int* p) noexcept;
     void setUpgradeLivesLevelPtr(const int* p) noexcept;
     void setUpgradeSpeedLevelPtr(const int* p) noexcept;
@@ -184,6 +185,7 @@ private:
     const GameState* m_pGameState = nullptr;
     const bool*     m_pLevelCleared = nullptr;
     const int*      m_pCurrentLevel = nullptr;
+    const int*      m_pMaxUnlockedLevel = nullptr;
     const int*      m_pStarCores    = nullptr;
     const int*      m_pUpgradeFireLevel     = nullptr;
     const int*      m_pUpgradeLivesLevel    = nullptr;

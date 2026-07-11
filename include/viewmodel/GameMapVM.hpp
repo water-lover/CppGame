@@ -92,6 +92,7 @@ public:
     int   getCurrentLevel()       const noexcept { return m_currentLevel; }
     int   getMaxUnlockedLevel()   const noexcept { return m_maxUnlockedLevel; }
     void  setMaxUnlockedLevel(int lvl) noexcept { m_maxUnlockedLevel = lvl; }
+    const int* getMaxUnlockedLevelPtr() const noexcept { return &m_maxUnlockedLevel; }
     int   getWave()               const noexcept { return m_wave; }
     int   getBossHp()             const noexcept { return m_bossHp; }
     int   getBossMaxHp()          const noexcept { return m_bossMaxHp; }

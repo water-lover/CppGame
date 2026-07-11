@@ -19,6 +19,7 @@ enum : uint32_t {
     PROP_ID_WEAPON_LEVEL,       // 武器等级变化
     PROP_ID_STAR_CORES,         // 星核数量变化
     PROP_ID_UPGRADE_LEVELS,     // 升级等级变化
+    PROP_ID_MAX_UNLOCKED_LEVEL, // 最大已解锁关卡变化
 };
 
 #endif // PROPERTYIDS_HPP

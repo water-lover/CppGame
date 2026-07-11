@@ -78,10 +78,11 @@ void AppAgent::init() {
     m_gameView->setUpgradeLivesLevelPtr(m_mapVM->getUpgradeLivesLevelPtr());
     m_gameView->setUpgradeSpeedLevelPtr(m_mapVM->getUpgradeSpeedLevelPtr());
     m_gameView->setUpgradeCooldownLevelPtr(m_mapVM->getUpgradeCooldownLevelPtr());
+    // 最大已解锁关卡指针注入（GameMapVM 自身维护业务逻辑）
+    m_gameView->setMaxUnlockedLevelPtr(m_mapVM->getMaxUnlockedLevelPtr());
 
-    // 初始关卡解锁（测试阶段全解锁）
+    // 初始关卡解锁（测试阶段全解锁；正式版应从存档加载）
     m_mapVM->setMaxUnlockedLevel(7);
-    m_gameView->setLevelSelectMaxUnlocked(7);
     log("AppAgent", "All levels unlocked for testing (7/7)");
 
     // 迭代 6：从存档读取升级数据
@@ -128,16 +129,9 @@ void AppAgent::init() {
                          log("AppAgent", "High score saved: " + std::to_string(score));
                      });
     QObject::connect(m_mapVM, &GameMapVM::saveCampaignRequested,
-                     [this](int level) {
+                     [](int level) {
                          SaveManager().saveCampaignProgress(level);
-                         // 仅当新关卡比当前最大解锁更高时才更新，确保不锁住已开放关卡
-                         if (level > 1) {
-                             int cur = m_mapVM->getMaxUnlockedLevel();
-                             if (level > cur) {
-                                 m_mapVM->setMaxUnlockedLevel(level);
-                                 m_gameView->setLevelSelectMaxUnlocked(level);
-                             }
-                         }
+                         // 解锁逻辑已由 GameMapVM 在 tickImpl 中完成
                          log("AppAgent", "Campaign progress saved: level " + std::to_string(level));
                      });
     QObject::connect(m_mapVM, &GameMapVM::saveUpgradeRequested,

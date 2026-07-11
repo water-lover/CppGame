@@ -125,7 +125,7 @@ void GameMapVM::tickImpl(float dt) {
 
     // 2. 更新技能冷却/持续
     m_skill.update(dt);
-    applySkillEffects();
+    applySkillEffects(dt);
 
     // 3. 玩家自动射击
     if (m_player.canFire(dt)) {
@@ -206,7 +206,7 @@ void GameMapVM::tickImpl(float dt) {
         }
     }
 
-    // 11. 道具拾取
+    // 11. 清理实体
     cleanupEntities();
 
     // 12. 更新波次/BOSS 状态
@@ -238,6 +238,13 @@ void GameMapVM::tickImpl(float dt) {
         }
         // 发出持久化请求
         emit saveHighScoreRequested(m_scoreMgr.getHighScore());
+
+        // 更新最大已解锁关卡（ViewModel 自身业务逻辑，不依赖 App）
+        if (nextLevel <= 7 && nextLevel > m_maxUnlockedLevel) {
+            m_maxUnlockedLevel = nextLevel;
+            fireChange(PROP_ID_MAX_UNLOCKED_LEVEL);
+        }
+
         if (nextLevel <= 7) {
             emit saveCampaignRequested(nextLevel);
         }
@@ -249,7 +256,7 @@ void GameMapVM::tickImpl(float dt) {
     // 14. 同步到 AirMap
     syncMap();
 
-    // 14. 发出属性变化通知
+    // 15. 发出属性变化通知
     int curScore = m_scoreMgr.getScore();
     if (curScore != m_lastScore) {
         m_lastScore = curScore;
@@ -469,7 +476,7 @@ void GameMapVM::handleEnemyAttacks(float dt) {
 // 技能效果处理
 // ═══════════════════════════════════════════════════════════════════
 
-void GameMapVM::applySkillEffects() {
+void GameMapVM::applySkillEffects(float dt) {
     if (!m_skill.isActive()) {
         m_flameStormTimer = 0.0f;
         m_isDashing = false;
@@ -477,7 +484,6 @@ void GameMapVM::applySkillEffects() {
         return;
     }
     const auto& tmpl = AircraftStats::getTemplate(m_player.getAircraftType());
-    const float dt = 0.016f;
     switch (tmpl.skill) {
     case SkillType::FlameStorm: handleFlameStorm(dt); break;
     case SkillType::TimeDash:   handleTimeDash(dt);   break;
@@ -575,7 +581,7 @@ void GameMapVM::checkCollisions() {
                     fireChange(PROP_ID_STAR_CORES);
                     m_powerUpMgr.onEnemyDestroyed(m_enemies[ei]->getPos(), m_rng);
                 }
-                m_bullets[bi] = Bullet(); // 标记移除
+                m_bullets[bi].markDead();
                 break;
             }
         }
@@ -590,7 +596,7 @@ void GameMapVM::checkCollisions() {
         if (dist < m_player.getSize() + b.getSize()) {
             if (reflectEnabled) continue; // 铁壁阵反弹
             m_player.takeDamage();
-            b = Bullet(); // 移除
+            b.markDead();
             if (m_player.isDead()) {
                 m_state = GameState::GameOver;
                 log("GameMapVM", "Player died — Game Over");
@@ -640,7 +646,7 @@ void GameMapVM::cleanupEntities() {
     });
     // 子弹：离屏 或 已被标记移除（通过 getSize() == 0 判断）
     removeDead(m_bullets, [](const auto& b) {
-        return b.isOffScreen() || b.getSize() < 0.001f;
+        return b.isOffScreen() || b.isDead();
     });
 }
 
@@ -684,7 +690,7 @@ void GameMapVM::syncMap() {
 
     // 子弹
     for (const auto& b : m_bullets) {
-        if (b.getSize() < 0.001f) continue; // 已标记移除
+        if (b.isDead()) continue; // 已标记移除
         Actor a;
         a.type  = (b.getOwner() == Bullet::Player) ? ActorType::PlayerBullet : ActorType::EnemyBullet;
         a.x     = b.getPos().x;
