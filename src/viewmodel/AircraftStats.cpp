@@ -17,7 +17,7 @@ static const AircraftTemplate kTemplates[] = {
         AircraftType::Thunder,
         "雷霆号",
         4,          // ★★★★ 火力
-        4,          // ♥♥♥♥ 生命
+        6,          // ♥♥♥♥♥♥ 生命
         1.0f,       // ★★★  速度 (基准)
         0.18f,      // 较快射速
         SkillType::ThunderStrike,
@@ -33,7 +33,7 @@ static const AircraftTemplate kTemplates[] = {
         AircraftType::Flame,
         "烈焰号",
         5,          // ★★★★★ 火力
-        3,          // ♥♥♥   生命
+        5,          // ♥♥♥♥♥ 生命
         0.9f,       // ★★★   速度
         0.25f,      // 稍慢射速，3发散射补偿
         SkillType::FlameStorm,
@@ -49,7 +49,7 @@ static const AircraftTemplate kTemplates[] = {
         AircraftType::Frost,
         "冰霜号",
         3,          // ★★★  火力
-        5,          // ♥♥♥♥♥ 生命
+        7,          // ♥♥♥♥♥♥♥ 生命
         0.9f,       // ★★★  速度
         0.20f,      // 中等射速
         SkillType::FrostShield,
@@ -65,7 +65,7 @@ static const AircraftTemplate kTemplates[] = {
         AircraftType::Phantom,
         "幻影号",
         3,          // ★★★  火力
-        3,          // ♥♥♥   生命
+        5,          // ♥♥♥♥♥ 生命
         1.3f,       // ★★★★★ 速度
         0.15f,      // 极快射速
         SkillType::TimeDash,
@@ -81,7 +81,7 @@ static const AircraftTemplate kTemplates[] = {
         AircraftType::Fortress,
         "堡垒号",
         3,          // ★★★  火力
-        4,          // ♥♥♥♥ 生命
+        6,          // ♥♥♥♥♥♥ 生命
         0.75f,      // ★★   速度
         0.20f,      // 中等射速，V形双发
         SkillType::IronWall,
