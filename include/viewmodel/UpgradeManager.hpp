@@ -1,7 +1,7 @@
 #ifndef UPGRADEMANAGER_HPP
 #define UPGRADEMANAGER_HPP
 
-#include "common/Constants.hpp"
+#include "viewmodel/GameConstants.hpp"
 
 /// 可升级的属性
 enum class UpgradeType {

@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include "viewmodel/Player.hpp"
-#include "common/Constants.hpp"
+#include "viewmodel/GameConstants.hpp"
 
 TEST_CASE("Player - initial state", "[player]") {
     Player player;

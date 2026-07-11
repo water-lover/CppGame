@@ -1,5 +1,5 @@
 #include "view/EnemyItem.hpp"
-#include "common/Constants.hpp"
+#include "view/ViewConstants.hpp"
 
 /// 敌机图形项 — 支持按类型设置不同尺寸
 ///

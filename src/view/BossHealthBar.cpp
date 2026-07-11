@@ -1,5 +1,5 @@
 #include "view/BossHealthBar.hpp"
-#include "common/Constants.hpp"
+#include "view/ViewConstants.hpp"
 
 #include <QPainter>
 #include <QFont>

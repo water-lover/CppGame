@@ -1,5 +1,5 @@
 #include "view/UpgradeScreen.hpp"
-#include "common/Constants.hpp"
+#include "view/ViewConstants.hpp"
 
 #include <QPainter>
 #include <QVBoxLayout>
@@ -132,7 +132,7 @@ void UpgradeScreen::refreshSlot(UpgradeSlot& slot) {
     int idx = static_cast<int>(slot.type);
     int lv = (idx < 4) ? m_levels[idx] : 0;
     int cost = upgradeCost(lv);
-    bool maxed = (lv >= MAX_UPGRADE_LEVEL);
+    bool maxed = (lv >= VIEW_MAX_UPGRADE_LV);
     bool canAfford = (m_starCores >= cost);
 
     QString nextStr = maxed ? QStringLiteral("MAX") :

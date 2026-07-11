@@ -1,5 +1,5 @@
 #include "viewmodel/Enemy.hpp"
-#include "common/Constants.hpp"
+#include "viewmodel/GameConstants.hpp"
 
 // ═══════════════════════════════════════════════════════════════════
 // Enemy 基类

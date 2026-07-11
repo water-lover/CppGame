@@ -1,5 +1,5 @@
 #include "view/BulletItem.hpp"
-#include "common/Constants.hpp"
+#include "view/ViewConstants.hpp"
 
 /// 子弹图形项 — 支持玩家/敌方颜色区分
 ///

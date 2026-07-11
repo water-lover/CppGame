@@ -16,7 +16,7 @@ using Catch::Approx;
 #include "viewmodel/WaveManager.hpp"
 #include "viewmodel/Enemy.hpp"
 #include "viewmodel/Boss.hpp"
-#include "common/Constants.hpp"
+#include "viewmodel/GameConstants.hpp"
 #include <random>
 #include <chrono>
 

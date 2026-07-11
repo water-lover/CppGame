@@ -132,7 +132,7 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
         switch (actor.type) {
         case ActorType::Player: {
             // 玩家：绘制发光光环 + 飞机
-            float glowSize = PLAYER_SIZE * SCREEN_WIDTH * 0.8f;
+            float glowSize = SPRITE_PLAYER_SIZE * SCREEN_WIDTH * 0.8f;
             QRadialGradient glow(px, py, glowSize);
             glow.setColorAt(0.0, QColor(100, 200, 255, 40));
             glow.setColorAt(0.5, QColor(50, 100, 255, 20));
@@ -141,20 +141,20 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
             painter->setPen(Qt::NoPen);
             painter->drawEllipse(QPointF(px, py), glowSize, glowSize);
             // 飞机主体
-            drawPixmapAt(painter, m_pPlayerImg, px, py, PLAYER_SIZE * SCREEN_WIDTH);
+            drawPixmapAt(painter, m_pPlayerImg, px, py, SPRITE_PLAYER_SIZE * SCREEN_WIDTH);
             break;
         }
 
         case ActorType::EnemySmall:
-            drawPixmapAt(painter, m_pEnemyImg, px, py, ENEMY_SIZE * SCREEN_WIDTH);
+            drawPixmapAt(painter, m_pEnemyImg, px, py, SPRITE_ENEMY_SIZE * SCREEN_WIDTH);
             break;
 
         case ActorType::EnemyMedium:
-            drawPixmapAt(painter, m_pEnemyMediumImg, px, py, ENEMY_SIZE * SCREEN_WIDTH * 1.4f);
+            drawPixmapAt(painter, m_pEnemyMediumImg, px, py, SPRITE_ENEMY_SIZE * SCREEN_WIDTH * 1.4f);
             break;
 
         case ActorType::EnemyLarge:
-            drawPixmapAt(painter, m_pEnemyLargeImg, px, py, ENEMY_SIZE * SCREEN_WIDTH * 1.8f);
+            drawPixmapAt(painter, m_pEnemyLargeImg, px, py, SPRITE_ENEMY_SIZE * SCREEN_WIDTH * 1.8f);
             break;
 
         case ActorType::Boss: {
@@ -162,32 +162,32 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
             if (actor.maxHp <= 250 && m_pBossImg2)       bossImg = m_pBossImg2;
             else if (actor.maxHp <= 400 && m_pBossImg3)  bossImg = m_pBossImg3;
             else if (m_pBossImg4)                         bossImg = m_pBossImg4;
-            drawPixmapAt(painter, bossImg, px, py, ENEMY_SIZE * SCREEN_WIDTH * 3.0f);
+            drawPixmapAt(painter, bossImg, px, py, SPRITE_ENEMY_SIZE * SCREEN_WIDTH * 3.0f);
             break;
         }
 
         case ActorType::PlayerBullet:
-            drawPixmapAt(painter, m_pBulletImg, px, py, BULLET_SIZE * SCREEN_WIDTH);
+            drawPixmapAt(painter, m_pBulletImg, px, py, SPRITE_BULLET_SIZE * SCREEN_WIDTH);
             break;
 
         case ActorType::EnemyBullet:
-            drawPixmapAt(painter, m_pEnemyBulletImg, px, py, BULLET_SIZE * SCREEN_WIDTH);
+            drawPixmapAt(painter, m_pEnemyBulletImg, px, py, SPRITE_BULLET_SIZE * SCREEN_WIDTH);
             break;
 
         case ActorType::PowerUpHp:
-            drawPixmapAt(painter, m_pPowerUpHpImg, px, py, ENEMY_SIZE * SCREEN_WIDTH);
+            drawPixmapAt(painter, m_pPowerUpHpImg, px, py, SPRITE_ENEMY_SIZE * SCREEN_WIDTH);
             break;
 
         case ActorType::PowerUpFire:
-            drawPixmapAt(painter, m_pPowerUpFireImg, px, py, ENEMY_SIZE * SCREEN_WIDTH);
+            drawPixmapAt(painter, m_pPowerUpFireImg, px, py, SPRITE_ENEMY_SIZE * SCREEN_WIDTH);
             break;
 
         case ActorType::PowerUpShield:
-            drawPixmapAt(painter, m_pPowerUpShieldImg, px, py, ENEMY_SIZE * SCREEN_WIDTH);
+            drawPixmapAt(painter, m_pPowerUpShieldImg, px, py, SPRITE_ENEMY_SIZE * SCREEN_WIDTH);
             break;
 
         case ActorType::PowerUpStarCore:
-            drawPixmapAt(painter, m_pPowerUpStarCoreImg, px, py, ENEMY_SIZE * SCREEN_WIDTH);
+            drawPixmapAt(painter, m_pPowerUpStarCoreImg, px, py, SPRITE_ENEMY_SIZE * SCREEN_WIDTH);
             break;
         }
     }
@@ -281,7 +281,7 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
             if (a.type == ActorType::Player) {
                 float px = normToPixel(a.x, SCREEN_WIDTH);
                 float py = normToPixel(a.y, SCREEN_HEIGHT);
-                float r = PLAYER_SIZE * SCREEN_WIDTH * 0.8f;
+                float r = SPRITE_PLAYER_SIZE * SCREEN_WIDTH * 0.8f;
                 float time = QTime::currentTime().msecsTo(QTime()) * 0.001f;
 
                 if (skillType == 0) { // ThunderStrike — 金色闪电光环
@@ -354,7 +354,7 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
             if (a.type == ActorType::Player) {
                 float px = normToPixel(a.x, SCREEN_WIDTH);
                 float py = normToPixel(a.y, SCREEN_HEIGHT);
-                float r = PLAYER_SIZE * SCREEN_WIDTH * 0.5f;
+                float r = SPRITE_PLAYER_SIZE * SCREEN_WIDTH * 0.5f;
                 painter->setBrush(Qt::NoBrush);
                 QPen pen(QColor(0, 255, 180, 100), 2);
                 painter->setPen(pen);

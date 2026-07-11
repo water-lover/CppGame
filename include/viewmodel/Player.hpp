@@ -2,7 +2,7 @@
 #define PLAYER_HPP
 
 #include "viewmodel/MathUtils.hpp"
-#include "common/Constants.hpp"
+#include "viewmodel/GameConstants.hpp"
 #include "viewmodel/AircraftStats.hpp"
 
 /// 玩家数据类

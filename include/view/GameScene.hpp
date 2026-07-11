@@ -8,7 +8,7 @@ class QPixmap;
 
 #include "common/AirMap.hpp"
 #include "common/Actor.hpp"
-#include "common/Constants.hpp"
+#include "view/ViewConstants.hpp"
 #include "common/PropertyIds.hpp"
 #include "common/Types.hpp"
 

@@ -1,5 +1,5 @@
 #include "view/ModeSelectScreen.hpp"
-#include "common/Constants.hpp"
+#include "view/ViewConstants.hpp"
 
 #include <QPainter>
 #include <QVBoxLayout>

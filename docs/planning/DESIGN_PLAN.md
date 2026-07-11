@@ -77,10 +77,9 @@
 ```
 src/common/                         include/common/
 ├── AirMap.cpp                      ├── AirMap.hpp         ← 精灵集合容器（View+VM 使用）
-│   (文件清单移除了 Logger / MathUtils / Geometry，见 resource/ 和 viewmodel/ 目录)
+│   (文件清单移除了 Logger / MathUtils / Geometry / Constants，见各自的层)
                                 ├── Actor.hpp          ← 精灵数据结构（View+VM 使用）
-                                ├── Types.hpp          ← EntityType, GameState（View+VM 使用）
-                                ├── Constants.hpp      ← SCREEN_WIDTH, PLAYER_SPEED（View+VM 使用）
+                                ├── Types.hpp          ← GameState 跨层通信协议
                                 └── PropertyIds.hpp    ← PROP_ID_MAP, PROP_ID_SCORE（View+VM 使用）
 ```
 
@@ -158,8 +157,9 @@ enum {
 
 ```
 src/viewmodel/                      include/viewmodel/
-├── MathUtils.cpp                   ├── MathUtils.hpp     ← Vec2, distance（从 common/ 移入）
-├── Geometry.cpp                    ├── Geometry.hpp      ← Rect, Circle（从 common/ 移入）
+├── MathUtils.cpp                   ├── MathUtils.hpp     ← Vec2, distance
+├── Geometry.cpp                    ├── Geometry.hpp      ← Rect, Circle
+│                                   ├── GameConstants.hpp ← 游戏常量, GameMode 枚举
 ├── GameMapVM.cpp                   ├── GameMapVM.hpp     ← 游戏地图 ViewModel（核心 FM）
 ├── SpiritVM.cpp                    ├── SpiritVM.hpp      ← 精灵图片 ViewModel
 ├── Player.cpp                      ├── Player.hpp        ← 玩家数据类
@@ -256,6 +256,7 @@ GameView::GameView(QWidget* parent) : QGraphicsView(parent) {
 src/view/                           include/view/
 ├── GameView.cpp                    ├── GameView.hpp        ← QGraphicsView 主窗口
 ├── GameScene.cpp                   ├── GameScene.hpp       ← QGraphicsScene 场景
+│                                   ├── ViewConstants.hpp   ← 屏幕/帧率/精灵尺寸常量
 ├── PlayerItem.cpp                  ├── PlayerItem.hpp      ← 玩家飞机（QGraphicsPixmapItem）
 ├── EnemyItem.cpp                   ├── EnemyItem.hpp       ← 敌机（QGraphicsPixmapItem）
 ├── BulletItem.cpp                  ├── BulletItem.hpp      ← 子弹（QGraphicsPixmapItem）

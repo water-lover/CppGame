@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "common/AirMap.hpp"
-#include "common/Constants.hpp"
+#include "viewmodel/GameConstants.hpp"
 #include "common/PropertyIds.hpp"
 #include "common/Types.hpp"
 #include "viewmodel/AircraftStats.hpp"

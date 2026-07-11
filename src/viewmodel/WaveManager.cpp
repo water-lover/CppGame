@@ -1,5 +1,5 @@
 #include "viewmodel/WaveManager.hpp"
-#include "common/Constants.hpp"
+#include "viewmodel/GameConstants.hpp"
 #include "resource/Logger.hpp"
 #include <random>
 #include <cmath>

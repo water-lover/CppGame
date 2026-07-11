@@ -14,7 +14,7 @@
 #include <algorithm>
 #include "viewmodel/GameMapVM.hpp"
 #include "viewmodel/AircraftStats.hpp"
-#include "common/Constants.hpp"
+#include "viewmodel/GameConstants.hpp"
 #include "common/Actor.hpp"
 #include "common/AirMap.hpp"
 
@@ -35,8 +35,9 @@ struct SignalRecorder {
 
 // ── 辅助工具 ─────────────────────────────────────────────────────────────────
 
-/// 对 vm 执行 N 帧更新（每帧 dt = FRAME_DURATION ≈ 0.0167s）
-static void tickN(GameMapVM& vm, int n, float dt = FRAME_DURATION) {
+/// 对 vm 执行 N 帧更新（每帧 dt ≈ 0.0167s）
+static constexpr float kFrameDur = 1.0f / 60.0f;
+static void tickN(GameMapVM& vm, int n, float dt = kFrameDur) {
     auto tickCmd = vm.getTickCommand();
     for (int i = 0; i < n; ++i) {
         tickCmd(dt);
@@ -133,7 +134,7 @@ TEST_CASE("GameMapVM - auto-firing creates bullets", "[gamemap][bullet]") {
     startCmd();
 
     // 射击间隔 0.2s ≈ 12 ticks
-    tickN(vm, static_cast<int>(FIRE_INTERVAL / FRAME_DURATION) + 2);
+    tickN(vm, static_cast<int>(FIRE_INTERVAL / kFrameDur) + 2);
 
     const AirMap* map = vm.getMap();
     int bulletCount = 0;
@@ -157,7 +158,7 @@ TEST_CASE("GameMapVM - player movement commands work", "[gamemap][move]") {
     // 向右移动
     auto moveRightCmd = vm.getMoveRightCommand();
     moveRightCmd(1);  // 按下
-    tickN(vm, static_cast<int>(0.5f / FRAME_DURATION));  // 移动 0.5 秒
+    tickN(vm, static_cast<int>(0.5f / kFrameDur));  // 移动 0.5 秒
     moveRightCmd(0);  // 松开
 
     // 玩家 x 坐标应增大
