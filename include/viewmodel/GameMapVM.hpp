@@ -168,6 +168,7 @@ private:
     void handleThunderStrike();     // 全屏雷击
     void handleFlameStorm(float dt);// 扇形火焰
     void handleTimeDash(float dt);  // 冲刺攻击
+    void handleIronWall(float dt);  // 铁壁阵反击弹幕
     void cleanupEntities();
     void syncMap();
     void fireChange(uint32_t id);

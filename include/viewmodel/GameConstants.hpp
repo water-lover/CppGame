@@ -9,13 +9,13 @@ enum class GameMode {
 
 // ── 玩家 ──────────────────────────────────────────────────────────
 constexpr float PLAYER_SPEED      = 0.4f;     // 归一化速度/秒
-constexpr int   PLAYER_MAX_LIVES  = 3;
-constexpr float PLAYER_SIZE       = 0.06f;    // 归一化大小（碰撞/渲染基准）
-constexpr float INVINCIBLE_TIME   = 2.0f;     // 受伤后无敌时间(秒)
-constexpr float FIRE_INTERVAL     = 0.2f;     // 射击间隔(秒)
+constexpr int   PLAYER_MAX_LIVES  = 4;        // 基础生命
+constexpr float PLAYER_SIZE       = 0.06f;    // 归一化大小
+constexpr float INVINCIBLE_TIME   = 2.5f;     // 受伤后无敌时间(秒)
+constexpr float FIRE_INTERVAL     = 0.2f;     // 基准射击间隔(秒)
 
 // ── 敌机 ──────────────────────────────────────────────────────────
-constexpr float ENEMY_SPEED       = 0.25f;    // 归一化速度/秒
+constexpr float ENEMY_SPEED       = 0.22f;    // 归一化速度/秒
 constexpr int   ENEMY_SCORE       = 10;
 
 // ── 子弹 ──────────────────────────────────────────────────────────

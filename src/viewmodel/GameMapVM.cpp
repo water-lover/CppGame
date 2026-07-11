@@ -496,13 +496,14 @@ void GameMapVM::applySkillEffects(float dt) {
     switch (tmpl.skill) {
     case SkillType::FlameStorm: handleFlameStorm(dt); break;
     case SkillType::TimeDash:   handleTimeDash(dt);   break;
+    case SkillType::IronWall:   handleIronWall(dt);   break;
     default: break;
     }
 }
 
 void GameMapVM::handleThunderStrike() {
     for (auto& e : m_enemies) {
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i < 5; ++i) {
             if (!e->isDead()) e->takeDamage();
         }
         if (e->isDead()) {
@@ -561,6 +562,24 @@ void GameMapVM::handleTimeDash(float dt) {
     }
     m_dashTimer -= dt;
     if (m_dashTimer <= 0.0f) m_isDashing = false;
+}
+
+// ── 铁壁阵：持续期间自动向四周发射反击弹幕 ─────────────────────
+void GameMapVM::handleIronWall(float dt) {
+    m_flameStormTimer += dt;
+    if (m_flameStormTimer >= 0.15f) {
+        m_flameStormTimer = 0.0f;
+        Vec2 p = m_player.getPos();
+        for (int i = 0; i < 8; ++i) {
+            float angle = 3.14159f * 2.0f * i / 8.0f;
+            m_bullets.emplace_back(
+                p.x + std::cos(angle) * PLAYER_SIZE * 0.5f,
+                p.y + std::sin(angle) * PLAYER_SIZE * 0.5f,
+                std::cos(angle) * BULLET_SPEED * 0.6f,
+                std::sin(angle) * BULLET_SPEED * 0.6f,
+                Bullet::Player);
+        }
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════
