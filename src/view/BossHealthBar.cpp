@@ -30,12 +30,13 @@ void BossHealthBar::paintEvent(QPaintEvent* /*event*/) {
                      QColor(220, 30, 30, 220));
 
     // ── 高光线（顶部装饰） ────────────────────────────────────────
-    painter.fillRect(0, 0, barWidth, 3, QColor(255, 100, 100, 160));
+    int hlH = std::max(1, static_cast<int>(h * 0.12f));
+    painter.fillRect(0, 0, barWidth, hlH, QColor(255, 100, 100, 160));
 
     // ── 文字：HP 数值 ─────────────────────────────────────────────
     painter.setPen(QColor(255, 255, 255, 220));
     QFont font;
-    font.setPixelSize(14);
+    font.setPixelSize(std::max(10, static_cast<int>(h * 0.55f)));
     font.setBold(true);
     painter.setFont(font);
     painter.drawText(QRect(0, 0, static_cast<int>(w), static_cast<int>(h)),

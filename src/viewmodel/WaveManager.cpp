@@ -28,10 +28,12 @@ void WaveManager::reset(int levelId) {
     // 无尽模式：每轮循环增加难度
     if (endlessMode_) {
         currentLevel_ = 1;
-        endlessLoop_++;
+        if (endlessLoop_ == 0) endlessLoop_ = 1;  // 首次进入设为第1轮
     } else {
         endlessLoop_ = 0;
     }
+
+    m_initialTimer = 0.0f;
 
     log("WaveManager", "Level " + std::to_string(currentLevel_) +
         " started (endless=" + (endlessMode_ ? "Y" : "N") +
@@ -69,6 +71,12 @@ void WaveManager::update(float dt,
 
     const auto& cfg = getConfigForLevel(currentLevel_);
 
+    // 关卡开始前预延迟（~2 秒），防止 wave 0 立即出怪
+    if (m_initialTimer < 2.0f) {
+        m_initialTimer += dt;
+        return;
+    }
+
     // 无尽模式：计算当前波次的难度倍率
     float diffMult = 1.0f;
     if (endlessMode_) {
@@ -105,6 +113,7 @@ void WaveManager::update(float dt,
 
             // 普通波次：重新计算本波敌机数量
             enemiesPerWave_ = 4 + currentWave_;  // 递增
+            m_initialTimer = 0.0f;  // 重置下一关的初始延迟
             m_timer = 0.0f;
         }
         return;

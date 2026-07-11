@@ -252,11 +252,12 @@ void UpgradeScreen::resizeEvent(QResizeEvent* event) {
 }
 
 void UpgradeScreen::applyScale() {
-    if (width() < 1 || height() < 1) return;
+    // 尺寸过小时跳过缩放（避免 QFont::setPixelSize <= 0）
+    if (width() < 50 || height() < 50) return;
 
     float sx = static_cast<float>(width())  / SCREEN_WIDTH;
     float sy = static_cast<float>(height()) / SCREEN_HEIGHT;
-    m_scale = std::min(sx, sy);
+    m_scale = std::max(std::min(sx, sy), 0.1f);
 
     for (auto& slot : m_slots) {
         slot.infoLabel->setFixedSize(

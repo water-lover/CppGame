@@ -76,9 +76,8 @@
 
 ```
 src/common/                         include/common/
-├── Logger.cpp                      ├── Logger.hpp         ← log(tag, msg)（VM+App 使用）
 ├── AirMap.cpp                      ├── AirMap.hpp         ← 精灵集合容器（View+VM 使用）
-│   (文件清单移除了 MathUtils / Geometry，见 viewmodel/ 目录)
+│   (文件清单移除了 Logger / MathUtils / Geometry，见 resource/ 和 viewmodel/ 目录)
                                 ├── Actor.hpp          ← 精灵数据结构（View+VM 使用）
                                 ├── Types.hpp          ← EntityType, GameState（View+VM 使用）
                                 ├── Constants.hpp      ← SCREEN_WIDTH, PLAYER_SPEED（View+VM 使用）
@@ -264,13 +263,12 @@ src/view/                           include/view/
 ├── HudOverlay.cpp                  ├── HudOverlay.hpp      ← 分数/生命覆盖层
 ├── StartScreen.cpp                 ├── StartScreen.hpp     ← 开始界面
 ├── GameOverScreen.cpp              ├── GameOverScreen.hpp  ← 游戏结束界面
-├── AircraftSelectScreen.cpp        ├── AircraftSelectScreen.hpp  (后续迭代)
-├── ModeSelectScreen.cpp            ├── ModeSelectScreen.hpp      (后续迭代)
-├── BossHealthBar.cpp               ├── BossHealthBar.hpp         (后续迭代)
-├── PauseOverlay.cpp                ├── PauseOverlay.hpp          (后续迭代)
-├── StageClearScreen.cpp            ├── StageClearScreen.hpp      (后续迭代)
-├── UpgradeScreen.cpp               ├── UpgradeScreen.hpp         (后续迭代)
-└── ExplosionEffect.cpp             └── ExplosionEffect.hpp       (后续迭代)
+├── AircraftSelectScreen.cpp        ├── AircraftSelectScreen.hpp  ← 战机选择
+├── ModeSelectScreen.cpp            ├── ModeSelectScreen.hpp      ← 模式选择
+├── LevelSelectScreen.cpp           ├── LevelSelectScreen.hpp     ← 关卡选择
+├── BossHealthBar.cpp               ├── BossHealthBar.hpp         ← BOSS 血条
+├── PauseOverlay.cpp                ├── PauseOverlay.hpp          ← 暂停覆盖层
+└── UpgradeScreen.cpp               └── UpgradeScreen.hpp         ← 升级界面
 ```
 
 ---
@@ -289,7 +287,8 @@ src/view/                           include/view/
 ```
 src/resource/                       include/resource/
 ├── AssetManager.cpp                ├── AssetManager.hpp  ← getImage(key) → QPixmap
-└── SaveManager.cpp                 └── SaveManager.hpp   ← load/saveHighScore(int)
+├── SaveManager.cpp                 ├── SaveManager.hpp   ← load/saveHighScore(int)
+└── Logger.cpp                      └── Logger.hpp        ← log(tag, msg)（VM+App 使用）
 ```
 
 **关键规则**：ViewModel 和 View **绝对不能直接调用 QFile / QImage / QPixmap 读写文件**。所有文件 I/O 必须通过 Resource Agent。
@@ -361,7 +360,12 @@ tests/
 ├── test_player.cpp            ← Player 移动/生命/无敌计时
 ├── test_collision.cpp         ← CollisionSystem 碰撞检测
 ├── test_game_map_vm.cpp       ← GameMapVM 集成测试
-└── test_spirit_vm.cpp         ← SpiritVM 测试（后续）
+├── test_aircraft_stats.cpp    ← AircraftStats 属性模板
+├── test_skill_system.cpp      ← SkillSystem 技能系统
+├── test_wave_manager.cpp      ← WaveManager 波次管理
+├── test_power_up.cpp          ← PowerUpManager 道具
+├── test_boss.cpp              ← Boss 行为
+└── test_upgrade_manager.cpp   ← UpgradeManager 升级系统
 ```
 
 ---
@@ -657,13 +661,19 @@ void Boss::updatePhase() {
 | `src/viewmodel/Enemy.cpp`           | ② ViewModel | **仅** ②         |
 | `src/viewmodel/CollisionSystem.cpp` | ② ViewModel | **仅** ②         |
 | `src/viewmodel/ScoreManager.cpp`    | ② ViewModel | **仅** ②         |
+| `src/viewmodel/WaveManager.cpp`     | ② ViewModel | **仅** ②         |
+| `src/viewmodel/UpgradeManager.cpp`  | ② ViewModel | **仅** ②         |
 | `src/view/GameView.cpp`             | ③ View      | **仅** ③         |
 | `src/view/PlayerItem.cpp`           | ③ View      | **仅** ③         |
 | `src/view/EnemyItem.cpp`            | ③ View      | **仅** ③         |
 | `src/view/HudOverlay.cpp`           | ③ View      | **仅** ③         |
 | `src/view/StartScreen.cpp`          | ③ View      | **仅** ③         |
+| `src/view/GameScene.cpp`            | ③ View      | **仅** ③         |
+| `src/view/LevelSelectScreen.cpp`    | ③ View      | **仅** ③         |
+| `src/view/UpgradeScreen.cpp`        | ③ View      | **仅** ③         |
 | `src/resource/AssetManager.cpp`     | ④ Resource  | **仅** ④         |
 | `src/resource/SaveManager.cpp`      | ④ Resource  | **仅** ④         |
+| `src/resource/Logger.cpp`           | ④ Resource  | **仅** ④         |
 | `src/app/AppAgent.cpp`              | ⑤ App       | **仅** ⑤         |
 | `tests/test_player.cpp`             | ⑥ Test      | **仅** ⑥         |
 | `CMakeLists.txt`                    | 所有 Agent   | 加新文件时对应 Agent 改 |

@@ -58,6 +58,7 @@ public:
     const int*      getHighScorePtr()    const noexcept { return &m_cachedHighScore; }
     const GameState* getGameStatePtr()   const noexcept { return &m_state; }
     const int*      getWavePtr()         const noexcept { return &m_wave; }
+    const char*     getWaveDisplayPtr()  const noexcept { return m_waveDisplayBuf.c_str(); }
     const int*      getBossHpPtr()       const noexcept { return &m_bossHp; }
     const int*      getBossMaxHpPtr()    const noexcept { return &m_bossMaxHp; }
     const int*      getCurrentLevelPtr() const noexcept { return &m_currentLevel; }
@@ -203,6 +204,7 @@ private:
     // 迭代 3：波次 / BOSS 数据
     int   m_currentLevel = 1;
     int   m_wave         = 0;
+    std::string m_waveDisplayBuf;
 
     // 迭代 4：关卡解锁进度
     int   m_maxUnlockedLevel = 1;

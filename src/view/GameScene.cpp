@@ -246,7 +246,8 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
         wf.setBold(true);
         painter->setFont(wf);
         painter->drawText(QRectF(270, 4, 260, 44), Qt::AlignCenter,
-                          QString("WAVE %1").arg(*m_pWave));
+                          m_pWaveDisplay ? QString(m_pWaveDisplay) :
+                          QString("WAVE %1").arg(m_pWave ? *m_pWave : 0));
     }
 
     // ── 技能状态（右下角） ──────────────────────────────────────

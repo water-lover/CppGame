@@ -130,7 +130,6 @@ thunder-fighter/
 **文件清单：**
 ```
 src/common/                     include/common/
-├── Logger.cpp                  ├── Logger.hpp        ← log(tag, msg)（VM+App 使用）
 ├── AirMap.cpp                  ├── AirMap.hpp        ← 精灵集合（View+VM 使用）
                                 ├── Actor.hpp          ← 精灵数据结构（View+VM 使用）
                                 ├── Types.hpp          ← EntityType, GameState（View+VM 使用）
@@ -204,13 +203,12 @@ src/view/                       include/view/
 ├── HudOverlay.cpp              ├── HudOverlay.hpp      ← 分数/生命覆盖层
 ├── StartScreen.cpp             ├── StartScreen.hpp     ← 开始界面
 ├── GameOverScreen.cpp          ├── GameOverScreen.hpp  ← 游戏结束界面
-├── AircraftSelectScreen.cpp    ├── AircraftSelectScreen.hpp  (后续)
-├── ModeSelectScreen.cpp        ├── ModeSelectScreen.hpp      (后续)
-├── BossHealthBar.cpp           ├── BossHealthBar.hpp         (后续)
-├── PauseOverlay.cpp            ├── PauseOverlay.hpp          (后续)
-├── StageClearScreen.cpp        ├── StageClearScreen.hpp      (后续)
-├── UpgradeScreen.cpp           ├── UpgradeScreen.hpp         (后续)
-└── ExplosionEffect.cpp         └── ExplosionEffect.hpp       (后续)
+├── AircraftSelectScreen.cpp    ├── AircraftSelectScreen.hpp  ← 战机选择
+├── ModeSelectScreen.cpp        ├── ModeSelectScreen.hpp      ← 模式选择
+├── LevelSelectScreen.cpp       ├── LevelSelectScreen.hpp     ← 关卡选择
+├── BossHealthBar.cpp           ├── BossHealthBar.hpp         ← BOSS 血条
+├── PauseOverlay.cpp            ├── PauseOverlay.hpp          ← 暂停覆盖层
+├── UpgradeScreen.cpp           └── UpgradeScreen.hpp         ← 升级界面
 ```
 
 ---
@@ -230,7 +228,8 @@ src/view/                       include/view/
 ```
 src/resource/                   include/resource/
 ├── AssetManager.cpp            ├── AssetManager.hpp  ← getImage(key) → QPixmap
-└── SaveManager.cpp             └── SaveManager.hpp   ← load/saveHighScore(int)
+├── SaveManager.cpp             ├── SaveManager.hpp   ← load/saveHighScore(int)
+└── Logger.cpp                  └── Logger.hpp        ← log(tag, msg)（VM+App 使用）
 ```
 
 **关键规则**：ViewModel 和 View **绝对不能直接调用 QFile / QImage / QPixmap 读写文件**。所有文件 I/O 必须通过 Resource Agent。
@@ -279,7 +278,12 @@ tests/
 ├── test_player.cpp            ← Player 移动/生命/无敌计时
 ├── test_collision.cpp         ← CollisionSystem 碰撞检测
 ├── test_game_map_vm.cpp       ← GameMapVM 集成测试
-└── test_spirit_vm.cpp         ← SpiritVM 测试（后续）
+├── test_aircraft_stats.cpp    ← AircraftStats 属性模板
+├── test_skill_system.cpp      ← SkillSystem 技能系统
+├── test_wave_manager.cpp      ← WaveManager 波次管理
+├── test_power_up.cpp          ← PowerUpManager 道具
+├── test_boss.cpp              ← Boss 行为
+└── test_upgrade_manager.cpp   ← UpgradeManager 升级系统
 ```
 
 ---
@@ -474,7 +478,6 @@ std::function<void(float)> getTickCommand() {
 # ▸ Common Agent — 只放被两个及以上不同层使用的代码
 # MathUtils / Geometry 仅 ViewModel 使用，放在 viewmodel/ 下
 add_library(thf_common OBJECT
-    src/common/Logger.cpp
     src/common/AirMap.cpp
 )
 target_include_directories(thf_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -513,6 +516,7 @@ target_link_libraries(thf_view PUBLIC thf_common Qt5::Gui Qt5::Widgets)
 add_library(thf_resource OBJECT
     src/resource/AssetManager.cpp
     src/resource/SaveManager.cpp
+    src/resource/Logger.cpp
 )
 target_include_directories(thf_resource PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(thf_resource PUBLIC thf_common Qt5::Core Qt5::Gui)

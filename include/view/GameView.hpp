@@ -84,6 +84,7 @@ public:
     void setHighScorePtr(const int* p) noexcept { m_pHighScore = p; if (m_scene) m_scene->setHudHighScore(p); }
     void setGameStatePtr(const GameState* p) noexcept { m_pGameState = p; }
     void setWavePtr(const int* p)    noexcept { m_pWave = p; if (m_scene) m_scene->setHudWave(p); }
+    void setWaveDisplayPtr(const char* p) noexcept { if (m_scene) m_scene->setHudWaveDisplay(p); }
     void setBossHpPtr(const int* p)    noexcept { m_pBossHp = p; }
     void setBossMaxHpPtr(const int* p) noexcept { m_pBossMaxHp = p; }
     void setLevelClearedPtr(const bool* p) noexcept { m_pLevelCleared = p; }
@@ -92,6 +93,7 @@ public:
     void setSkillReadyPtr(const bool* p) noexcept { m_pSkillReady = p; if (m_scene) m_scene->setHudSkillReady(p); }
     void setSkillActivePtr(const bool* p) noexcept { m_pSkillActive = p; if (m_scene) m_scene->setHudSkillActive(p); }
     void setSkillTypePtr(const int* p) noexcept { if (m_scene) m_scene->setHudSkillType(p); }
+    void setWeaponLevelPtr(const int* p) noexcept { m_pWeaponLevel = p; if (m_scene) m_scene->setHudWeaponLevel(p); }
     void setHasShieldPtr(const bool* p) noexcept { if (m_scene) m_scene->setHudHasShield(p); }
     void setAircraftNamePtr(const char* p) noexcept { if (m_scene) m_scene->setHudAircraftName(p); }
 
@@ -185,6 +187,7 @@ private:
     const GameState* m_pGameState = nullptr;
     const bool*     m_pLevelCleared = nullptr;
     const int*      m_pCurrentLevel = nullptr;
+    const int*      m_pWeaponLevel  = nullptr;
     const int*      m_pMaxUnlockedLevel = nullptr;
     const int*      m_pStarCores    = nullptr;
     const int*      m_pUpgradeFireLevel     = nullptr;

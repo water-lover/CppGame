@@ -212,6 +212,15 @@ void GameMapVM::tickImpl(float dt) {
     // 12. 更新波次/BOSS 状态
     m_wave = m_waveMgr.getCurrentWave();
     m_currentLevel = m_waveMgr.getCurrentLevel();
+    // 格式化波次显示文字
+    {
+        if (m_mode == GameMode::Endless) {
+            m_waveDisplayBuf = std::to_string(m_waveMgr.getEndlessLoop())
+                + "-" + std::to_string(m_currentLevel);
+        } else {
+            m_waveDisplayBuf = "WAVE " + std::to_string(m_wave);
+        }
+    }
     // 查找 BOSS 血量
     m_bossHp = 0;
     m_bossMaxHp = 0;

@@ -302,7 +302,8 @@ void GameView::resizeEvent(QResizeEvent* e) {
         m_graphicsView->fitInView(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Qt::KeepAspectRatio);
     }
     if (m_bossHealthBar && m_gamePage) {
-        m_bossHealthBar->setGeometry(0, 0, m_gamePage->width(), 28);
+        int barH = std::max(20, m_gamePage->height() / 25);
+        m_bossHealthBar->setGeometry(0, 0, m_gamePage->width(), barH);
         m_bossHealthBar->raise();
     }
 }
@@ -350,6 +351,10 @@ void GameView::onPropertyChanged(uint32_t id) {
             m_upgradeScreen->setStarCores(*m_pStarCores);
         break;
 
+    case PROP_ID_WEAPON_LEVEL:
+        m_scene->update();
+        break;
+
     case PROP_ID_MAX_UNLOCKED_LEVEL:
         if (m_pMaxUnlockedLevel)
             setLevelSelectMaxUnlocked(*m_pMaxUnlockedLevel);
@@ -384,7 +389,15 @@ void GameView::updatePage() {
     case GameState::ModeSelect:  m_pageStack->setCurrentIndex(1); m_timer->stop(); break;
     case GameState::LevelSelect: m_pageStack->setCurrentIndex(2); m_timer->stop(); break;
     case GameState::AircraftSelect: m_pageStack->setCurrentIndex(3); m_timer->stop(); break;
-    case GameState::Playing:     m_pageStack->setCurrentIndex(4); m_timer->start(16); setFocus(); break;
+    case GameState::Playing:     m_pageStack->setCurrentIndex(4); m_timer->start(16); setFocus();
+        if (m_graphicsView)
+            m_graphicsView->fitInView(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Qt::KeepAspectRatio);
+        if (m_bossHealthBar && m_gamePage) {
+            int barH = std::max(20, m_gamePage->height() / 25);
+            m_bossHealthBar->setGeometry(0, 0, m_gamePage->width(), barH);
+            m_bossHealthBar->raise();
+        }
+        break;
     case GameState::Paused:      m_pageStack->setCurrentIndex(6); m_timer->stop(); break;
     case GameState::Upgrade:     m_pageStack->setCurrentIndex(7); m_timer->stop(); break;
     case GameState::GameOver:    m_pageStack->setCurrentIndex(5); m_timer->stop();

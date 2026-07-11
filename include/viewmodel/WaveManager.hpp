@@ -44,11 +44,14 @@ public:
     /// 当前关卡是否完成（所有波次完成 + BOSS 被击败）
     bool isLevelComplete(const std::vector<std::unique_ptr<Enemy>>& enemies) const;
 
-    /// 当前波次号 (0-based)
-    int  getCurrentWave()  const { return currentWave_; }
+    /// 当前波次号 (1-based)
+    int  getCurrentWave()  const { return currentWave_ + 1; }
 
     /// 当前关卡号
     int  getCurrentLevel() const { return currentLevel_; }
+
+    /// 无尽模式轮次号（1=第一轮）
+    int  getEndlessLoop()  const { return endlessLoop_; }
 
     /// 获取当前关卡配置
     const WaveConfig& getConfigForLevel(int levelId) const;
@@ -75,6 +78,7 @@ private:
     std::pair<EnemyType, int> getEnemyTypeForWave(int level, int waveIdx, int spawnIdx) const;
 
     float m_timer         = 0.0f;
+    float m_initialTimer  = 0.0f;  // 关卡开始前预延迟，防止 wave 0 立即出怪
     int   currentLevel_   = 1;
     int   currentWave_    = 0;
     int   enemiesSpawned_ = 0;

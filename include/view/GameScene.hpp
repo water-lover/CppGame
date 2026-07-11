@@ -49,6 +49,7 @@ public:
     void setHudLives(const int* p)     noexcept { m_pLives = p; }
     void setHudHighScore(const int* p) noexcept { m_pHighScore = p; }
     void setHudWave(const int* p)      noexcept { m_pWave = p; }
+    void setHudWaveDisplay(const char* p) noexcept { m_pWaveDisplay = p; }
     void setHudSkillCooldown(const float* p) noexcept { m_pSkillCD = p; }
     void setHudSkillReady(const bool* p)    noexcept { m_pSkillReady = p; }
     void setHudSkillActive(const bool* p)   noexcept { m_pSkillActive = p; }
@@ -56,6 +57,7 @@ public:
     void setHudHasShield(const bool* p)     noexcept { m_pHasShield = p; }
     void setHudAircraftName(const char* p)  noexcept { m_pAircraftName = p; }
     void setHudStarCores(const int* p)      noexcept { m_pStarCores = p; }
+    void setHudWeaponLevel(const int* p)    noexcept { m_pWeaponLv = p; }
 
 protected:
     /// 绘制背景（星空 + 背景图）
@@ -99,7 +101,9 @@ private:
     const int*   m_pSkillType   = nullptr;
     const bool*  m_pHasShield   = nullptr;
     const char*  m_pAircraftName = nullptr;
+    const char*  m_pWaveDisplay = nullptr;
     const int*   m_pStarCores    = nullptr;
+    const int*   m_pWeaponLv     = nullptr;
 };
 
 #endif // GAMESCENE_HPP

@@ -59,6 +59,7 @@ void AppAgent::init() {
     m_gameView->setLivesPtr(m_mapVM->getLivesPtr());
     m_gameView->setHighScorePtr(m_mapVM->getHighScorePtr());
     m_gameView->setWavePtr(m_mapVM->getWavePtr());
+    m_gameView->setWaveDisplayPtr(m_mapVM->getWaveDisplayPtr());
     m_gameView->setBossHpPtr(m_mapVM->getBossHpPtr());
     m_gameView->setBossMaxHpPtr(m_mapVM->getBossMaxHpPtr());
     m_gameView->setGameStatePtr(m_mapVM->getGameStatePtr());
@@ -68,6 +69,7 @@ void AppAgent::init() {
     m_gameView->setSkillReadyPtr(m_mapVM->isSkillReadyPtr());
     m_gameView->setSkillActivePtr(m_mapVM->isSkillActivePtr());
     m_gameView->setSkillTypePtr(m_mapVM->getSkillTypePtr());
+    m_gameView->setWeaponLevelPtr(m_mapVM->getWeaponLevelPtr());
     m_gameView->setHasShieldPtr(m_mapVM->getHasShieldPtr());
     m_gameView->setAircraftNamePtr(m_mapVM->getAircraftName());
 
@@ -83,6 +85,8 @@ void AppAgent::init() {
 
     // 初始关卡解锁（测试阶段全解锁；正式版应从存档加载）
     m_mapVM->setMaxUnlockedLevel(7);
+    // 初始值在指针绑定之后设置，需手动同步到 View（运行时通过 PROP_ID 自动同步）
+    m_gameView->setLevelSelectMaxUnlocked(7);
     log("AppAgent", "All levels unlocked for testing (7/7)");
 
     // 迭代 6：从存档读取升级数据
