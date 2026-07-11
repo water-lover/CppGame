@@ -1,5 +1,5 @@
 #include "viewmodel/CollisionSystem.hpp"
-#include "common/Geometry.hpp"
+#include "viewmodel/Geometry.hpp"
 #include <cmath>
 
 std::vector<int> CollisionSystem::checkBulletEnemy(

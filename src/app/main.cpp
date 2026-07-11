@@ -3,7 +3,7 @@
 #include <QDir>
 
 #include "app/AppAgent.hpp"
-#include "common/Logger.hpp"
+#include "resource/Logger.hpp"
 
 int main(int argc, char *argv[])
 {

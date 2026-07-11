@@ -1,7 +1,7 @@
 #ifndef PLAYER_HPP
 #define PLAYER_HPP
 
-#include "common/MathUtils.hpp"
+#include "viewmodel/MathUtils.hpp"
 #include "common/Constants.hpp"
 #include "viewmodel/AircraftStats.hpp"
 

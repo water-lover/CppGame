@@ -20,7 +20,11 @@ public:
     SpiritVM() = default;
     ~SpiritVM() = default;
 
-    // ── 公共 setter（由 App 从 AssetManager 注入） ──────────────
+    /// 从 Resource Agent 加载所有精灵图片
+    /// 调用 AssetManager 从 QRC 加载图片并缓存到内部指针
+    bool initialize();
+
+    // ── 公共 setter（供初始化或测试时直接注入图片） ──────────────
 
     /// 设置某架战机的图片
     void setAircraftPixmap(AircraftType type, const QPixmap* p) noexcept;

@@ -16,7 +16,7 @@ using Catch::Approx;
 #include <set>
 #include "viewmodel/PowerUpManager.hpp"
 #include "viewmodel/Enemy.hpp"
-#include "common/MathUtils.hpp"
+#include "viewmodel/MathUtils.hpp"
 #include <random>
 #include <chrono>
 #include <cmath>

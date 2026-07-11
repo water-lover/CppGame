@@ -41,6 +41,7 @@ public:
     void setPowerUpHpPixmap(const QPixmap* p) noexcept { m_pPowerUpHpImg = p; }
     void setPowerUpFirePixmap(const QPixmap* p) noexcept { m_pPowerUpFireImg = p; }
     void setPowerUpShieldPixmap(const QPixmap* p) noexcept { m_pPowerUpShieldImg = p; }
+    void setPowerUpStarCorePixmap(const QPixmap* p) noexcept { m_pPowerUpStarCoreImg = p; }
     void setBackgroundPixmap(const QPixmap* p) noexcept { m_pBgImg = p; }
 
     // ── HUD 数据注入（在场景坐标中直接绘制，避免 QWidget 覆盖层尺寸问题） ─
@@ -84,6 +85,7 @@ private:
     const QPixmap*  m_pPowerUpHpImg    = nullptr;
     const QPixmap*  m_pPowerUpFireImg  = nullptr;
     const QPixmap*  m_pPowerUpShieldImg = nullptr;
+    const QPixmap*  m_pPowerUpStarCoreImg = nullptr;
     const QPixmap*  m_pBgImg     = nullptr;
     // ── HUD 指针 ────────────────────────────────────────────────
     const int* m_pScore     = nullptr;

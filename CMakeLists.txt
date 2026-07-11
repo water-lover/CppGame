@@ -38,9 +38,6 @@ find_package(Qt5 REQUIRED COMPONENTS
 #  ① Common Agent — 不依赖任何人
 # ═════════════════════════════════════════════════════════════════════════════
 add_library(thf_common OBJECT
-    src/common/MathUtils.cpp
-    src/common/Logger.cpp
-    src/common/Geometry.cpp
     src/common/AirMap.cpp
 )
 target_include_directories(thf_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -49,6 +46,8 @@ target_include_directories(thf_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 #  ② ViewModel Agent — 取消 Model 层，数据即可绘制对象
 # ═════════════════════════════════════════════════════════════════════════════
 add_library(thf_viewmodel OBJECT
+    src/viewmodel/MathUtils.cpp
+    src/viewmodel/Geometry.cpp
     src/viewmodel/SpiritVM.cpp
     src/viewmodel/GameMapVM.cpp
     src/viewmodel/Player.cpp
@@ -64,6 +63,8 @@ add_library(thf_viewmodel OBJECT
     src/viewmodel/UpgradeManager.cpp
     include/viewmodel/SpiritVM.hpp
     include/viewmodel/GameMapVM.hpp
+    include/viewmodel/MathUtils.hpp
+    include/viewmodel/Geometry.hpp
     include/viewmodel/AircraftStats.hpp
     include/viewmodel/SkillSystem.hpp
     include/viewmodel/WaveManager.hpp
@@ -72,7 +73,7 @@ add_library(thf_viewmodel OBJECT
     include/viewmodel/UpgradeManager.hpp
 )
 target_include_directories(thf_viewmodel PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(thf_viewmodel PUBLIC thf_common Qt5::Core Qt5::Gui)
+target_link_libraries(thf_viewmodel PUBLIC thf_resource thf_common Qt5::Core Qt5::Gui)
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  ③ View Agent — 纯 C++ QGraphicsView
@@ -119,6 +120,7 @@ target_link_libraries(thf_view PUBLIC thf_common Qt5::Gui Qt5::Widgets)
 add_library(thf_resource OBJECT
     src/resource/AssetManager.cpp
     src/resource/SaveManager.cpp
+    src/resource/Logger.cpp
 )
 target_include_directories(thf_resource PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(thf_resource PUBLIC thf_common Qt5::Core Qt5::Gui)
@@ -196,12 +198,13 @@ if(Catch2_FOUND)
         tests/test_upgrade_manager.cpp
         $<TARGET_OBJECTS:thf_common>
         $<TARGET_OBJECTS:thf_viewmodel>
+        $<TARGET_OBJECTS:thf_resource>
     )
     target_include_directories(${PROJECT_NAME}_tests PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
     )
     target_link_libraries(${PROJECT_NAME}_tests PRIVATE
-        thf_common thf_viewmodel
+        thf_common thf_viewmodel thf_resource
         Qt5::Core
         Catch2::Catch2WithMain
     )

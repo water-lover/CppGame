@@ -87,10 +87,10 @@ thunder-fighter/
 
 | # | 智能体 | 目录 | 一句话职责 | 依赖 |
 |---|---|---|---|---|
-| ① | **Common** | `src/common/` | 类型/工具/常量/属性ID枚举，被所有人用 | ❌ 不依赖任何人 |
+| ① | **Common** | `src/common/` | 被两个及以上不同层共同使用的公共代码 | ❌ 不依赖任何人 |
 | ② | **ViewModel** | `src/viewmodel/` | 游戏数据+规则，持有数据类对象，通过 const T* + std::function + signal 暴露 | 依赖 ① |
 | ③ | **View** | `src/view/` | 纯 C++ QGraphicsView 渲染+按键捕获，**绝不认识 ViewModel** | 依赖 ① |
-| ④ | **Resource** | `src/resource/` | 图片加载+存档读写（唯一可读写磁盘的 Agent） | 依赖 ① |
+| ④ | **Resource** | `src/resource/` | 图片加载+存档读写（本质属于 ViewModel 层） | 依赖 ① |
 | ⑤ | **App** | `src/app/` | 启动组装+建立三绑定连接，**唯一认识所有人的 Agent** | 依赖 ① ② ③ ④ |
 | ⑥ | **Test** | `tests/` | 单元测试 Common 和 ViewModel | 依赖 ① ② |
 
@@ -117,22 +117,25 @@ thunder-fighter/
 | 规则项 | 内容 |
 |---|---|
 | **目录** | `src/common/` + `include/common/` |
-| **负责内容** | 枚举定义、常量、数学工具(Vec2/距离)、日志打印、基础几何形状(Rect/Circle)、属性ID枚举 |
+| **负责内容** | 枚举定义、常量、属性ID枚举——**仅放被两个及以上不同层使用的公共代码**。仅被一个层（如仅 ViewModel）使用的工具类不应放在 Common 层 |
 | **可读（可 include）** | ❌ 无。不得 include 任何本项目其他文件 |
 | **可写（可修改）** | 仅限自己目录下的文件 |
 | **不可碰** | 任何其他 Agent 的文件 |
 
+> **⚠️ Common 层核心原则：** Common 中的文件必须至少被两个不同的层使用。  
+> ViewModel 层包含 Resource（参见下文 ViewModel 层规则），所以仅被 ViewModel + Resource 使用的文件**不算**两个层。  
+> ✅ 示例：Actor.hpp / AirMap.hpp 被 View + ViewModel 使用 → 放在 Common 合理  
+> ❌ 示例：MathUtils.hpp（Vec2）仅被 ViewModel 使用 → 应放在 `viewmodel/`
+
 **文件清单：**
 ```
 src/common/                     include/common/
-├── MathUtils.cpp               ├── MathUtils.hpp     ← Vec2, distance, normalize
-├── Logger.cpp                  ├── Logger.hpp        ← log(tag, msg)
-├── Geometry.cpp                ├── Geometry.hpp      ← Rect, Circle, overlaps
-├── AirMap.cpp                  ├── AirMap.hpp        ← 精灵集合（View 唯一能读的数据）
-                                ├── Actor.hpp          ← 精灵数据结构
-                                ├── Types.hpp          ← EntityType, GameState, Direction
-                                ├── Constants.hpp      ← SCREEN_WIDTH, PLAYER_SPEED, ...
-                                └── PropertyIds.hpp    ← PROP_ID_MAP, PROP_ID_SCORE, ...
+├── Logger.cpp                  ├── Logger.hpp        ← log(tag, msg)（VM+App 使用）
+├── AirMap.cpp                  ├── AirMap.hpp        ← 精灵集合（View+VM 使用）
+                                ├── Actor.hpp          ← 精灵数据结构（View+VM 使用）
+                                ├── Types.hpp          ← EntityType, GameState（View+VM 使用）
+                                ├── Constants.hpp      ← SCREEN_WIDTH, PLAYER_SPEED（View+VM 使用）
+                                └── PropertyIds.hpp    ← PROP_ID_MAP（View+VM 使用）
 ```
 
 ---
@@ -143,14 +146,21 @@ src/common/                     include/common/
 |---|---|
 | **目录** | `src/viewmodel/` + `include/viewmodel/` |
 | **负责内容** | 游戏全部数据和规则。采用 MVFM 思想，两个 ViewModel 类。命令用 `std::function`。聚合数据类（Player/Enemy/Bullet/CollisionSystem/ScoreManager 等）|
-| **可读** | ✅ 可读 Common Agent<br>❌ **不可读** View 的任何文件<br>❌ **不可读** Resource 的实现细节 |
+| **可读** | ✅ 可读 Common Agent<br>✅ **可读 Resource Agent**（Resource 本质属于 ViewModel 层）<br>❌ **不可读** View 的任何文件 |
 | **可写** | 仅限自己目录下的文件 |
-| **不可碰** | `src/view/` — 绝不能 include 任何 UI 头文件<br>`src/resource/` — 不直接写文件（通过 SaveManager 接口调用）|
+| **不可碰** | `src/view/` — 绝不能 include 任何 UI 头文件 |
 | **Qt 限制** | 可以 `#include <QObject>` 用于信号机制，**不能** include 任何 Widgets/Quick 头文件 |
+
+> **📌 Resource 归属说明：** Resource Agent（AssetManager / SaveManager）本质属于 ViewModel 层。  
+> 它提供图片加载和持久化服务，供 SpiritVM 和 GameMapVM 直接调用。  
+> 因此 SpiritVM 可以直接 `#include "resource/AssetManager.hpp"` 并调用其方法。  
+> **在判断 Common 层的"两个不同层"时，ViewModel 和 Resource 视为同一个层。**
 
 **文件清单：**
 ```
 src/viewmodel/                  include/viewmodel/
+├── MathUtils.cpp               ├── MathUtils.hpp     ← Vec2, distance（从 common/ 移入）
+├── Geometry.cpp                ├── Geometry.hpp      ← Rect, Circle（从 common/ 移入）
 ├── GameMapVM.cpp               ├── GameMapVM.hpp     ← 游戏地图 ViewModel（核心 FM）
 ├── SpiritVM.cpp                ├── SpiritVM.hpp      ← 精灵图片 ViewModel
 ├── Player.cpp                  ├── Player.hpp        ← 玩家数据类
@@ -158,10 +168,12 @@ src/viewmodel/                  include/viewmodel/
 ├── Bullet.cpp                  ├── Bullet.hpp        ← 子弹数据类
 ├── CollisionSystem.cpp         ├── CollisionSystem.hpp ← 碰撞检测工具
 ├── ScoreManager.cpp            ├── ScoreManager.hpp  ← 计分 + 最高分
-├── PowerUpManager.cpp (后续)   ├── PowerUpManager.hpp
-├── AircraftStats.cpp (后续)    ├── AircraftStats.hpp
-├── SkillSystem.cpp (后续)      ├── SkillSystem.hpp
-└── WaveManager.cpp (后续)      └── WaveManager.hpp
+├── PowerUpManager.cpp          ├── PowerUpManager.hpp
+├── AircraftStats.cpp           ├── AircraftStats.hpp
+├── SkillSystem.cpp             ├── SkillSystem.hpp
+├── WaveManager.cpp             ├── WaveManager.hpp
+├── Boss.cpp                    ├── Boss.hpp
+├── UpgradeManager.cpp          └── UpgradeManager.hpp
 ```
 
 ---
@@ -209,8 +221,11 @@ src/view/                       include/view/
 |---|---|
 | **目录** | `src/resource/` + `include/resource/` |
 | **负责内容** | 加载 PNG 图片到 QPixmap（带缓存）、读写最高分/升级数据 JSON 文件 |
-| **可读** | ✅ 可读 Common Agent<br>❌ **不可读** ViewModel 的任何文件<br>❌ **不可读** View 的任何文件 |
+| **可读** | ✅ 可读 Common Agent<br>✅ **可被 ViewModel 读取**（Resource 本质属于 ViewModel 层）<br>❌ **不可读** View 的任何文件 |
 | **可写** | 仅限自己目录下的文件 |
+
+> **📌 Resource 与 ViewModel 的关系：** Resource 提供图片加载（AssetManager）和持久化（SaveManager）服务，  
+> 供 SpiritVM 和 GameMapVM 直接调用。两者属于同一逻辑层。
 
 ```
 src/resource/                   include/resource/
@@ -239,10 +254,13 @@ src/app/                        include/app/
 └── main.cpp                    └── (无头文件)
 ```
 
-**App 层附加规则（来自课件 FAQ）：**
+**App 层附加规则（来自课件 FAQ + 实践）：**
 - App 层**不能放入**应只属于 ViewModel/Model 内部的业务逻辑（如碰撞检测、敌机生成）
-- App 层**可以**做跨 Agent 的轻量编排（如 GameOver 时调用 SaveManager 存盘、从 SpiritVM 获取图片注入 ViewModel），因为 App 是唯一认识所有 Agent 的层
+- App 层**不能包含** ViewModel 层的功能代码（如图片加载、数据初始化）。这些应归 SpiritVM 或 GameMapVM 自己处理
+- App 层**可以**做跨 Agent 的轻量编排（如从存档读取升级数据后调用 `m_mapVM->initUpgradeData()`），因为 App 是唯一认识所有 Agent 的层
 - App 层**只能**绑定 View 层的通知，**不能**绑定来自其他层的通知
+
+> **📌 Part 类概念（课件 App 层拓展）：** 当项目复杂时，可将一套 View + ViewModel + Model 对象封装成 **Part 类**，以方便 App 管理生命周期。例如 `GamePart` 包含 GameView + GameMapVM + SpiritVM + Resource。App 持有 Part 类而非逐个持有各 Agent。Part 类本身也可以暴露 Command 供 View 调用（如创建新窗口的命令）。
 
 ---
 
@@ -453,17 +471,19 @@ std::function<void(float)> getTickCommand() {
 编译时只能看到自己的头文件 + 依赖 Agent 的头文件，**编译阶段就防止越界 include**。
 
 ```cmake
-# ▸ Common Agent — 不依赖任何人
+# ▸ Common Agent — 只放被两个及以上不同层使用的代码
+# MathUtils / Geometry 仅 ViewModel 使用，放在 viewmodel/ 下
 add_library(thf_common OBJECT
-    src/common/MathUtils.cpp
     src/common/Logger.cpp
-    src/common/Geometry.cpp
     src/common/AirMap.cpp
 )
 target_include_directories(thf_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# ▸ ViewModel Agent — 依赖 Common
+# ▸ ViewModel Agent — 依赖 Common + Resource
+# Resource 本质属于 ViewModel 层，thf_viewmodel 直接链接 thf_resource 以调用 AssetManager
 add_library(thf_viewmodel OBJECT
+    src/viewmodel/MathUtils.cpp
+    src/viewmodel/Geometry.cpp
     src/viewmodel/GameMapVM.cpp
     src/viewmodel/SpiritVM.cpp
     src/viewmodel/Player.cpp
@@ -471,9 +491,15 @@ add_library(thf_viewmodel OBJECT
     src/viewmodel/Bullet.cpp
     src/viewmodel/CollisionSystem.cpp
     src/viewmodel/ScoreManager.cpp
+    src/viewmodel/PowerUpManager.cpp
+    src/viewmodel/AircraftStats.cpp
+    src/viewmodel/SkillSystem.cpp
+    src/viewmodel/WaveManager.cpp
+    src/viewmodel/Boss.cpp
+    src/viewmodel/UpgradeManager.cpp
 )
 target_include_directories(thf_viewmodel PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(thf_viewmodel PUBLIC thf_common Qt5::Core)
+target_link_libraries(thf_viewmodel PUBLIC thf_resource thf_common Qt5::Core Qt5::Gui)
 
 # ▸ View Agent — 只依赖 Common（绝不依赖 ViewModel！）
 add_library(thf_view OBJECT
@@ -505,16 +531,25 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt5::Core Qt5::Gui Qt5::Widgets
 )
 
-# ▸ Tests — 依赖 Common + ViewModel（不依赖 View）
+# ▸ Tests — 依赖 Common + ViewModel + Resource
 add_executable(ThunderFighter_tests
     tests/test_main.cpp
     tests/test_player.cpp
     tests/test_collision.cpp
+    tests/test_game_map_vm.cpp
+    tests/test_aircraft_stats.cpp
+    tests/test_skill_system.cpp
+    tests/test_wave_manager.cpp
+    tests/test_power_up.cpp
+    tests/test_boss.cpp
+    tests/test_upgrade_manager.cpp
     $<TARGET_OBJECTS:thf_common>
     $<TARGET_OBJECTS:thf_viewmodel>
+    $<TARGET_OBJECTS:thf_resource>
 )
 target_link_libraries(ThunderFighter_tests PRIVATE
-    thf_common thf_viewmodel Qt5::Core
+    thf_common thf_viewmodel thf_resource
+    Qt5::Core
     Catch2::Catch2WithMain
 )
 ```
@@ -615,15 +650,18 @@ ViewModel: 实现玩家移动 + 碰撞检测
 每个 Agent 在提交代码前，先自问：
 
 | # | 问题 | Common | ViewModel | View | Resource | App | Test |
-|---|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|---|---|
 | 1 | 我 include 了不该 include 的 Agent 吗？ | — | 没 include View 吧？ | **没 include viewmodel/ 吧？** | 没 include ViewModel 吧？ | 没写业务逻辑吧？ | 没 include View 吧？ |
-| 2 | 我直接操作游戏数据（Player/Enemy/Bullet）了吗？ | — | ✅ 这是本分 | **绝不能！** 只通过 const T* 读 | — | — | ✅ |
-| 3 | 我直接调用 ViewModel 的实例方法了吗？ | — | — | **只能通过 std::function！** | — | — | ✅ |
-| 4 | 我直接读写磁盘文件了吗？ | — | 通过 Resource 了吗？ | 通过 Resource 了吗？ | ✅ 这是本分 | — | 用 Mock |
+| 2 | 我直接操作游戏数据了吗？ | — | ✅ 这是本分 | **绝不能！** 只读 const T* | — | — | ✅ |
+| 3 | 我直接调用 ViewModel 实例方法了吗？ | — | — | **只能 std::function！** | — | — | ✅ |
+| 4 | 我直接读写磁盘文件了吗？ | — | 通过 Resource | 通过 Resource | ✅ 本分 | — | 用 Mock |
 | 5 | 我引入了 QML/JS 了吗？ | — | — | **绝对禁止** | — | — | — |
-| 6 | 我在 App Agent 里写逻辑/渲染代码了吗？ | — | — | — | — | **只做组装** | — |
+| 6 | 我在 App 里写逻辑/渲染代码了吗？ | — | — | — | — | **只做组装** | — |
 | 7 | 我改了不属于我的目录吗？ | 仅 `common/` | 仅 `viewmodel/` | 仅 `view/` | 仅 `resource/` | 仅 `app/` | 仅 `tests/` |
-| 8 | View 的 paint() 里通过属性指针读数据了吗？ | — | — | ✅ **正确做法** | — | — | — |
-| 9 | App 绑定了非 View 层的通知了吗？ | — | — | — | — | **只绑定 View 的通知** | — |
+| 8 | View 的 paint() 用 const T* 读数据了吗？ | — | — | ✅ **正确做法** | — | — | — |
+| 9 | App 只绑定了 View 层的通知吗？ | — | — | — | — | **只绑定 View** | — |
+| 10 | **Common 文件至少两个不同层用吗？** | ❌ **仅单层用不应在此** | 含 Resource 算同层 | — | 与 VM 同层 | — | — |
+| 11 | **App 包含 ViewModel 功能吗？** | — | — | — | — | ❌ **加载等归 VM** | — |
+| 12 | **Resource 被当作独立层吗？** | — | ❌ **Resource 算 VM** | — | ✅ **属于 VM 层** | — | — |
 
 > **每一条违规都可能破坏编译隔离和 MVVM 分层。修改前先过一遍清单。** 🚀

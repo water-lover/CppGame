@@ -2,7 +2,7 @@
 #define POWERUPMANAGER_HPP
 
 #include "common/Actor.hpp"
-#include "common/MathUtils.hpp"
+#include "viewmodel/MathUtils.hpp"
 #include "viewmodel/Enemy.hpp"
 #include <vector>
 #include <random>

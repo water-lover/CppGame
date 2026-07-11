@@ -66,7 +66,7 @@ bool Boss::canAttack(float dt) {
     switch (phase_) {
     case BossPhase::Phase1: interval = 2.0f; break;
     case BossPhase::Phase2: interval = 1.5f; break;
-    case BossPhase::Phase3: interval = 1.0f; break;
+    case BossPhase::Phase3: interval = 1.2f; break;
     }
     if (attackTimer_ >= interval) {
         attackTimer_ = 0.0f;

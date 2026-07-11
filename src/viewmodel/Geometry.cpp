@@ -1,4 +1,4 @@
-#include "common/Geometry.hpp"
+#include "viewmodel/Geometry.hpp"
 #include <cmath>
 
 bool overlaps(const Rect& a, const Rect& b) {

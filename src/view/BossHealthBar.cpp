@@ -34,7 +34,9 @@ void BossHealthBar::paintEvent(QPaintEvent* /*event*/) {
 
     // ── 文字：HP 数值 ─────────────────────────────────────────────
     painter.setPen(QColor(255, 255, 255, 220));
-    QFont font(QStringLiteral("Microsoft YaHei"), 11, QFont::Bold);
+    QFont font;
+    font.setPixelSize(14);
+    font.setBold(true);
     painter.setFont(font);
     painter.drawText(QRect(0, 0, static_cast<int>(w), static_cast<int>(h)),
                      Qt::AlignCenter,

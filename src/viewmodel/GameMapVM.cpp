@@ -1,6 +1,6 @@
 #include "viewmodel/GameMapVM.hpp"
 #include "viewmodel/CollisionSystem.hpp"
-#include "common/Logger.hpp"
+#include "resource/Logger.hpp"
 #include <chrono>
 #include <algorithm>
 #include <cmath>

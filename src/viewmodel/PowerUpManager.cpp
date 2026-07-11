@@ -1,5 +1,5 @@
 #include "viewmodel/PowerUpManager.hpp"
-#include "common/Logger.hpp"
+#include "resource/Logger.hpp"
 #include <random>
 #include <algorithm>
 

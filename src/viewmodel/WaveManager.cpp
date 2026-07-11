@@ -1,6 +1,6 @@
 #include "viewmodel/WaveManager.hpp"
 #include "common/Constants.hpp"
-#include "common/Logger.hpp"
+#include "resource/Logger.hpp"
 #include <random>
 #include <cmath>
 
@@ -13,7 +13,7 @@ const WaveConfig LEVEL_TABLE[7] = {
     { 4, 3, 1.2f, 1.3f, 1, true,  2 },  // 第4关: 敌军要塞 — 重型BOSS 350HP
     { 5, 3, 1.1f, 1.4f, 2, true,  6 },  // 第5关: 暗夜突袭 — 重型BOSS 400HP
     { 6, 3, 1.0f, 1.5f, 3, true,  3 },  // 第6关: 火力封锁 — 装甲BOSS(500HP)
-    { 7, 3, 0.9f, 1.8f, 5, true,  4 },  // 第7关: 最终决战 — 装甲BOSS(600HP)
+    { 7, 3, 0.95f, 1.6f, 4, true,  4 },  // 第7关: 最终决战 — 装甲BOSS(600HP)
 };
 
 void WaveManager::reset(int levelId) {

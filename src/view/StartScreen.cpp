@@ -19,7 +19,7 @@ StartScreen::StartScreen(QWidget* parent)
         "  color: white;"
         "  font-size: 22px;"
         "  font-weight: bold;"
-        "  font-family: 'Microsoft YaHei';"
+        " "
         "  border: 2px solid white;"
         "  border-radius: 10px;"
         "}"
@@ -50,23 +50,27 @@ void StartScreen::paintEvent(QPaintEvent* /*event*/) {
 
     // ── 标题 ───────────────────────────────────────────────────────
     painter.setPen(QColor(255, 215, 0));
-    QFont titleFont(QStringLiteral("Microsoft YaHei"), static_cast<int>(h * 0.08), QFont::Bold);
+    QFont titleFont;
+    titleFont.setPixelSize(static_cast<int>(h * 0.09));
+    titleFont.setBold(true);
     painter.setFont(titleFont);
-    painter.drawText(QRect(0, h * 0.08, w, h * 0.18),
+    painter.drawText(QRect(0, h * 0.04, w, h * 0.24),
                      Qt::AlignCenter, QStringLiteral("雷 霆 战 机"));
 
     painter.setPen(QColor(200, 200, 255, 180));
-    QFont subFont("sans-serif", static_cast<int>(h * 0.03));
+    QFont subFont;
+    subFont.setPixelSize(static_cast<int>(h * 0.035));
     painter.setFont(subFont);
-    painter.drawText(QRect(0, h * 0.26, w, h * 0.06),
+    painter.drawText(QRect(0, h * 0.26, w, h * 0.08),
                      Qt::AlignCenter, QStringLiteral("THUNDER FIGHTER"));
 
     // ── 操作提示 ───────────────────────────────────────────────────
     painter.setPen(QColor(180, 180, 200, 150));
-    QFont tipFont(QStringLiteral("Microsoft YaHei"), static_cast<int>(h * 0.022));
+    QFont tipFont;
+    tipFont.setPixelSize(static_cast<int>(h * 0.025));
     painter.setFont(tipFont);
-    painter.drawText(QRect(0, h * 0.73, w, h * 0.05),
+    painter.drawText(QRect(0, h * 0.71, w, h * 0.07),
                      Qt::AlignCenter, QStringLiteral("WASD / 方向键：移动"));
-    painter.drawText(QRect(0, h * 0.78, w, h * 0.05),
+    painter.drawText(QRect(0, h * 0.78, w, h * 0.07),
                      Qt::AlignCenter, QStringLiteral("自动开火  ·  Enter：开始"));
 }

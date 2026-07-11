@@ -3,7 +3,7 @@
 #include "viewmodel/GameMapVM.hpp"
 #include "viewmodel/SpiritVM.hpp"
 #include "resource/SaveManager.hpp"
-#include "common/Logger.hpp"
+#include "resource/Logger.hpp"
 
 #include <QApplication>
 

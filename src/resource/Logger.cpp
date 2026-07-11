@@ -1,4 +1,4 @@
-#include "common/Logger.hpp"
+#include "resource/Logger.hpp"
 #include <iostream>
 
 void log(const std::string& tag, const std::string& message) {

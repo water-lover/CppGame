@@ -66,19 +66,23 @@
 | 项目               | 内容                                                             |
 | ------------------ | ---------------------------------------------------------------- |
 | **负责文件** | `src/common/` + `include/common/`                            |
-| **职责**     | 系统最底层。所有其他智能体都会用到的基础工具                     |
+| **职责**     | **仅放被两个及以上不同层使用的公共代码**。系统最底层，所有其他智能体都会用到的基础工具 |
 | **越界限制** | **严禁** `#include` 系统里任何其他智能体的文件。完全独立 |
+
+> **⚠️ 核心原则：** Common 中的文件必须至少被两个不同的层使用。  
+> ViewModel 层包含 Resource Agent（参见下文），所以仅被 ViewModel + Resource 使用的文件**不算**两个层。  
+> ✅ `Actor.hpp` / `AirMap.hpp` 被 View + ViewModel 使用 → 放在 Common 合理  
+> ❌ `MathUtils.hpp`（Vec2）仅被 ViewModel 使用 → 应放在 `viewmodel/`
 
 ```
 src/common/                         include/common/
-├── Types.hpp                       ├── Types.hpp          ← EntityType, GameState, Direction
-├── Constants.hpp                   ├── Constants.hpp      ← SCREEN_WIDTH, PLAYER_SPEED, ...
-├── MathUtils.cpp                   ├── MathUtils.hpp      ← Vec2, distance, normalize
-├── Logger.cpp                      ├── Logger.hpp         ← log(tag, msg)
-├── Geometry.cpp                    ├── Geometry.hpp       ← Rect, Circle, overlaps
-├── Actor.hpp                       ├── Actor.hpp          ← 精灵数据结构（type, x, y, hp）
-├── AirMap.cpp                      ├── AirMap.hpp         ← 精灵集合容器（可被 View 遍历绘制）
-└── PropertyIds.hpp                 └── PropertyIds.hpp    ← PROP_ID_MAP, PROP_ID_SCORE, ...
+├── Logger.cpp                      ├── Logger.hpp         ← log(tag, msg)（VM+App 使用）
+├── AirMap.cpp                      ├── AirMap.hpp         ← 精灵集合容器（View+VM 使用）
+│   (文件清单移除了 MathUtils / Geometry，见 viewmodel/ 目录)
+                                ├── Actor.hpp          ← 精灵数据结构（View+VM 使用）
+                                ├── Types.hpp          ← EntityType, GameState（View+VM 使用）
+                                ├── Constants.hpp      ← SCREEN_WIDTH, PLAYER_SPEED（View+VM 使用）
+                                └── PropertyIds.hpp    ← PROP_ID_MAP, PROP_ID_SCORE（View+VM 使用）
 ```
 
 **像素质量与屏幕适应性：**
@@ -143,13 +147,20 @@ enum {
 | **命令模式** | 命令通过`std::function` 实现，ViewModel 提供 getter 方法返回命令，由 App 注入给 View                                                                                                                                    |
 | **事件通知** | 数据变化时调用`fire(PROP_ID_XXX)`，由 PropertyTrigger（Qt 中可用 QObject + signal 替代）发出                                                                                                                            |
 | **属性暴露** | 通过 getter 方法返回`const T*` 指针，View 只读访问                                                                                                                                                                      |
-| **可读**     | ✅ 可读 Common Agent❌**不可读** View 的任何文件❌ **不可读** Resource 的实现细节（但可通过接口调用 SaveManager）                                                                                             |
+| **可读**     | ✅ 可读 Common Agent<br>✅ **可读 Resource Agent**（Resource 本质属于 ViewModel 层）<br>❌**不可读** View 的任何文件                                                                                             |
 | **可写**     | 仅限自己目录下的文件                                                                                                                                                                                                      |
-| **不可碰**   | `src/view/` — **绝对不能** include 任何 UI 头文件`src/resource/` — 不直接写文件，通过 Resource 接口调用                                                                                                       |
+| **不可碰**   | `src/view/` — **绝对不能** include 任何 UI 头文件                                                                                                                                                               |
 | **Qt 限制**  | 可以`#include <QObject>` 用于信号机制，**不能** include 任何 Widgets/Quick 头文件                                                                                                                                 |
+
+> **📌 Resource 归属说明：** Resource Agent（AssetManager / SaveManager）本质属于 ViewModel 层。  
+> 它提供图片加载和持久化服务，供 SpiritVM 和 GameMapVM 直接调用。  
+> SpiritVM 可以直接 `#include "resource/AssetManager.hpp"` 并调用其方法。  
+> **在判断 Common 层的"两个不同层"时，ViewModel 和 Resource 视为同一个层。**
 
 ```
 src/viewmodel/                      include/viewmodel/
+├── MathUtils.cpp                   ├── MathUtils.hpp     ← Vec2, distance（从 common/ 移入）
+├── Geometry.cpp                    ├── Geometry.hpp      ← Rect, Circle（从 common/ 移入）
 ├── GameMapVM.cpp                   ├── GameMapVM.hpp     ← 游戏地图 ViewModel（核心 FM）
 ├── SpiritVM.cpp                    ├── SpiritVM.hpp      ← 精灵图片 ViewModel
 ├── Player.cpp                      ├── Player.hpp        ← 玩家数据类
@@ -157,10 +168,12 @@ src/viewmodel/                      include/viewmodel/
 ├── Bullet.cpp                      ├── Bullet.hpp        ← 子弹数据类
 ├── CollisionSystem.cpp             ├── CollisionSystem.hpp ← 碰撞检测工具
 ├── ScoreManager.cpp                ├── ScoreManager.hpp  ← 计分 + 最高分
-├── PowerUpManager.cpp (后续迭代)   ├── PowerUpManager.hpp
-├── AircraftStats.cpp (后续迭代)    ├── AircraftStats.hpp
-├── SkillSystem.cpp (后续迭代)      ├── SkillSystem.hpp
-└── WaveManager.cpp (后续迭代)      └── WaveManager.hpp
+├── PowerUpManager.cpp              ├── PowerUpManager.hpp
+├── AircraftStats.cpp               ├── AircraftStats.hpp
+├── SkillSystem.cpp                 ├── SkillSystem.hpp
+├── WaveManager.cpp                 ├── WaveManager.hpp
+├── Boss.cpp                        ├── Boss.hpp
+├── UpgradeManager.cpp              └── UpgradeManager.hpp
 ```
 
 **GameMapVM 的核心结构（对齐 ex5 Plane 的 GameViewModel）：**
@@ -268,7 +281,10 @@ src/view/                           include/view/
 | ------------------ | ---------------------------------------------------------------------------------------------- |
 | **负责文件** | `src/resource/` + `include/resource/`                                                      |
 | **职责**     | 磁盘 I/O：加载 PNG 图片到 QPixmap（带缓存）、读写最高分/升级数据 JSON 存档                     |
-| **越界限制** | • 可读 Common Agent•**不可读** ViewModel 的任何文件• **不可读** View 的任何文件 |
+| **越界限制** | • 可读 Common Agent<br>• **可被 ViewModel 读取**（Resource 本质属于 ViewModel 层）<br>• **不可读** View 的任何文件 |
+
+> **📌 Resource 与 ViewModel 的关系：** Resource 提供图片加载（AssetManager）和持久化（SaveManager）服务，
+> 供 SpiritVM 和 GameMapVM 直接调用。两者属于同一逻辑层。
 
 ```
 src/resource/                       include/resource/
@@ -289,7 +305,7 @@ src/resource/                       include/resource/
 | **技术方案** | `QApplication` + `QGraphicsView`，**无** QQmlApplicationEngine                                                                                        |
 | **可读**     | ✅ 可读所有 Agent                                                                                                                                               |
 | **可写**     | 仅限自己目录下的文件                                                                                                                                            |
-| **不可碰**   | ⚠️**绝对不能**写游戏逻辑或渲染代码——只做组装和连接                                                                                                    |
+| **不可碰**   | ⚠️**绝对不能**写游戏逻辑或渲染代码——只做组装和连接。<br>⚠️**绝对不能**包含 ViewModel 层的功能代码（如图片加载）。这些应归 SpiritVM 自己处理 |
 
 ```
 src/app/                            include/app/
@@ -298,6 +314,8 @@ src/app/                            include/app/
 ```
 
 **AppAgent 的组装流程（对齐 ex5/ex6 AirApp）：**
+
+> **📌 Part 类概念（课件 App 层拓展）：** 当项目复杂时，可将一套 View + ViewModel + Model 对象封装成 Part 类。例如 `GamePart` 包含 GameView + GameMapVM + SpiritVM + Resource。App 持有 Part 类而非逐个持有各 Agent。本项目目前用 AppAgent 直接管理所有 Agent 实例，是简化的 Part 模式。
 
 ```cpp
 class AppAgent {

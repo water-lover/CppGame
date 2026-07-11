@@ -1,4 +1,4 @@
-#include "common/MathUtils.hpp"
+#include "viewmodel/MathUtils.hpp"
 #include <cmath>
 
 float distance(Vec2 a, Vec2 b) {

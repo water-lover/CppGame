@@ -1,7 +1,7 @@
 #ifndef ENEMY_HPP
 #define ENEMY_HPP
 
-#include "common/MathUtils.hpp"
+#include "viewmodel/MathUtils.hpp"
 #include "common/Actor.hpp"
 #include "viewmodel/Bullet.hpp"
 #include <vector>

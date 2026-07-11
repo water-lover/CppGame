@@ -1,4 +1,35 @@
 #include "viewmodel/SpiritVM.hpp"
+#include "resource/AssetManager.hpp"
+
+bool SpiritVM::initialize() {
+    AssetManager& assets = AssetManager::instance();
+
+    // 5 架战机图片
+    setAircraftPixmap(AircraftType::Thunder,  assets.getImage("thunderShip"));
+    setAircraftPixmap(AircraftType::Flame,    assets.getImage("flameShip"));
+    setAircraftPixmap(AircraftType::Frost,    assets.getImage("frostShip"));
+    setAircraftPixmap(AircraftType::Phantom,  assets.getImage("phantomShip"));
+    setAircraftPixmap(AircraftType::Fortress, assets.getImage("fortressShip"));
+
+    setEnemySmallPixmap(assets.getImage("enemySmall"));
+    setPlayerBulletPixmap(assets.getImage("playerBullet"));
+    setEnemyBulletPixmap(assets.getImage("enemyBullet"));
+    setBackgroundPixmap(assets.getImage("background"));
+
+    setEnemyMediumPixmap(assets.getImage("enemyMedium"));
+    setEnemyLargePixmap(assets.getImage("enemyLarge"));
+    setBossPixmap(assets.getImage("bossShip"));
+    setBossPixmap2(assets.getImage("bossShip2"));
+    setBossPixmap3(assets.getImage("bossShip3"));
+    setBossPixmap4(assets.getImage("bossShip4"));
+    setEnemyBulletPixmap(assets.getImage("enemyBullet"));
+    setPowerUpHpPixmap(assets.getImage("powerUpHp"));
+    setPowerUpFirePixmap(assets.getImage("powerUpFire"));
+    setPowerUpShieldPixmap(assets.getImage("powerUpShield"));
+    setPowerUpStarCorePixmap(assets.getImage("powerUpStarCore"));
+
+    return true;
+}
 
 void SpiritVM::setAircraftPixmap(AircraftType type, const QPixmap* p) noexcept {
     int idx = static_cast<int>(type);

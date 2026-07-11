@@ -25,7 +25,7 @@ ModeSelectScreen::ModeSelectScreen(QWidget* parent)
         "  color: white;"
         "  font-size: 26px;"
         "  font-weight: bold;"
-        "  font-family: 'Microsoft YaHei';"
+        " "
         "  border: 2px solid white;"
         "  border-radius: 12px;"
         "}"
@@ -44,7 +44,7 @@ ModeSelectScreen::ModeSelectScreen(QWidget* parent)
         "  color: white;"
         "  font-size: 26px;"
         "  font-weight: bold;"
-        "  font-family: 'Microsoft YaHei';"
+        " "
         "  border: 2px solid white;"
         "  border-radius: 12px;"
         "}"
@@ -68,8 +68,10 @@ void ModeSelectScreen::paintEvent(QPaintEvent* /*event*/) {
     painter.fillRect(0, 0, w, h, QColor(15, 15, 40));
 
     painter.setPen(QColor(255, 215, 0));
-    QFont titleFont(QStringLiteral("Microsoft YaHei"), static_cast<int>(h * 0.07), QFont::Bold);
+    QFont titleFont;
+    titleFont.setPixelSize(static_cast<int>(h * 0.07));
+    titleFont.setBold(true);
     painter.setFont(titleFont);
-    painter.drawText(QRect(0, h * 0.12, w, h * 0.12),
+    painter.drawText(QRect(0, h * 0.08, w, h * 0.22),
                      Qt::AlignCenter, QStringLiteral("选 择 模 式"));
 }
