@@ -27,28 +27,19 @@ endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-# ── Qt5 (纯 C++，无 Quick/Qml) ──────────────────────────────────────────────
-find_package(Qt5 REQUIRED COMPONENTS
-    Core
-    Gui
-    Widgets
-)
+# ── Qt5 ──────────────────────────────────────────────────────────────────────
+find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets Test)
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  ① Common Agent — 不依赖任何人
+#  Common Agent
 # ═════════════════════════════════════════════════════════════════════════════
-add_library(thf_common OBJECT
-    src/common/AirMap.cpp
-)
+add_library(thf_common OBJECT src/common/AirMap.cpp)
 target_include_directories(thf_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  ② ViewModel Agent — 取消 Model 层，数据即可绘制对象
+#  ViewModel Agent
 # ═════════════════════════════════════════════════════════════════════════════
 add_library(thf_viewmodel OBJECT
-    src/viewmodel/MathUtils.cpp
-    src/viewmodel/Geometry.cpp
-    src/viewmodel/SpiritVM.cpp
     src/viewmodel/GameMapVM.cpp
     src/viewmodel/Player.cpp
     src/viewmodel/Enemy.cpp
@@ -61,22 +52,28 @@ add_library(thf_viewmodel OBJECT
     src/viewmodel/PowerUpManager.cpp
     src/viewmodel/Boss.cpp
     src/viewmodel/UpgradeManager.cpp
-    include/viewmodel/SpiritVM.hpp
+    src/viewmodel/SpiritVM.cpp
+    src/viewmodel/MathUtils.cpp
+    src/viewmodel/Geometry.cpp
     include/viewmodel/GameMapVM.hpp
-    include/viewmodel/MathUtils.hpp
-    include/viewmodel/Geometry.hpp
+    include/viewmodel/Player.hpp
+    include/viewmodel/Enemy.hpp
+    include/viewmodel/Bullet.hpp
+    include/viewmodel/CollisionSystem.hpp
+    include/viewmodel/ScoreManager.hpp
     include/viewmodel/AircraftStats.hpp
     include/viewmodel/SkillSystem.hpp
     include/viewmodel/WaveManager.hpp
     include/viewmodel/PowerUpManager.hpp
     include/viewmodel/Boss.hpp
     include/viewmodel/UpgradeManager.hpp
+    include/viewmodel/SpiritVM.hpp
 )
 target_include_directories(thf_viewmodel PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(thf_viewmodel PUBLIC thf_resource thf_common Qt5::Core Qt5::Gui)
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  ③ View Agent — 纯 C++ QGraphicsView
+#  View Agent
 # ═════════════════════════════════════════════════════════════════════════════
 add_library(thf_view OBJECT
     src/view/GameView.cpp
@@ -96,6 +93,10 @@ add_library(thf_view OBJECT
     src/view/UpgradeScreen.cpp
     include/view/GameView.hpp
     include/view/GameScene.hpp
+    include/view/PlayerItem.hpp
+    include/view/EnemyItem.hpp
+    include/view/BulletItem.hpp
+    include/view/StarFieldItem.hpp
     include/view/HudOverlay.hpp
     include/view/StartScreen.hpp
     include/view/ModeSelectScreen.hpp
@@ -105,17 +106,12 @@ add_library(thf_view OBJECT
     include/view/LevelSelectScreen.hpp
     include/view/AircraftSelectScreen.hpp
     include/view/UpgradeScreen.hpp
-    include/view/PlayerItem.hpp
-    include/view/EnemyItem.hpp
-    include/view/BulletItem.hpp
-    include/view/StarFieldItem.hpp
 )
 target_include_directories(thf_view PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(thf_view PUBLIC thf_common Qt5::Gui Qt5::Widgets)
-# ⚠️ 不链接 thf_viewmodel — 编译隔离确保 View 绝不 include ViewModel 头文件
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  ④ Resource Agent — 依赖 Common
+#  Resource Agent
 # ═════════════════════════════════════════════════════════════════════════════
 add_library(thf_resource OBJECT
     src/resource/AssetManager.cpp
@@ -126,38 +122,33 @@ target_include_directories(thf_resource PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inclu
 target_link_libraries(thf_resource PUBLIC thf_common Qt5::Core Qt5::Gui)
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  QRC 资源
+#  QRC
 # ═════════════════════════════════════════════════════════════════════════════
 qt5_add_resources(QRC_SOURCES resources/resources.qrc)
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  ⑤ 主可执行文件
+#  Main executable
 # ═════════════════════════════════════════════════════════════════════════════
 add_executable(${PROJECT_NAME}
-    src/app/main.cpp
-    src/app/AppAgent.cpp
-    ${QRC_SOURCES}
+    src/app/main.cpp src/app/AppAgent.cpp ${QRC_SOURCES}
     $<TARGET_OBJECTS:thf_common>
     $<TARGET_OBJECTS:thf_viewmodel>
     $<TARGET_OBJECTS:thf_view>
     $<TARGET_OBJECTS:thf_resource>
 )
-target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     thf_common thf_viewmodel thf_view thf_resource
     Qt5::Core Qt5::Gui Qt5::Widgets
 )
 
-# ── Warnings ──────────────────────────────────────────────────────────────────
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /W4 /utf-8)
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
-# ── Debug 平台插件修复 ──────────────────────────────────────────────────────
+# ── Debug plugin copy ──────────────────────────────────────────────────────
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(_plugin_search
         "${VCPKG_INSTALLED_DIR}/x64-mingw-dynamic/debug/plugins/platforms/qwindows.dll"
@@ -181,7 +172,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  ⑥ Tests — 依赖 Common + ViewModel
+#  Tests
 # ═════════════════════════════════════════════════════════════════════════════
 find_package(Catch2 CONFIG QUIET)
 if(Catch2_FOUND)
@@ -208,9 +199,27 @@ if(Catch2_FOUND)
         Qt5::Core
         Catch2::Catch2WithMain
     )
+
+    # ── 自动化测试（QTest 鼠标模拟，带 View 层） ─────────
+    add_executable(${PROJECT_NAME}_auto
+        tests/test_auto_play.cpp
+        ${QRC_SOURCES}
+        $<TARGET_OBJECTS:thf_common>
+        $<TARGET_OBJECTS:thf_viewmodel>
+        $<TARGET_OBJECTS:thf_resource>
+        $<TARGET_OBJECTS:thf_view>
+    )
+    target_include_directories(${PROJECT_NAME}_auto PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+    target_link_libraries(${PROJECT_NAME}_auto PRIVATE
+        thf_common thf_viewmodel thf_resource thf_view
+        Catch2::Catch2WithMain
+        Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Test
+    )
+
     include(CTest)
     include(Catch)
-    # catch_discover_tests(${PROJECT_NAME}_tests)
 endif()
 
 # ── Install ───────────────────────────────────────────────────────────────────
