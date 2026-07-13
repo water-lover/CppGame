@@ -255,6 +255,10 @@ void GameView::setStarCoresPtr(const int* p) noexcept {
     m_pStarCores = p;
     if (m_scene) m_scene->setHudStarCores(p);
 }
+void GameView::setAircraftCardData(int idx, const char* name, int fire, int lives, int cd, const char* skill, const char* desc) {
+    if (m_aircraftSelectScreen)
+        m_aircraftSelectScreen->setAircraftData(idx, name, fire, lives, cd, skill, desc);
+}
 void GameView::setUpgradeFireLevelPtr(const int* p) noexcept { m_pUpgradeFireLevel = p; }
 void GameView::setUpgradeLivesLevelPtr(const int* p) noexcept { m_pUpgradeLivesLevel = p; }
 void GameView::setUpgradeSpeedLevelPtr(const int* p) noexcept { m_pUpgradeSpeedLevel = p; }

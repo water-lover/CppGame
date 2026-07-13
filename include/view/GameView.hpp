@@ -105,6 +105,8 @@ public:
     void setWeaponLevelPtr(const int* p) noexcept { m_pWeaponLevel = p; if (m_scene) m_scene->setHudWeaponLevel(p); }
     void setHasShieldPtr(const bool* p) noexcept { if (m_scene) m_scene->setHudHasShield(p); }
     void setAircraftNamePtr(const char* p) noexcept { m_pAircraftName = p; if (m_scene) m_scene->setHudAircraftName(p); }
+    /// 注入战机选择卡数据（来自 AircraftStats，避免 View 硬编码）
+    void setAircraftCardData(int idx, const char* name, int fire, int lives, int cd, const char* skill, const char* desc);
 
     // ════════════════════════════════════════════════════════════════
     // ② 命令绑定 — 接收 std::function 命令（由 App 注入）

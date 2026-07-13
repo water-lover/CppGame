@@ -3,16 +3,15 @@
 #include <QMouseEvent>
 #include <QFont>
 
-// id, name, fire★, lives♥, skillCD(s), skill, desc
-const AircraftSelectScreen::CardInfo AircraftSelectScreen::AIRCRAFT[5] = {
-    {0, "雷 霆 号", 4, 6, 13, "雷暴领域",   "均衡旗舰 · 无短板"},
-    {1, "烈 焰 号", 5, 5, 15, "火焰风暴",   "极致火力 · 高输出"},
-    {2, "冰 霜 号", 3, 7, 15, "极寒护盾",   "最强生存 · 稳如山"},
-    {3, "幻 影 号", 3, 5, 14, "时空闪避",   "极速游击 · 风筝王"},
-    {4, "堡 垒 号", 3, 6, 16, "铁壁守护",   "钢铁壁垒 · 稳扎稳打"},
-};
+// 数据由 App 通过 setAircraftData 从 AircraftStats 注入
+// 不再硬编码，避免与 ViewModel 数据不同步
 
-static bool isTier5(int idx) { return idx == 0 || idx == 2; }  // 雷霆号+冰霜号
+static bool isTier5(int idx) { return idx == 0 || idx == 2; }
+
+void AircraftSelectScreen::setAircraftData(int idx, const char* name, int fire, int lives, int cd, const char* skill, const char* desc) {
+    if (idx >= 0 && idx < 5)
+        AIRCRAFT[idx] = {idx, name, fire, lives, cd, skill, desc};
+}
 
 AircraftSelectScreen::AircraftSelectScreen(QWidget* parent) : QWidget(parent) {
     setMouseTracking(false);

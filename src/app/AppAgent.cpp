@@ -2,6 +2,7 @@
 #include "view/GameView.hpp"
 #include "viewmodel/GameMapVM.hpp"
 #include "viewmodel/SpiritVM.hpp"
+#include "viewmodel/AircraftStats.hpp"
 #include "resource/SaveManager.hpp"
 #include "resource/Logger.hpp"
 
@@ -38,6 +39,20 @@ void AppAgent::init() {
 
     // 精灵图片
     m_gameView->setMap(m_mapVM->getMap());
+
+    // 注入战机选择数据（来自 AircraftStats，避免 View 硬编码）
+    {
+        static const char* kSkillNames[5] = {"雷暴领域","火焰风暴","极寒护盾","时空闪避","铁壁守护"};
+        static const char* kDescs[5] = {
+            "均衡旗舰 · 无短板","极致火力 · 高输出","最强生存 · 稳如山",
+            "极速游击 · 风筝王","钢铁壁垒 · 稳扎稳打"};
+        for (int i = 0; i < 5; ++i) {
+            const auto& t = AircraftStats::getTemplate(static_cast<AircraftType>(i));
+            m_gameView->setAircraftCardData(i, t.name, t.starFirePower,
+                t.baseLives, static_cast<int>(t.skillCooldown),
+                kSkillNames[i], kDescs[i]);
+        }
+    }
     m_gameView->setPlayerPixmap(m_spriteVM->getAircraftPixmap(AircraftType::Thunder));
     m_gameView->setEnemySmallPixmap(m_spriteVM->getEnemySmallPixmap());
     m_gameView->setBulletPixmap(m_spriteVM->getPlayerBulletPixmap());
