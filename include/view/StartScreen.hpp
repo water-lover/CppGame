@@ -21,6 +21,7 @@ signals:
 
 protected:
     void paintEvent(QPaintEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
 
 private:
     QPushButton* m_startButton = nullptr;

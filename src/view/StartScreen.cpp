@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <QVBoxLayout>
 #include <QFont>
+#include <QResizeEvent>
 
 StartScreen::StartScreen(QWidget* parent)
     : QWidget(parent)
@@ -49,16 +50,21 @@ StartScreen::StartScreen(QWidget* parent)
         "}"
     );
 
-    // 居中布局
+    // 居中布局（只有开始按钮）
     auto* layout = new QVBoxLayout(this);
     layout->setAlignment(Qt::AlignCenter);
     layout->addSpacing(180);  // 标题下方留空间
     layout->addWidget(m_startButton, 0, Qt::AlignCenter);
-    layout->addSpacing(10);
-    layout->addWidget(m_resetButton, 0, Qt::AlignCenter);
 
     connect(m_startButton, &QPushButton::clicked, this, &StartScreen::startClicked);
     connect(m_resetButton, &QPushButton::clicked, this, &StartScreen::resetClicked);
+}
+
+void StartScreen::resizeEvent(QResizeEvent* event) {
+    QWidget::resizeEvent(event);
+    // 重置按钮固定在右下角
+    m_resetButton->move(width() - m_resetButton->width() - 16,
+                        height() - m_resetButton->height() - 16);
 }
 
 void StartScreen::paintEvent(QPaintEvent* /*event*/) {

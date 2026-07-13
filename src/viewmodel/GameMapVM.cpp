@@ -209,6 +209,7 @@ void GameMapVM::tickImpl(float dt) {
         auto* boss = dynamic_cast<Boss*>(e.get());
         if (boss && boss->isDead()) {
             m_waveMgr.notifyBossDefeated();
+            m_scoreMgr.addScore(boss->getScore());  // BOSS 击杀分数
             m_scoreMgr.onBossKilled();  // 迭代7：BOSS统计
             // BOSS 星核掉落
             m_upgradeMgr.addStarCores(STAR_CORE_PER_BOSS);
