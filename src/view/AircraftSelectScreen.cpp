@@ -78,6 +78,18 @@ void AircraftSelectScreen::paintEvent(QPaintEvent* /*event*/) {
             p.setBrush(bg);
             p.drawRoundedRect(r, 10, 10);
 
+            // ── 品质徽章（右上角） ──────────────────────────────
+            {
+                QString badge = t5 ? QStringLiteral("★★★★★") : QStringLiteral("★★★★");
+                p.setPen(t5 ? QColor(255, 200, 50, 200) : QColor(160, 180, 255, 150));
+                QFont badgeF;
+                badgeF.setPixelSize(static_cast<int>(cardH * 0.07f));
+                p.setFont(badgeF);
+                p.drawText(QRectF(r.x() + r.width() * 0.55f, r.y() + 4,
+                                  r.width() * 0.45f, cardH * 0.12f),
+                           Qt::AlignRight | Qt::AlignTop, badge);
+            }
+
             float rowY = r.y() + r.height() * 0.04f;
             float rowH = r.height() * 0.17f;
 
