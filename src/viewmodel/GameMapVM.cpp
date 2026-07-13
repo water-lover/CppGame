@@ -210,9 +210,9 @@ void GameMapVM::tickImpl(float dt) {
         if (boss && boss->isDead()) {
             m_waveMgr.notifyBossDefeated();
             m_scoreMgr.addScore(boss->getScore());  // BOSS 击杀分数
-            m_scoreMgr.onBossKilled();  // 迭代7：BOSS统计
-            // BOSS 星核掉落
+            m_scoreMgr.onBossKilled();
             m_upgradeMgr.addStarCores(STAR_CORE_PER_BOSS);
+            fireChange(PROP_ID_SCORE);
             fireChange(PROP_ID_STAR_CORES);
             break;
         }
@@ -339,6 +339,9 @@ void GameMapVM::tickImpl(float dt) {
                 m_scoreMgr.setHighScore(m_scoreMgr.getScore());
                 emit saveHighScoreRequested(m_scoreMgr.getHighScore());
             }
+            // 游戏结束时持久化本局获得的星核
+            emit saveUpgradeRequested(m_upgradeMgr.getStarCores(),
+                                      m_upgradeMgr.packLevels());
         }
         fireChange(PROP_ID_GAME_STATE);
     }
