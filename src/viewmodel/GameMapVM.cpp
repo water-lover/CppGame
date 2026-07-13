@@ -60,6 +60,9 @@ std::function<void(int)> GameMapVM::getNavigateCommand() {
 std::function<void(int)> GameMapVM::getUpgradeStatCommand() {
     return [this](int type) { upgradeStatImpl(type); };
 }
+std::function<void()> GameMapVM::getResetAllCommand() {
+    return [this]() { resetAllImpl(); };
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // 命令实现
@@ -445,6 +448,20 @@ void GameMapVM::upgradeStatImpl(int type) {
 void GameMapVM::setInitialHighScore(int hs) noexcept {
     m_scoreMgr.setHighScore(hs);
     m_cachedHighScore = hs;
+}
+
+void GameMapVM::resetAllImpl() {
+    m_scoreMgr.setHighScore(0);
+    m_cachedHighScore = 0;
+    m_upgradeMgr = UpgradeManager();
+    m_player.setUpgradeBonuses(0, 0, 0, 0);
+    emit saveUpgradeRequested(0, 0);
+    emit saveHighScoreRequested(0);
+    emit resetAllRequested();
+    fireChange(PROP_ID_UPGRADE_LEVELS);
+    fireChange(PROP_ID_STAR_CORES);
+    fireChange(PROP_ID_MAX_UNLOCKED_LEVEL);
+    log("GameMapVM", "All save data reset");
 }
 
 void GameMapVM::initUpgradeData(int starCores, int packedLevels) {

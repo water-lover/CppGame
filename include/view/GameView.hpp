@@ -125,6 +125,7 @@ public:
     void setUseSkillCommand(std::function<void()>&& cmd);
     void setNavigateCommand(std::function<void(int)>&& cmd);
     void setUpgradeStatCommand(std::function<void(int)>&& cmd);
+    void setResetAllCommand(std::function<void()>&& cmd) { m_resetAllCommand = std::move(cmd); }
     void setLevelSelectMaxUnlocked(int level) noexcept;
     void setStarCoresPtr(const int* p) noexcept;
     void setMaxUnlockedLevelPtr(const int* p) noexcept;
@@ -227,6 +228,7 @@ private:
     std::function<void(int)>   m_startLevelCommand;
     std::function<void(int)>   m_selectLevelCommand;
     std::function<void()>      m_quitLevelCommand;
+    std::function<void()>      m_resetAllCommand;
     std::function<void(int)>   m_selectAircraftCommand;
     std::function<void()>      m_useSkillCommand;
     std::function<void(int)>   m_navigateCommand;

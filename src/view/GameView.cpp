@@ -117,6 +117,11 @@ GameView::GameView(QWidget* parent)
         m_pageStack->setCurrentIndex(1);
     });
 
+    // ── 重置数据 ──────────────────────────────────────────────
+    connect(m_startScreen, &StartScreen::resetClicked, [this]() {
+        if (m_resetAllCommand) m_resetAllCommand();
+    });
+
     connect(m_modeSelectScreen, &ModeSelectScreen::modeSelected, [this](int mode) {
         if (mode == 0)
             m_pageStack->setCurrentIndex(2);  // Campaign → LevelSelect

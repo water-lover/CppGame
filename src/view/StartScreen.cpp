@@ -31,13 +31,34 @@ StartScreen::StartScreen(QWidget* parent)
         "}"
     );
 
+    // ── 重置按钮 ───────────────────────────────────────────────────
+    m_resetButton = new QPushButton(QStringLiteral("重 置 数 据"), this);
+    m_resetButton->setFixedSize(130, 36);
+    m_resetButton->setStyleSheet(
+        "QPushButton {"
+        "  background-color: rgba(120, 40, 40, 180);"
+        "  color: #CC8888;"
+        "  font-size: 14px;"
+        " "
+        "  border: 1px solid #663333;"
+        "  border-radius: 6px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: rgba(160, 50, 50, 220);"
+        "  color: white;"
+        "}"
+    );
+
     // 居中布局
     auto* layout = new QVBoxLayout(this);
     layout->setAlignment(Qt::AlignCenter);
     layout->addSpacing(180);  // 标题下方留空间
     layout->addWidget(m_startButton, 0, Qt::AlignCenter);
+    layout->addSpacing(10);
+    layout->addWidget(m_resetButton, 0, Qt::AlignCenter);
 
     connect(m_startButton, &QPushButton::clicked, this, &StartScreen::startClicked);
+    connect(m_resetButton, &QPushButton::clicked, this, &StartScreen::resetClicked);
 }
 
 void StartScreen::paintEvent(QPaintEvent* /*event*/) {

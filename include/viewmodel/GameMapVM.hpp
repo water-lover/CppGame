@@ -88,7 +88,8 @@ public:
     const int* getUpgradeSpeedLevelPtr()   const noexcept { return m_upgradeMgr.getSpeedLevelPtr(); }
     const int* getUpgradeCooldownLevelPtr() const noexcept { return m_upgradeMgr.getCooldownLevelPtr(); }
     void initUpgradeData(int starCores, int packedLevels);
-    void setInitialHighScore(int hs) noexcept;  // 从存档加载最高分
+    void setInitialHighScore(int hs) noexcept;
+    void resetAllImpl();
 
     // 迭代 3 新属性
     int   getAircraftType()       const noexcept { return static_cast<int>(m_player.getAircraftType()); }
@@ -134,6 +135,7 @@ public:
 
     // UI 导航命令（让 ViewModel 控制页面切换，而非 View 直接操作页面栈）
     std::function<void(int)>      getNavigateCommand();
+    std::function<void()>         getResetAllCommand();         ///< 重置所有存档数据
 
     // 迭代 6：升级命令
     std::function<void(int)>      getUpgradeStatCommand();
@@ -151,6 +153,7 @@ signals:
     void saveHighScoreRequested(int score);
     void saveCampaignRequested(int level);
     void saveUpgradeRequested(int starCores, int packedLevels);
+    void resetAllRequested();
 
 private:
     // ── 命令实现 ──────────────────────────────────────────────────

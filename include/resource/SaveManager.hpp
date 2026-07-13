@@ -33,6 +33,9 @@ public:
     UpgradeData loadUpgradeData();
     void saveUpgradeData(const UpgradeData& data);
 
+    /// 重置所有存档数据（最高分/升级数据/关卡进度）
+    void resetAllData();
+
     /// 打包：将 4 项等级压缩为 16bit int
     static int packLevels(int fire, int lives, int speed, int cooldown);
 

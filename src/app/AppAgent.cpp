@@ -131,6 +131,7 @@ void AppAgent::init() {
     m_gameView->setSelectAircraftCommand(m_mapVM->getSelectAircraftCommand());
     m_gameView->setUseSkillCommand(m_mapVM->getUseSkillCommand());
     m_gameView->setNavigateCommand(m_mapVM->getNavigateCommand());
+    m_gameView->setResetAllCommand(m_mapVM->getResetAllCommand());
 
     // 迭代 6：升级命令
     m_gameView->setUpgradeStatCommand(m_mapVM->getUpgradeStatCommand());
@@ -158,6 +159,11 @@ void AppAgent::init() {
                      [](int starCores, int packedLevels) {
                          SaveManager().saveUpgradeData({starCores, packedLevels});
                          log("AppAgent", "Upgrade data saved");
+                     });
+    QObject::connect(m_mapVM, &GameMapVM::resetAllRequested,
+                     []() {
+                         SaveManager().resetAllData();
+                         log("AppAgent", "All save data cleared");
                      });
 
     // ── 动态更新（监听 GameState 变化，仅用于战机图片切换）─────

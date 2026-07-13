@@ -77,3 +77,8 @@ void SaveManager::saveUpgradeData(const UpgradeData& data) {
     obj["upgradeLevels"] = data.levelsPacked;
     saveObject(filePath_, obj);
 }
+
+void SaveManager::resetAllData() {
+    QJsonObject empty;
+    saveObject(filePath_, empty);
+}

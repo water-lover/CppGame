@@ -16,12 +16,15 @@ public:
 signals:
     /// 用户点击"开始游戏"
     void startClicked();
+    /// 用户点击"重置数据"
+    void resetClicked();
 
 protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
     QPushButton* m_startButton = nullptr;
+    QPushButton* m_resetButton = nullptr;
 };
 
 #endif // STARTSCREEN_HPP
