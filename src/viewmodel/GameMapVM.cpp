@@ -467,6 +467,7 @@ void GameMapVM::resetAllImpl() {
     m_scoreMgr.setActiveHighScoreSlot(0);
     static const int zero[5] = {};
     m_upgradeMgr.setAllLevelsFromArray(zero);
+    m_upgradeMgr.setCurrentAircraft(m_upgradeMgr.getCurrentAircraft());  // 刷新缓存
     m_upgradeMgr.addStarCores(-m_upgradeMgr.getStarCores());
     m_player.setUpgradeBonuses(0, 0, 0, 0);
     int packed[5]; m_upgradeMgr.packAllLevels(packed);
