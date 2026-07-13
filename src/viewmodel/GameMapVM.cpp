@@ -434,9 +434,17 @@ void GameMapVM::upgradeStatImpl(int type) {
         fireChange(PROP_ID_UPGRADE_LEVELS);
         fireChange(PROP_ID_STAR_CORES);
         fireChange(PROP_ID_LIVES);
+        // 持久化升级数据
+        emit saveUpgradeRequested(m_upgradeMgr.getStarCores(),
+                                  m_upgradeMgr.packLevels());
         log("GameMapVM", "Upgrade stat " + std::to_string(type) + " to level " +
             std::to_string(m_upgradeMgr.getUpgradeLevel(ut)));
     }
+}
+
+void GameMapVM::setInitialHighScore(int hs) noexcept {
+    m_scoreMgr.setHighScore(hs);
+    m_cachedHighScore = hs;
 }
 
 void GameMapVM::initUpgradeData(int starCores, int packedLevels) {

@@ -88,6 +88,7 @@ public:
     const int* getUpgradeSpeedLevelPtr()   const noexcept { return m_upgradeMgr.getSpeedLevelPtr(); }
     const int* getUpgradeCooldownLevelPtr() const noexcept { return m_upgradeMgr.getCooldownLevelPtr(); }
     void initUpgradeData(int starCores, int packedLevels);
+    void setInitialHighScore(int hs) noexcept;  // 从存档加载最高分
 
     // 迭代 3 新属性
     int   getAircraftType()       const noexcept { return static_cast<int>(m_player.getAircraftType()); }

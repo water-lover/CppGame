@@ -98,6 +98,13 @@ void AppAgent::init() {
     m_gameView->setLevelSelectMaxUnlocked(7);
     log("AppAgent", "All levels unlocked for testing (7/7)");
 
+    // ── 从存档加载最高分（闯关+无尽共用） ──────────────────────
+    {
+        int hs = SaveManager().loadHighScore();
+        m_mapVM->setInitialHighScore(hs);
+        log("AppAgent", "High score loaded: " + std::to_string(hs));
+    }
+
     // 迭代 6：从存档读取升级数据
     {
         auto upgradeData = SaveManager().loadUpgradeData();
