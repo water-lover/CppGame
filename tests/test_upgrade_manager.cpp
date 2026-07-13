@@ -1,4 +1,5 @@
 // ── UpgradeManager 单元测试 ──────────────────────────────────────────────
+#include "viewmodel/GameConstants.hpp"
 // 测试升级系统的消耗计算、星核管理、属性加成、序列化
 //
 // 覆盖范围：
@@ -95,17 +96,17 @@ TEST_CASE("UpgradeManager - upgrade fails at MAX_LEVEL", "[upgrade][upgrade][bou
     um.addStarCores(9999);
 
     // 升到 MAX_LEVEL
-    for (int i = 0; i < UpgradeManager::MAX_LEVEL; ++i) {
+    for (int i = 0; i < MAX_UPGRADE_LEVEL; ++i) {
         CHECK(um.upgrade(UpgradeType::Speed) == true);
     }
-    CHECK(um.getUpgradeLevel(UpgradeType::Speed) == UpgradeManager::MAX_LEVEL);
+    CHECK(um.getUpgradeLevel(UpgradeType::Speed) == MAX_UPGRADE_LEVEL);
 
     // 满级后再升级失败
     CHECK(um.upgrade(UpgradeType::Speed) == false);
 }
 
 TEST_CASE("UpgradeManager - MAX_LEVEL constant equals 10", "[upgrade][constant]") {
-    CHECK(UpgradeManager::MAX_LEVEL == 10);
+    CHECK(MAX_UPGRADE_LEVEL == 10);
 }
 
 TEST_CASE("UpgradeManager - getFirePowerBonus increases with level", "[upgrade][bonus]") {
@@ -146,7 +147,7 @@ TEST_CASE("UpgradeManager - getCooldownBonus caps at 50%", "[upgrade][bonus][bou
     um.addStarCores(9999);
 
     // 升 10 级: 10 * 0.05 = 0.5 = 50% (已达到上限)
-    for (int i = 0; i < UpgradeManager::MAX_LEVEL; ++i)
+    for (int i = 0; i < MAX_UPGRADE_LEVEL; ++i)
         um.upgrade(UpgradeType::Cooldown);
 
     CHECK(um.getCooldownBonus() == Approx(0.5f));
@@ -161,7 +162,7 @@ TEST_CASE("UpgradeManager - packLevels encodes all 4 levels", "[upgrade][seriali
     um.setUpgradeLevel(UpgradeType::Speed,     7);
     um.setUpgradeLevel(UpgradeType::Cooldown,  2);
 
-    int packed = um.packLevels();
+    int packed = um.getAircraftLevelsPacked(0);
 
     // bit 0-3: FirePower=3, bit 4-7: Lives=5, bit 8-11: Speed=7, bit 12-15: Cooldown=2
     CHECK((packed & 0xF) == 3);
@@ -176,7 +177,7 @@ TEST_CASE("UpgradeManager - unpackLevels restores levels correctly", "[upgrade][
     // 打包数据
     int packed = (3 & 0xF) | ((5 & 0xF) << 4) | ((7 & 0xF) << 8) | ((2 & 0xF) << 12);
 
-    um.unpackLevels(packed);
+    um.setAircraftLevelsPacked(0, packed);
 
     CHECK(um.getUpgradeLevel(UpgradeType::FirePower)  == 3);
     CHECK(um.getUpgradeLevel(UpgradeType::Lives)      == 5);
@@ -192,11 +193,11 @@ TEST_CASE("UpgradeManager - pack/unpack roundtrip preserves data", "[upgrade][se
     um.setUpgradeLevel(UpgradeType::Speed,      2);
     um.setUpgradeLevel(UpgradeType::Cooldown,   6);
 
-    int packed = um.packLevels();
+    int packed = um.getAircraftLevelsPacked(0);
 
     // 新管理器解包
     UpgradeManager um2;
-    um2.unpackLevels(packed);
+    um2.setAircraftLevelsPacked(0, packed);
 
     CHECK(um2.getUpgradeLevel(UpgradeType::FirePower)  == 9);
     CHECK(um2.getUpgradeLevel(UpgradeType::Lives)      == 8);
@@ -232,5 +233,5 @@ TEST_CASE("UpgradeManager - setUpgradeLevel clamps to valid range", "[upgrade][s
     CHECK(um.getUpgradeLevel(UpgradeType::FirePower) == 0);
 
     um.setUpgradeLevel(UpgradeType::Lives, 99);
-    CHECK(um.getUpgradeLevel(UpgradeType::Lives) == UpgradeManager::MAX_LEVEL);
+    CHECK(um.getUpgradeLevel(UpgradeType::Lives) == MAX_UPGRADE_LEVEL);
 }

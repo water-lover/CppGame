@@ -5,56 +5,55 @@
 
 /// 可升级的属性
 enum class UpgradeType {
-    FirePower,      // 火力
-    Lives,          // 生命
-    Speed,          // 速度
-    Cooldown        // 冷却
+    FirePower,    // 火力
+    Lives,       // 生命
+    Speed,       // 速度
+    Cooldown     // 冷却
 };
 
 /// 升级系统管理器
-///
-/// 管理星核碎片和 4 项属性的升级等级。
-/// 闯关模式和无尽模式共用升级数据。
-/// 升级消耗：Lv.N → Lv.N+1 需 10 × (N+1) 星核
+/// 每架战机独立升级等级，星核碎片全局共用
 class UpgradeManager {
 public:
     UpgradeManager() = default;
 
-    // ── 星核管理 ──────────────────────────────────────────────────
-    int  getStarCores()            const { return m_starCores; }
-    const int* getStarCoresPtr()   const { return &m_starCores; }
+    /// 设置/获取当前操作的战机
+    void  setCurrentAircraft(int type) noexcept { currentAircraft_ = type; }
+    int   getCurrentAircraft() const noexcept { return currentAircraft_; }
 
-    // ── 等级指针（供 ViewModel 暴露给 View） ─────────────────────
-    const int* getFireLevelPtr()     const { return &m_fireLevel; }
-    const int* getLivesLevelPtr()    const { return &m_livesLevel; }
-    const int* getSpeedLevelPtr()   const { return &m_speedLevel; }
-    const int* getCooldownLevelPtr() const { return &m_cooldownLevel; }
+    // ── 升级管理（操作当前战机） ────────────────────────────────
+    int   getUpgradeLevel(UpgradeType type) const;
+    void  setUpgradeLevel(UpgradeType type, int level);
+    bool  upgrade(UpgradeType type);  // 消耗星核升级，返回成功
+
+    /// 当前战机的属性加成
+    float getFirePowerBonus()  const;
+    int   getLivesBonus()      const;
+    float getSpeedBonus()      const;
+    float getCooldownBonus()   const;
+
+    // ── 星核管理（全局共用） ────────────────────────────────────
+    int  getStarCores()            const { return m_starCores; }
     void addStarCores(int amount)        { m_starCores += amount; }
     bool spendStarCores(int amount);
+    const int* getStarCoresPtr()   const { return &m_starCores; }
 
-    // ── 升级管理 ──────────────────────────────────────────────────
-    int  getUpgradeLevel(UpgradeType type) const;
-    void setUpgradeLevel(UpgradeType type, int level);
-    bool upgrade(UpgradeType type);  // 尝试升级，消耗星核，返回成功
+    // ── 单战机等级指针（供 ViewModel 暴露给 View） ──────────────
+    const int* getFireLevelPtr()     const;
+    const int* getLivesLevelPtr()    const;
+    const int* getSpeedLevelPtr()   const;
+    const int* getCooldownLevelPtr() const;
 
-    /// 获取某属性的总加成值
-    float getFirePowerBonus()  const;    // 返回累加值（如 1.5 = +50% 火力等级）
-    int   getLivesBonus()      const;    // 返回额外生命数
-    float getSpeedBonus()      const;    // 返回速度倍率加成
-    float getCooldownBonus()   const;    // 返回冷却缩减比例 [0,1]
-
-    // ── 序列化（供 SaveManager 读写） ─────────────────────────────
-    int  packLevels()           const;   // 将 4 项等级打包为 int（每项 4bit）
-    void unpackLevels(int data);         // 解包
-
-    static constexpr int MAX_LEVEL = MAX_UPGRADE_LEVEL;
+    // ── 序列化 ──────────────────────────────────────────────────
+    int   getAircraftLevelsPacked(int aircraftIdx) const;  // 打包单战机 4 项等级
+    void  setAircraftLevelsPacked(int aircraftIdx, int packedData);
+    void  setAllLevelsFromArray(const int packed[5]);      // 批量加载
+    void  packAllLevels(int out[5]) const;                 // 批量打包
 
 private:
-    int m_starCores       = 0;
-    int m_fireLevel       = 0;
-    int m_livesLevel      = 0;
-    int m_speedLevel      = 0;
-    int m_cooldownLevel   = 0;
+    int currentAircraft_ = 0;       // 当前正在查看/升级的战机
+    int m_starCores = 0;
+    int m_levels[5][4] = {};        // [战机][属性]: Fire,Lives,Speed,Cooldown
 };
 
 #endif // UPGRADEMANAGER_HPP

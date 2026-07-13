@@ -156,8 +156,15 @@ void AppAgent::init() {
                          log("AppAgent", "Campaign progress saved: level " + std::to_string(level));
                      });
     QObject::connect(m_mapVM, &GameMapVM::saveUpgradeRequested,
-                     [](int starCores, int packedLevels) {
-                         SaveManager().saveUpgradeData({starCores, packedLevels});
+                     [](int starCores, int p0, int p1, int p2, int p3, int p4) {
+                         SaveManager::UpgradeData d;
+                         d.starCores = starCores;
+                         d.levelsPacked[0] = p0;
+                         d.levelsPacked[1] = p1;
+                         d.levelsPacked[2] = p2;
+                         d.levelsPacked[3] = p3;
+                         d.levelsPacked[4] = p4;
+                         SaveManager().saveUpgradeData(d);
                          log("AppAgent", "Upgrade data saved");
                      });
     QObject::connect(m_mapVM, &GameMapVM::resetAllRequested,

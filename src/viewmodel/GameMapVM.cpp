@@ -345,8 +345,9 @@ void GameMapVM::tickImpl(float dt) {
             m_lastScore = m_scoreMgr.getScore();
             m_cachedHighScore = m_scoreMgr.getHighScore();
             // 游戏结束时持久化本局获得的星核
+            int pp[5]; m_upgradeMgr.packAllLevels(pp);
             emit saveUpgradeRequested(m_upgradeMgr.getStarCores(),
-                                      m_upgradeMgr.packLevels());
+                                      pp[0], pp[1], pp[2], pp[3], pp[4]);
         }
         fireChange(PROP_ID_GAME_STATE);
     }
@@ -447,8 +448,9 @@ void GameMapVM::upgradeStatImpl(int type) {
         fireChange(PROP_ID_STAR_CORES);
         fireChange(PROP_ID_LIVES);
         // 持久化升级数据
+        int pp[5]; m_upgradeMgr.packAllLevels(pp);
         emit saveUpgradeRequested(m_upgradeMgr.getStarCores(),
-                                  m_upgradeMgr.packLevels());
+                                  pp[0], pp[1], pp[2], pp[3], pp[4]);
         log("GameMapVM", "Upgrade stat " + std::to_string(type) + " to level " +
             std::to_string(m_upgradeMgr.getUpgradeLevel(ut)));
     }
@@ -462,9 +464,12 @@ void GameMapVM::setInitialHighScore(int hs) noexcept {
 void GameMapVM::resetAllImpl() {
     m_scoreMgr.setHighScore(0);
     m_cachedHighScore = 0;
-    m_upgradeMgr = UpgradeManager();
+    static const int zero[5] = {};
+    m_upgradeMgr.setAllLevelsFromArray(zero);
+    m_upgradeMgr.addStarCores(-m_upgradeMgr.getStarCores());
     m_player.setUpgradeBonuses(0, 0, 0, 0);
-    emit saveUpgradeRequested(0, 0);
+    int packed[5]; m_upgradeMgr.packAllLevels(packed);
+    emit saveUpgradeRequested(0, packed[0], packed[1], packed[2], packed[3], packed[4]);
     emit saveHighScoreRequested(0);
     emit resetAllRequested();
     fireChange(PROP_ID_UPGRADE_LEVELS);
@@ -473,9 +478,9 @@ void GameMapVM::resetAllImpl() {
     log("GameMapVM", "All save data reset");
 }
 
-void GameMapVM::initUpgradeData(int starCores, int packedLevels) {
+void GameMapVM::initUpgradeData(int starCores, const int packedLevels[5]) {
     m_upgradeMgr.addStarCores(starCores);
-    m_upgradeMgr.unpackLevels(packedLevels);
+    m_upgradeMgr.setAllLevelsFromArray(packedLevels);
     m_player.setUpgradeBonuses(
         m_upgradeMgr.getFirePowerBonus(),
         m_upgradeMgr.getLivesBonus(),
@@ -483,7 +488,7 @@ void GameMapVM::initUpgradeData(int starCores, int packedLevels) {
         m_upgradeMgr.getCooldownBonus()
     );
     log("GameMapVM", "Upgrade data loaded: cores=" + std::to_string(starCores)
-        + " levels=" + std::to_string(packedLevels));
+        + " lv0=" + std::to_string(packedLevels[0]));
 }
 
 void GameMapVM::pauseImpl() {
@@ -498,6 +503,14 @@ void GameMapVM::pauseImpl() {
 void GameMapVM::selectAircraftImpl(int type) {
     if (type < 0 || type >= AircraftStats::count()) return;
     m_player.setAircraftType(static_cast<AircraftType>(type));
+    m_upgradeMgr.setCurrentAircraft(type);
+    m_player.setUpgradeBonuses(
+        m_upgradeMgr.getFirePowerBonus(),
+        m_upgradeMgr.getLivesBonus(),
+        m_upgradeMgr.getSpeedBonus(),
+        m_upgradeMgr.getCooldownBonus()
+    );
+    fireChange(PROP_ID_UPGRADE_LEVELS);
 }
 
 void GameMapVM::useSkillImpl() {

@@ -87,7 +87,7 @@ public:
     const int* getUpgradeLivesLevelPtr()   const noexcept { return m_upgradeMgr.getLivesLevelPtr(); }
     const int* getUpgradeSpeedLevelPtr()   const noexcept { return m_upgradeMgr.getSpeedLevelPtr(); }
     const int* getUpgradeCooldownLevelPtr() const noexcept { return m_upgradeMgr.getCooldownLevelPtr(); }
-    void initUpgradeData(int starCores, int packedLevels);
+    void initUpgradeData(int starCores, const int packedLevels[5]);
     void setInitialHighScore(int hs) noexcept;
     void resetAllImpl();
 
@@ -152,7 +152,7 @@ signals:
     // ── 持久化请求（ViewModel → App，App 再调 SaveManager）──
     void saveHighScoreRequested(int score);
     void saveCampaignRequested(int level);
-    void saveUpgradeRequested(int starCores, int packedLevels);
+    void saveUpgradeRequested(int starCores, int p0, int p1, int p2, int p3, int p4);
     void resetAllRequested();
 
 private:

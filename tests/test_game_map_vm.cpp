@@ -672,7 +672,8 @@ TEST_CASE("GameMapVM - initUpgradeData sets star cores and levels", "[gamemap][i
     CHECK(*vm.getUpgradeStarCoresPtr() == 0);
 
     // 打包等级: Fire=3, Lives=5, Speed=2, Cooldown=1
-    int packed = (3 & 0xF) | ((5 & 0xF) << 4) | ((2 & 0xF) << 8) | ((1 & 0xF) << 12);
+    int packed[5] = {};
+    packed[0] = (3 & 0xF) | ((5 & 0xF) << 4) | ((2 & 0xF) << 8) | ((1 & 0xF) << 12);
     vm.initUpgradeData(250, packed);
 
     // 验证星核
