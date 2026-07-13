@@ -504,6 +504,7 @@ void GameMapVM::pauseImpl() {
 void GameMapVM::selectAircraftImpl(int type) {
     if (type < 0 || type >= AircraftStats::count()) return;
     m_player.setAircraftType(static_cast<AircraftType>(type));
+    m_aircraftNameBuf = AircraftStats::getTemplate(static_cast<AircraftType>(type)).name;
     m_upgradeMgr.setCurrentAircraft(type);
     m_player.setUpgradeBonuses(
         m_upgradeMgr.getFirePowerBonus(),

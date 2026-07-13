@@ -50,9 +50,15 @@ SaveManager::UpgradeData SaveManager::loadUpgradeData() {
     QJsonObject obj = loadObject(filePath_);
     UpgradeData data;
     data.starCores = obj.value("starCores").toInt(0);
-    QJsonArray arr = obj.value("upgradeLevels").toArray();
-    for (int i = 0; i < 5 && i < arr.size(); ++i)
-        data.levelsPacked[i] = arr[i].toInt(0);
+    // 兼容旧格式：单 int 而非数组
+    QJsonValue lvVal = obj.value("upgradeLevels");
+    if (lvVal.isArray()) {
+        QJsonArray arr = lvVal.toArray();
+        for (int i = 0; i < 5 && i < arr.size(); ++i)
+            data.levelsPacked[i] = arr[i].toInt(0);
+    } else if (lvVal.isDouble()) {
+        data.levelsPacked[0] = lvVal.toInt(0);
+    }
     return data;
 }
 

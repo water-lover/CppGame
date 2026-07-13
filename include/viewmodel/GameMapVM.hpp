@@ -94,7 +94,7 @@ public:
     // 迭代 3 新属性
     int   getAircraftType()       const noexcept { return static_cast<int>(m_player.getAircraftType()); }
     const char* getAircraftName() const noexcept {
-        return AircraftStats::getTemplate(m_player.getAircraftType()).name;
+        return m_aircraftNameBuf.c_str();
     }
     int   getWeaponLevel()        const noexcept { return m_player.getWeaponLevel(); }
     float getSkillCooldownPercent() const noexcept { return m_skill.getCooldownPercent(); }
@@ -238,6 +238,7 @@ private:
     // 迭代 7：雷击特效标记
     bool  m_thunderActive = false;
     float m_thunderTimer  = 0.0f;
+    std::string m_aircraftNameBuf;
 
     std::mt19937 m_rng;
 };
