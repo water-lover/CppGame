@@ -76,3 +76,34 @@ void SaveManager::resetAllData() {
     QJsonObject empty;
     saveObject(filePath_, empty);
 }
+
+// ── 分关卡最高分（兼容旧版 single highScore） ──────────────────
+
+int SaveManager::loadCampaignHighScore(int level) {
+    if (level < 1 || level > 7) return 0;
+    QJsonObject obj = loadObject(filePath_);
+    QJsonArray arr = obj.value("campaignScores").toArray();
+    if (level <= arr.size()) return arr[level - 1].toInt(0);
+    return obj.value("highScore").toInt(0);  // 降级：返回旧全局分
+}
+
+void SaveManager::saveCampaignHighScore(int level, int score) {
+    if (level < 1 || level > 7) return;
+    QJsonObject obj = loadObject(filePath_);
+    QJsonArray arr = obj.value("campaignScores").toArray();
+    while (arr.size() < 7) arr.append(0);
+    arr[level - 1] = score;
+    obj["campaignScores"] = arr;
+    obj["highScore"] = score;  // 保留旧字段兼容
+    saveObject(filePath_, obj);
+}
+
+int SaveManager::loadEndlessHighScore() {
+    return loadObject(filePath_).value("endlessScore").toInt(0);
+}
+
+void SaveManager::saveEndlessHighScore(int score) {
+    QJsonObject obj = loadObject(filePath_);
+    obj["endlessScore"] = score;
+    saveObject(filePath_, obj);
+}

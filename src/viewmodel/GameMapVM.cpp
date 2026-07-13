@@ -83,7 +83,8 @@ void GameMapVM::startGameImpl() {
     m_lastSkillActive = false;
     m_lastSkillType   = static_cast<int>(m_skill.getType());
     m_lastWeaponLv = m_player.getWeaponLevel();
-    m_cachedHighScore = m_scoreMgr.getHighScore();
+    int hsSlot = (m_mode == GameMode::Endless) ? 7 : (m_currentLevel - 1);
+    m_scoreMgr.setActiveHighScoreSlot(hsSlot);
     m_flameStormTimer = 0.0f;
     m_isDashing = false;
     m_dashTimer = 0.0f;
@@ -256,14 +257,13 @@ void GameMapVM::tickImpl(float dt) {
         } else {
             log("GameMapVM", "Level " + std::to_string(m_currentLevel) + " cleared!");
         }
-        if (m_scoreMgr.getScore() > m_scoreMgr.getHighScore()) {
-            m_scoreMgr.setHighScore(m_scoreMgr.getScore());
+        int hsSlot2 = m_currentLevel - 1;
+        if (m_scoreMgr.getScore() > m_scoreMgr.getHighScore(hsSlot2)) {
+            m_scoreMgr.setHighScore(hsSlot2, m_scoreMgr.getScore());
+            m_scoreMgr.setActiveHighScoreSlot(hsSlot2);
         }
-        // 同步分数缓存，GameOver 界面才能读到正确分数
         m_lastScore = m_scoreMgr.getScore();
-        m_cachedHighScore = m_scoreMgr.getHighScore();
-        // 发出持久化请求
-        emit saveHighScoreRequested(m_scoreMgr.getHighScore());
+        emit saveHighScoreRequested(m_scoreMgr.getScore(), hsSlot2);
 
         // 更新最大已解锁关卡（ViewModel 自身业务逻辑，不依赖 App）
         if (nextLevel <= 7 && nextLevel > m_maxUnlockedLevel) {
@@ -292,10 +292,6 @@ void GameMapVM::tickImpl(float dt) {
     if (curLives != m_lastLives) {
         m_lastLives = curLives;
         fireChange(PROP_ID_LIVES);
-    }
-    int curHigh = m_scoreMgr.getHighScore();
-    if (curHigh != m_cachedHighScore) {
-        m_cachedHighScore = curHigh;
     }
     float curCD = m_skill.getCooldownPercent();
     if (std::abs(curCD - m_lastSkillCD) > 0.01f) {
@@ -338,12 +334,13 @@ void GameMapVM::tickImpl(float dt) {
     if (isOver != m_lastGameOver) {
         m_lastGameOver = isOver;
         if (isOver) {
-            if (m_scoreMgr.getScore() > m_scoreMgr.getHighScore()) {
-                m_scoreMgr.setHighScore(m_scoreMgr.getScore());
-                emit saveHighScoreRequested(m_scoreMgr.getHighScore());
+            int goSlot = (m_mode == GameMode::Endless) ? 7 : (m_currentLevel - 1);
+            if (m_scoreMgr.getScore() > m_scoreMgr.getHighScore(goSlot)) {
+                m_scoreMgr.setHighScore(goSlot, m_scoreMgr.getScore());
+                m_scoreMgr.setActiveHighScoreSlot(goSlot);
+                emit saveHighScoreRequested(m_scoreMgr.getScore(), goSlot);
             }
             m_lastScore = m_scoreMgr.getScore();
-            m_cachedHighScore = m_scoreMgr.getHighScore();
             // 游戏结束时持久化本局获得的星核
             int pp[5]; m_upgradeMgr.packAllLevels(pp);
             emit saveUpgradeRequested(m_upgradeMgr.getStarCores(),
@@ -384,7 +381,8 @@ void GameMapVM::startLevelImpl(int levelId) {
     m_lastSkillActive = false;
     m_lastSkillType   = static_cast<int>(m_skill.getType());
     m_lastWeaponLv = m_player.getWeaponLevel();
-    m_cachedHighScore = m_scoreMgr.getHighScore();
+    int hsSlot = (m_mode == GameMode::Endless) ? 7 : (m_currentLevel - 1);
+    m_scoreMgr.setActiveHighScoreSlot(hsSlot);
     m_flameStormTimer = 0.0f;
     m_isDashing = false;
     m_dashTimer = 0.0f;
@@ -456,21 +454,24 @@ void GameMapVM::upgradeStatImpl(int type) {
     }
 }
 
-void GameMapVM::setInitialHighScore(int hs) noexcept {
-    m_scoreMgr.setHighScore(hs);
-    m_cachedHighScore = hs;
+void GameMapVM::setSlotHighScore(int slot, int hs) noexcept {
+    if (slot >= 0 && slot < 8) {
+        m_scoreMgr.setHighScore(slot, hs);
+        if (slot == ((m_mode == GameMode::Endless) ? 7 : (m_currentLevel - 1)))
+            m_scoreMgr.setActiveHighScoreSlot(slot);
+    }
 }
 
 void GameMapVM::resetAllImpl() {
-    m_scoreMgr.setHighScore(0);
-    m_cachedHighScore = 0;
+    for (int s = 0; s < 8; ++s) m_scoreMgr.setHighScore(s, 0);
+    m_scoreMgr.setActiveHighScoreSlot(0);
     static const int zero[5] = {};
     m_upgradeMgr.setAllLevelsFromArray(zero);
     m_upgradeMgr.addStarCores(-m_upgradeMgr.getStarCores());
     m_player.setUpgradeBonuses(0, 0, 0, 0);
     int packed[5]; m_upgradeMgr.packAllLevels(packed);
     emit saveUpgradeRequested(0, packed[0], packed[1], packed[2], packed[3], packed[4]);
-    emit saveHighScoreRequested(0);
+    emit saveHighScoreRequested(0, 0);
     emit resetAllRequested();
     fireChange(PROP_ID_UPGRADE_LEVELS);
     fireChange(PROP_ID_STAR_CORES);

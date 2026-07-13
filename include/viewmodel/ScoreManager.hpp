@@ -2,21 +2,26 @@
 #define SCOREMANAGER_HPP
 
 /// 分数与关卡统计管理器
-///
-/// P7 新增统计字段：敌击杀、子弹数、命中数、BOSS击杀、波次、时间
 class ScoreManager {
 public:
     ScoreManager();
 
-    /// 重置所有数据
     void reset();
 
-    // ── 分数 ──────────────────────────────────────────────────────
+    // ── 本局分数 ────────────────────────────────────────────────
     void addScore(int points);
     int  getScore()      const { return score_; }
-    int  getHighScore()  const;
-    void setHighScore(int hs) { highScore_ = hs; }
     const int* getScorePtr() const { return &score_; }
+
+    // ── 各关卡最高分（含无尽） ───────────────────────────────────
+    // 索引 0-6 为闯关 1-7 关，索引 7 为无尽模式
+    int  getHighScore(int modeSlot) const;     // modeSlot: 0-6 关卡, 7 无尽
+    void setHighScore(int modeSlot, int hs);
+    const int* getHighScorePtr(int modeSlot) const { return &m_highScores[modeSlot]; }
+
+    // 快捷：读取全局最高分缓存指针（由 GameMapVM 按当前模式切换）
+    const int* getActiveHighScorePtr() const { return &m_activeHighScore; }
+    void setActiveHighScoreSlot(int slot) { m_activeHighScore = m_highScores[slot]; }
 
     // ── P7: 关卡统计 ──────────────────────────────────────────────
     int  getEnemiesKilled() const { return m_enemiesKilled; }
@@ -42,7 +47,8 @@ public:
 
 private:
     int   score_          = 0;
-    int   highScore_      = 0;
+    int   m_highScores[8] = {};  // 0-6 闯关, 7 无尽
+    int   m_activeHighScore = 0;
     int   m_enemiesKilled = 0;
     int   m_shotsFired    = 0;
     int   m_shotsHit      = 0;

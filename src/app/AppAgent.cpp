@@ -98,11 +98,15 @@ void AppAgent::init() {
     m_gameView->setLevelSelectMaxUnlocked(7);
     log("AppAgent", "All levels unlocked for testing (7/7)");
 
-    // ── 从存档加载最高分（闯关+无尽共用） ──────────────────────
+    // ── 从存档加载最高分（每关独立+无尽） ──────────────────────
     {
-        int hs = SaveManager().loadHighScore();
-        m_mapVM->setInitialHighScore(hs);
-        log("AppAgent", "High score loaded: " + std::to_string(hs));
+        for (int lv = 1; lv <= 7; ++lv) {
+            int hs = SaveManager().loadCampaignHighScore(lv);
+            m_mapVM->setSlotHighScore(lv - 1, hs);
+        }
+        int ehs = SaveManager().loadEndlessHighScore();
+        m_mapVM->setSlotHighScore(7, ehs);
+        log("AppAgent", "High scores loaded (7 campaign + endless)");
     }
 
     // 迭代 6：从存档读取升级数据
@@ -145,9 +149,12 @@ void AppAgent::init() {
 
     // ── 持久化绑定（ViewModel 发出保存请求 → App 调 SaveManager）─
     QObject::connect(m_mapVM, &GameMapVM::saveHighScoreRequested,
-                     [](int score) {
-                         SaveManager().saveHighScore(score);
-                         log("AppAgent", "High score saved: " + std::to_string(score));
+                     [](int score, int modeSlot) {
+                         if (modeSlot == 7)
+                             SaveManager().saveEndlessHighScore(score);
+                         else if (modeSlot >= 0 && modeSlot < 7)
+                             SaveManager().saveCampaignHighScore(modeSlot + 1, score);
+                         log("AppAgent", "High score saved: slot=" + std::to_string(modeSlot));
                      });
     QObject::connect(m_mapVM, &GameMapVM::saveCampaignRequested,
                      [](int level) {

@@ -25,6 +25,12 @@ public:
 
     void resetAllData();
 
+    // ── 分关卡 + 无尽最高分 ──────────────────────────────────
+    int  loadCampaignHighScore(int level);            // level 1-7
+    void saveCampaignHighScore(int level, int score);
+    int  loadEndlessHighScore();
+    void saveEndlessHighScore(int score);
+
 private:
     QString filePath_;
 };

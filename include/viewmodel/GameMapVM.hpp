@@ -46,16 +46,16 @@ public:
     const AirMap* getMap()        const noexcept { return &m_map; }
     int   getScore()              const noexcept { return m_scoreMgr.getScore(); }
     int   getLives()              const noexcept { return m_player.getLives(); }
-    int   getHighScore()          const noexcept { return m_scoreMgr.getHighScore(); }
+    int   getHighScore()          const noexcept { return m_scoreMgr.getScore(); }
     GameState getGameState()      const noexcept { return m_state; }
     int   getScoreValue()         const noexcept { return m_scoreMgr.getScore(); }
     int   getLivesValue()         const noexcept { return m_player.getLives(); }
-    int   getHighScoreValue()     const noexcept { return m_scoreMgr.getHighScore(); }
+    int   getHighScoreValue()     const noexcept { return m_scoreMgr.getScore(); }
 
     // ── const T* 属性绑定指针（View 只读持有，无需 App 桥接） ──
     const int*      getScorePtr()        const noexcept { return &m_lastScore; }
     const int*      getLivesPtr()        const noexcept { return &m_lastLives; }
-    const int*      getHighScorePtr()    const noexcept { return &m_cachedHighScore; }
+    const int*      getHighScorePtr()    const noexcept { return m_scoreMgr.getActiveHighScorePtr(); }
     const GameState* getGameStatePtr()   const noexcept { return &m_state; }
     const int*      getWavePtr()         const noexcept { return &m_wave; }
     const char*     getWaveDisplayPtr()  const noexcept { return m_waveDisplayBuf.c_str(); }
@@ -88,7 +88,7 @@ public:
     const int* getUpgradeSpeedLevelPtr()   const noexcept { return m_upgradeMgr.getSpeedLevelPtr(); }
     const int* getUpgradeCooldownLevelPtr() const noexcept { return m_upgradeMgr.getCooldownLevelPtr(); }
     void initUpgradeData(int starCores, const int packedLevels[5]);
-    void setInitialHighScore(int hs) noexcept;
+    void setSlotHighScore(int slot, int hs) noexcept;
     void resetAllImpl();
 
     // 迭代 3 新属性
@@ -150,7 +150,7 @@ signals:
     void propertyChanged(uint32_t propertyId);
 
     // ── 持久化请求（ViewModel → App，App 再调 SaveManager）──
-    void saveHighScoreRequested(int score);
+    void saveHighScoreRequested(int score, int modeSlot);
     void saveCampaignRequested(int level);
     void saveUpgradeRequested(int starCores, int p0, int p1, int p2, int p3, int p4);
     void resetAllRequested();
@@ -209,7 +209,6 @@ private:
 
     int   m_lastScore   = 0;
     int   m_lastLives   = 0;
-    int   m_cachedHighScore = 0;
     bool  m_lastGameOver = false;
     float m_lastSkillCD  = 0.0f;    // 迭代 3
     bool  m_lastSkillReady  = true;
