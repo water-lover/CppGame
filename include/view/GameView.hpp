@@ -104,7 +104,7 @@ public:
     void setSkillTypePtr(const int* p) noexcept { if (m_scene) m_scene->setHudSkillType(p); }
     void setWeaponLevelPtr(const int* p) noexcept { m_pWeaponLevel = p; if (m_scene) m_scene->setHudWeaponLevel(p); }
     void setHasShieldPtr(const bool* p) noexcept { if (m_scene) m_scene->setHudHasShield(p); }
-    void setAircraftNamePtr(const char* p) noexcept { if (m_scene) m_scene->setHudAircraftName(p); }
+    void setAircraftNamePtr(const char* p) noexcept { m_pAircraftName = p; if (m_scene) m_scene->setHudAircraftName(p); }
 
     // ════════════════════════════════════════════════════════════════
     // ② 命令绑定 — 接收 std::function 命令（由 App 注入）
@@ -202,6 +202,7 @@ private:
     const bool*     m_pLevelCleared = nullptr;
     const int*      m_pCurrentLevel = nullptr;
     const int*      m_pWeaponLevel  = nullptr;
+    const char*     m_pAircraftName = nullptr;
     const int*      m_pMaxUnlockedLevel = nullptr;
     const int*      m_pStarCores    = nullptr;
     const bool*     m_pThunderActive = nullptr;

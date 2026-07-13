@@ -170,8 +170,10 @@ GameView::GameView(QWidget* parent)
     connect(m_pauseOverlay, &PauseOverlay::upgradeClicked, [this]() {
         m_pageStack->setCurrentIndex(7);
         // 进入时刷新升级界面数据
-        if (m_upgradeScreen && m_pStarCores)
+        if (m_upgradeScreen && m_pStarCores) {
             m_upgradeScreen->setStarCores(*m_pStarCores);
+            m_upgradeScreen->setAircraftName(m_pAircraftName ? m_pAircraftName : "");
+        }
         if (m_pUpgradeFireLevel) {
             m_upgradeScreen->setUpgradeLevel(0, *m_pUpgradeFireLevel);
             m_upgradeScreen->setUpgradeLevel(1, *m_pUpgradeLivesLevel);
@@ -384,6 +386,8 @@ void GameView::onPropertyChanged(uint32_t id) {
 
     case PROP_ID_UPGRADE_LEVELS:
         if (m_upgradeScreen) {
+            if (m_pAircraftName)
+                m_upgradeScreen->setAircraftName(m_pAircraftName);
             if (m_pUpgradeFireLevel)
                 m_upgradeScreen->setUpgradeLevel(0, *m_pUpgradeFireLevel);
             if (m_pUpgradeLivesLevel)

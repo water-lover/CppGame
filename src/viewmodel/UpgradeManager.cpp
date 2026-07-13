@@ -51,10 +51,20 @@ bool UpgradeManager::spendStarCores(int amount) {
     return true;
 }
 
-const int* UpgradeManager::getFireLevelPtr()     const { return &m_levels[currentAircraft_][0]; }
-const int* UpgradeManager::getLivesLevelPtr()    const { return &m_levels[currentAircraft_][1]; }
-const int* UpgradeManager::getSpeedLevelPtr()   const { return &m_levels[currentAircraft_][2]; }
-const int* UpgradeManager::getCooldownLevelPtr() const { return &m_levels[currentAircraft_][3]; }
+const int* UpgradeManager::getFireLevelPtr()     const { return &m_currentLevels[0]; }
+const int* UpgradeManager::getLivesLevelPtr()    const { return &m_currentLevels[1]; }
+const int* UpgradeManager::getSpeedLevelPtr()   const { return &m_currentLevels[2]; }
+const int* UpgradeManager::getCooldownLevelPtr() const { return &m_currentLevels[3]; }
+
+void UpgradeManager::syncCurrentLevels() {
+    for (int i = 0; i < 4; ++i)
+        m_currentLevels[i] = m_levels[currentAircraft_][i];
+}
+
+void UpgradeManager::setCurrentAircraft(int type) noexcept {
+    currentAircraft_ = type;
+    syncCurrentLevels();
+}
 
 // ── 序列化 ──────────────────────────────────────────────────────
 

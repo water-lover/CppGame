@@ -481,6 +481,7 @@ void GameMapVM::resetAllImpl() {
 void GameMapVM::initUpgradeData(int starCores, const int packedLevels[5]) {
     m_upgradeMgr.addStarCores(starCores);
     m_upgradeMgr.setAllLevelsFromArray(packedLevels);
+    m_upgradeMgr.setCurrentAircraft(m_upgradeMgr.getCurrentAircraft());  // 刷新缓存
     m_player.setUpgradeBonuses(
         m_upgradeMgr.getFirePowerBonus(),
         m_upgradeMgr.getLivesBonus(),

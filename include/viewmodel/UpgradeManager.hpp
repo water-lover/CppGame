@@ -18,7 +18,7 @@ public:
     UpgradeManager() = default;
 
     /// 设置/获取当前操作的战机
-    void  setCurrentAircraft(int type) noexcept { currentAircraft_ = type; }
+    void  setCurrentAircraft(int type) noexcept;
     int   getCurrentAircraft() const noexcept { return currentAircraft_; }
 
     // ── 升级管理（操作当前战机） ────────────────────────────────
@@ -51,9 +51,12 @@ public:
     void  packAllLevels(int out[5]) const;                 // 批量打包
 
 private:
-    int currentAircraft_ = 0;       // 当前正在查看/升级的战机
+    void  syncCurrentLevels();                              // 切换战机时同步当前等级到固定缓存
+
+    int currentAircraft_ = 0;
     int m_starCores = 0;
-    int m_levels[5][4] = {};        // [战机][属性]: Fire,Lives,Speed,Cooldown
+    int m_levels[5][4] = {};
+    int m_currentLevels[4] = {};  // getXxxLevelPtr 指向此缓存
 };
 
 #endif // UPGRADEMANAGER_HPP

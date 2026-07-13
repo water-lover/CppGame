@@ -28,7 +28,8 @@ public:
 
     /// 更新显示数据
     void setStarCores(int count);
-    void setUpgradeLevel(int type, int level);  // type=UpgradeType, level=0~10
+    void setUpgradeLevel(int type, int level);
+    void setAircraftName(const char* name) { m_aircraftName = name; update(); }
 
 signals:
     void backClicked();
@@ -53,7 +54,8 @@ private:
     float m_scale = 1.0f;
     std::function<void(int)> m_upgradeStatCommand;
     int m_starCores = 0;
-    int m_levels[4] = {};  // Fire, Lives, Speed, Cooldown
+    int m_levels[4] = {};
+    const char* m_aircraftName = "";
     QVector<UpgradeSlot> m_slots;
     QPushButton* m_backBtn = nullptr;
 };

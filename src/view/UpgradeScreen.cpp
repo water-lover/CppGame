@@ -139,9 +139,11 @@ void UpgradeScreen::refreshSlot(UpgradeSlot& slot) {
                       QStringLiteral("Lv.%1 → Lv.%2").arg(lv).arg(lv + 1);
     QString costStr = maxed ? QStringLiteral("") :
                       QStringLiteral(" 需 %1 星核").arg(cost);
+    QString airName = m_aircraftName;
 
     slot.infoLabel->setText(
-        QString("%1  %2%3\n效果: +%4")
+        QString("%1 [%2]  %3%4\n效果: +%5")
+            .arg(airName)
             .arg(slot.name)
             .arg(nextStr)
             .arg(costStr)
