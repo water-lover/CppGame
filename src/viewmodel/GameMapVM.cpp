@@ -259,6 +259,9 @@ void GameMapVM::tickImpl(float dt) {
         if (m_scoreMgr.getScore() > m_scoreMgr.getHighScore()) {
             m_scoreMgr.setHighScore(m_scoreMgr.getScore());
         }
+        // 同步分数缓存，GameOver 界面才能读到正确分数
+        m_lastScore = m_scoreMgr.getScore();
+        m_cachedHighScore = m_scoreMgr.getHighScore();
         // 发出持久化请求
         emit saveHighScoreRequested(m_scoreMgr.getHighScore());
 
@@ -339,6 +342,8 @@ void GameMapVM::tickImpl(float dt) {
                 m_scoreMgr.setHighScore(m_scoreMgr.getScore());
                 emit saveHighScoreRequested(m_scoreMgr.getHighScore());
             }
+            m_lastScore = m_scoreMgr.getScore();
+            m_cachedHighScore = m_scoreMgr.getHighScore();
             // 游戏结束时持久化本局获得的星核
             emit saveUpgradeRequested(m_upgradeMgr.getStarCores(),
                                       m_upgradeMgr.packLevels());
