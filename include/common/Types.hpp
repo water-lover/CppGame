@@ -11,6 +11,7 @@ enum class GameState {
     Playing,        // 游戏中
     Paused,         // 暂停
     Upgrade,        // 升级界面
+    LevelComplete,  // 关卡胜利
     GameOver        // 游戏结束
 };
 

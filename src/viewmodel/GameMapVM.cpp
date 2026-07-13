@@ -127,8 +127,15 @@ void GameMapVM::tickImpl(float dt) {
     m_skill.update(dt);
     applySkillEffects(dt);
 
+    // 雷击特效计时（迭代7）
+    if (m_thunderActive) {
+        m_thunderTimer -= dt;
+        if (m_thunderTimer <= 0.0f) m_thunderActive = false;
+    }
+
     // 3. 玩家自动射击
     if (m_player.canFire(dt)) {
+        m_scoreMgr.onShotFired();  // 迭代7：统计
         const Vec2 p = m_player.getPos();
         const int wl = m_player.getWeaponLevel();
         const auto& tmpl = AircraftStats::getTemplate(m_player.getAircraftType());
@@ -199,6 +206,7 @@ void GameMapVM::tickImpl(float dt) {
         auto* boss = dynamic_cast<Boss*>(e.get());
         if (boss && boss->isDead()) {
             m_waveMgr.notifyBossDefeated();
+            m_scoreMgr.onBossKilled();  // 迭代7：BOSS统计
             // BOSS 星核掉落
             m_upgradeMgr.addStarCores(STAR_CORE_PER_BOSS);
             fireChange(PROP_ID_STAR_CORES);
@@ -211,6 +219,8 @@ void GameMapVM::tickImpl(float dt) {
 
     // 12. 更新波次/BOSS 状态
     m_wave = m_waveMgr.getCurrentWave();
+    m_scoreMgr.setWaveReached(m_wave);
+    m_scoreMgr.addTime(dt);
     m_currentLevel = m_waveMgr.getCurrentLevel();
     // 格式化波次显示文字
     {
@@ -257,7 +267,7 @@ void GameMapVM::tickImpl(float dt) {
         if (nextLevel <= 7) {
             emit saveCampaignRequested(nextLevel);
         }
-        m_state = GameState::GameOver;
+        m_state = GameState::GameOver;  // 复用 GameOver 显示通关信息
         fireChange(PROP_ID_GAME_STATE);
         return;
     }
@@ -304,6 +314,12 @@ void GameMapVM::tickImpl(float dt) {
     if (curWL != m_lastWeaponLv) {
         m_lastWeaponLv = curWL;
         fireChange(PROP_ID_WEAPON_LEVEL);
+    }
+
+    // 雷击特效计时
+    if (m_thunderActive) {
+        m_thunderTimer -= dt;
+        if (m_thunderTimer <= 0.0f) m_thunderActive = false;
     }
 
     fireChange(PROP_ID_MAP);
@@ -456,7 +472,11 @@ void GameMapVM::useSkillImpl() {
 
     const auto& tmpl = AircraftStats::getTemplate(m_player.getAircraftType());
     switch (tmpl.skill) {
-    case SkillType::ThunderStrike: handleThunderStrike(); break;
+    case SkillType::ThunderStrike:
+        handleThunderStrike();
+        m_thunderActive = true;
+        m_thunderTimer = 0.4f;
+        break;
     case SkillType::FrostShield:   break;
     case SkillType::IronWall:      break;
     case SkillType::FlameStorm:    break;
@@ -502,6 +522,8 @@ void GameMapVM::applySkillEffects(float dt) {
 }
 
 void GameMapVM::handleThunderStrike() {
+    m_thunderActive = true;   // 迭代7：通知 View 绘制雷击特效
+    m_thunderTimer = 0.3f;
     for (auto& e : m_enemies) {
         for (int i = 0; i < 5; ++i) {
             if (!e->isDead()) e->takeDamage();
@@ -603,6 +625,7 @@ void GameMapVM::checkCollisions() {
             if (dist < m_bullets[bi].getSize() + m_enemies[ei]->getSize()) {
                 m_enemies[ei]->takeDamage();
                 if (m_enemies[ei]->isDead()) {
+                    m_scoreMgr.onEnemyKilled();  // 迭代7：统计
                     m_scoreMgr.addScore(m_enemies[ei]->getScore());
                     // 星核掉落
                     m_upgradeMgr.addStarCores(STAR_CORE_PER_KILL);

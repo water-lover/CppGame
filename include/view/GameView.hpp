@@ -26,6 +26,8 @@ class BossHealthBar;
 class LevelSelectScreen;
 class AircraftSelectScreen;
 class UpgradeScreen;
+class LevelCompleteScreen;
+class SplashScreen;
 
 /// 游戏主视图 — 纯 C++ QWidget
 ///
@@ -83,6 +85,13 @@ public:
     void setLivesPtr(const int* p)   noexcept { m_pLives = p; if (m_scene) m_scene->setHudLives(p); }
     void setHighScorePtr(const int* p) noexcept { m_pHighScore = p; if (m_scene) m_scene->setHudHighScore(p); }
     void setGameStatePtr(const GameState* p) noexcept { m_pGameState = p; }
+    void setThunderActivePtr(const bool* p) noexcept { m_pThunderActive = p; if (m_scene) m_scene->setThunderActivePtr(p); }
+    void setEnemiesKilledPtr(const int* p) noexcept { m_pEnemiesKilled = p; }
+    void setBossesKilledPtr(const int* p) noexcept { m_pBossesKilled = p; }
+    void setShotsFiredPtr(const int* p) noexcept { m_pShotsFired = p; }
+    void setShotsHitPtr(const int* p) noexcept { m_pShotsHit = p; }
+    void setWaveReachedPtr(const int* p) noexcept { m_pWaveReached = p; }
+    void setTimePlayedPtr(const float* p) noexcept { m_pTimePlayed = p; }
     void setWavePtr(const int* p)    noexcept { m_pWave = p; if (m_scene) m_scene->setHudWave(p); }
     void setWaveDisplayPtr(const char* p) noexcept { if (m_scene) m_scene->setHudWaveDisplay(p); }
     void setBossHpPtr(const int* p)    noexcept { m_pBossHp = p; }
@@ -168,6 +177,10 @@ private:
     PauseOverlay*   m_pauseOverlay = nullptr;
     // 页面 7: 升级界面
     UpgradeScreen*  m_upgradeScreen = nullptr;
+    // 页面 8: 胜利结算界面
+    LevelCompleteScreen* m_levelCompleteScreen = nullptr;
+    // 页面 9: 加载过渡画面
+    SplashScreen*   m_splashScreen = nullptr;
 
     // ── BOSS 血条（叠加在游戏页面上方） ───────────────────────
     BossHealthBar*  m_bossHealthBar = nullptr;
@@ -190,6 +203,13 @@ private:
     const int*      m_pWeaponLevel  = nullptr;
     const int*      m_pMaxUnlockedLevel = nullptr;
     const int*      m_pStarCores    = nullptr;
+    const bool*     m_pThunderActive = nullptr;
+    const int*      m_pEnemiesKilled = nullptr;
+    const int*      m_pShotsFired    = nullptr;
+    const int*      m_pShotsHit      = nullptr;
+    const int*      m_pBossesKilled  = nullptr;
+    const int*      m_pWaveReached   = nullptr;
+    const float*    m_pTimePlayed    = nullptr;
     const int*      m_pUpgradeFireLevel     = nullptr;
     const int*      m_pUpgradeLivesLevel    = nullptr;
     const int*      m_pUpgradeSpeedLevel    = nullptr;

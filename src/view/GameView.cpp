@@ -8,6 +8,8 @@
 #include "view/LevelSelectScreen.hpp"
 #include "view/AircraftSelectScreen.hpp"
 #include "view/UpgradeScreen.hpp"
+#include "view/LevelCompleteScreen.hpp"
+#include "view/SplashScreen.hpp"
 
 #include <QGraphicsView>
 #include <QVBoxLayout>
@@ -89,6 +91,20 @@ GameView::GameView(QWidget* parent)
         auto cpy = m_upgradeStatCommand;
         m_upgradeScreen->setUpgradeStatCommand(std::move(cpy));
     }
+
+    // ── 页面 8: 胜利结算界面 ──────────────────────────────────
+    m_levelCompleteScreen = new LevelCompleteScreen(this);
+    m_pageStack->addWidget(m_levelCompleteScreen);  // 8
+    connect(m_levelCompleteScreen, &LevelCompleteScreen::nextLevelClicked, [this]() {
+        if (m_startLevelCommand && m_pCurrentLevel) m_startLevelCommand(*m_pCurrentLevel + 1);
+    });
+    connect(m_levelCompleteScreen, &LevelCompleteScreen::backToMenuClicked, [this]() {
+        if (m_navigateCommand) m_navigateCommand(0);
+    });
+
+    // ── 页面 9: 加载过渡画面 ──────────────────────────────────
+    m_splashScreen = new SplashScreen(this);
+    m_pageStack->addWidget(m_splashScreen);  // 9
 
     m_pageStack->setCurrentIndex(0);
 
@@ -248,6 +264,7 @@ void GameView::setMaxUnlockedLevelPtr(const int* p) noexcept {
 // ═══════════════════════════════════════════════════════════════════
 
 void GameView::tick() {
+    if (m_scene) m_scene->updateParticles(0.016f);
     if (m_tickCommand) m_tickCommand(0.016f);
 }
 
@@ -403,6 +420,10 @@ void GameView::updatePage() {
     case GameState::GameOver:    m_pageStack->setCurrentIndex(5); m_timer->stop();
         if (m_pScore) m_gameOverScreen->setScore(*m_pScore);
         if (m_pHighScore) m_gameOverScreen->setHighScore(*m_pHighScore);
+        if (m_pLevelCleared && m_pCurrentLevel && *m_pLevelCleared)
+            m_gameOverScreen->setLevelCleared(true, *m_pCurrentLevel);
         break;
+    case GameState::LevelComplete:  // 安全兜底
+        m_pageStack->setCurrentIndex(5); m_timer->stop(); break;
     }
 }

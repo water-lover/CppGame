@@ -2,7 +2,9 @@
 #define GAMESCENE_HPP
 
 #include <QGraphicsScene>
+#include <QColor>
 #include <cstdint>
+#include <vector>
 
 class QPixmap;
 
@@ -59,6 +61,12 @@ public:
     void setHudStarCores(const int* p)      noexcept { m_pStarCores = p; }
     void setHudWeaponLevel(const int* p)    noexcept { m_pWeaponLv = p; }
 
+    /// 迭代 7 — 雷击特效标记
+    void setThunderActivePtr(const bool* p) noexcept { m_pThunderActive = p; }
+
+    /// 迭代 7 — 每帧更新粒子（供 GameView tick 调用）
+    void updateParticles(float dt) noexcept;
+
 protected:
     /// 绘制背景（星空 + 背景图）
     void drawBackground(QPainter* painter, const QRectF& rect) override;
@@ -67,6 +75,14 @@ protected:
     void drawForeground(QPainter* painter, const QRectF& rect) override;
 
 private:
+    /// 粒子结构
+    struct Particle {
+        float x, y;
+        float vx, vy;
+        float life;
+        QColor color;
+    };
+
     /// 将归一化坐标 [0,1] 映射到像素坐标
     inline float normToPixel(float norm, float dim) const noexcept {
         return norm * dim;
@@ -104,6 +120,12 @@ private:
     const char*  m_pWaveDisplay = nullptr;
     const int*   m_pStarCores    = nullptr;
     const int*   m_pWeaponLv     = nullptr;
+
+    // ── 迭代 7 特效 ──────────────────────────────────────────
+    const bool* m_pThunderActive = nullptr;
+
+    // ── 粒子系统 ─────────────────────────────────────────────
+    std::vector<Particle> m_particles;
 };
 
 #endif // GAMESCENE_HPP

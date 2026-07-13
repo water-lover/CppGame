@@ -56,9 +56,9 @@ TEST_CASE("WaveManager - level 7 config (final boss)", "[wave][table]") {
 
     CHECK(cfg.levelId == 7);
     CHECK(cfg.waveCount == 3);         // 3 波小怪（所有关卡固定）
-    CHECK(cfg.spawnInterval == Approx(0.9f));  // 最快生成
-    CHECK(cfg.enemySpeed == Approx(1.8f));     // 最快速度
-    CHECK(cfg.enemyHpBonus == 5);              // 最多额外血量
+    CHECK(cfg.spawnInterval == Approx(0.95f));
+    CHECK(cfg.enemySpeed == Approx(1.6f));
+    CHECK(cfg.enemyHpBonus == 4);
     CHECK(cfg.hasBoss == true);
     CHECK(cfg.bossId == 4);            // 装甲 BOSS
 }
@@ -83,7 +83,7 @@ TEST_CASE("WaveManager - initial state after construction", "[wave][init]") {
     WaveManager wm;
 
     CHECK(wm.getCurrentLevel() == 1);
-    CHECK(wm.getCurrentWave() == 0);
+    CHECK(wm.getCurrentWave() == 1);  // 1-based 索引
     CHECK(wm.isEndless() == false);
 }
 
@@ -92,7 +92,7 @@ TEST_CASE("WaveManager - reset to valid level sets correct level", "[wave][reset
 
     wm.reset(3);
     CHECK(wm.getCurrentLevel() == 3);
-    CHECK(wm.getCurrentWave() == 0);
+    CHECK(wm.getCurrentWave() == 1);  // 1-based 索引
 }
 
 TEST_CASE("WaveManager - reset to invalid level defaults to level 1", "[wave][reset][boundary]") {
@@ -122,9 +122,8 @@ TEST_CASE("WaveManager - update spawns enemies over time", "[wave][spawn]") {
     auto rng = makeRng();
     std::vector<std::unique_ptr<Enemy>> enemies;
 
-    // 关卡 1：生成间隔 1.5s，3 波，每波 5 只
-    // 等待超过生成间隔
-    for (int i = 0; i < 100; ++i) {
+    // 关卡 1：初始延迟 2s + 生成间隔 1.5s → 约 3.5s (220 ticks)
+    for (int i = 0; i < 220; ++i) {
         wm.update(0.016f, enemies, 0.85f, rng);
     }
 

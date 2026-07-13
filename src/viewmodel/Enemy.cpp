@@ -1,5 +1,6 @@
 #include "viewmodel/Enemy.hpp"
 #include "viewmodel/GameConstants.hpp"
+#include "resource/Logger.hpp"
 
 // ═══════════════════════════════════════════════════════════════════
 // Enemy 基类
@@ -38,6 +39,7 @@ EnemySmall::EnemySmall(float x, float y, float speed, int hpBonus)
 {
     enemyType_ = EnemyType::Small;
     size_ = 0.05f;
+    log("Enemy", "Small spawned at " + std::to_string(x));
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -52,6 +54,7 @@ EnemyMedium::EnemyMedium(float x, float y, float speed, int hpBonus)
     attackInterval_ = 2.0f;
     sinePhase_ = 0.0f;
     baseX_ = x;
+    log("Enemy", "Medium spawned at " + std::to_string(x));
 }
 
 void EnemyMedium::update(float dt) {
@@ -69,6 +72,7 @@ bool EnemyMedium::canAttack(float dt) {
 }
 
 void EnemyMedium::attack(std::vector<Bullet>& bullets, float playerX) {
+    log("Enemy", "Medium attacks");
     // 单发瞄准玩家大致方向
     float dx = playerX - pos_.x;
     float dy = 1.0f;  // 向下
@@ -90,6 +94,7 @@ EnemyLarge::EnemyLarge(float x, float y, float speed, int hpBonus)
     enemyType_ = EnemyType::Large;
     size_ = 0.10f;
     attackInterval_ = 1.5f;
+    log("Enemy", "Large spawned at " + std::to_string(x));
 }
 
 bool EnemyLarge::canAttack(float dt) {
@@ -97,6 +102,7 @@ bool EnemyLarge::canAttack(float dt) {
 }
 
 void EnemyLarge::attack(std::vector<Bullet>& bullets, float playerX) {
+    log("Enemy", "Large attacks");
     // V 形双发
     bullets.emplace_back(pos_.x - 0.03f, pos_.y + size_,
                          -0.1f, 0.3f, Bullet::Enemy);
@@ -114,6 +120,7 @@ EnemyElite::EnemyElite(float x, float y, float speed, int hpBonus)
     enemyType_ = EnemyType::Elite;
     size_ = 0.09f;
     attackInterval_ = 1.0f;
+    log("Enemy", "Elite spawned at " + std::to_string(x));
 }
 
 bool EnemyElite::canAttack(float dt) {
@@ -121,6 +128,7 @@ bool EnemyElite::canAttack(float dt) {
 }
 
 void EnemyElite::attack(std::vector<Bullet>& bullets, float playerX) {
+    log("Enemy", "Elite attacks");
     // 3 发散弹
     float bx = pos_.x;
     float by = pos_.y + size_;

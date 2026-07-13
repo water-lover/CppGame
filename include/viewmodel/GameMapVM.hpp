@@ -70,6 +70,17 @@ public:
     const int*      getWeaponLevelPtr()  const noexcept { return &m_lastWeaponLv; }
     const bool*     isLevelClearedPtr()  const noexcept { return &m_levelCleared; }
 
+    // 迭代 7：雷击特效标记
+    const bool*     getThunderActivePtr() const noexcept { return &m_thunderActive; }
+
+    // 迭代 7：关卡统计数据（转调 ScoreManager）
+    const int*      getEnemiesKilledPtr()  const noexcept { return m_scoreMgr.getEnemiesKilledPtr(); }
+    const int*      getShotsFiredPtr()     const noexcept { return m_scoreMgr.getShotsFiredPtr(); }
+    const int*      getShotsHitPtr()       const noexcept { return m_scoreMgr.getShotsHitPtr(); }
+    const int*      getBossesKilledPtr()   const noexcept { return m_scoreMgr.getBossesKilledPtr(); }
+    const int*      getWaveReachedPtr()    const noexcept { return m_scoreMgr.getWaveReachedPtr(); }
+    const float*    getTimePlayedPtr()     const noexcept { return m_scoreMgr.getTimePlayedPtr(); }
+
     // 迭代 6：升级系统
     const int* getUpgradeStarCoresPtr()  const noexcept { return m_upgradeMgr.getStarCoresPtr(); }
     const int* getUpgradeFireLevelPtr()    const noexcept { return m_upgradeMgr.getFireLevelPtr(); }
@@ -219,6 +230,10 @@ private:
     // 幻影号时空闪避：冲刺状态
     bool  m_isDashing    = false;
     float m_dashTimer    = 0.0f;
+
+    // 迭代 7：雷击特效标记
+    bool  m_thunderActive = false;
+    float m_thunderTimer  = 0.0f;
 
     std::mt19937 m_rng;
 };

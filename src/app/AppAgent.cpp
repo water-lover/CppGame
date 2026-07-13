@@ -75,6 +75,15 @@ void AppAgent::init() {
 
     // 迭代 6：星核指针注入（HUD 显示）
     m_gameView->setStarCoresPtr(m_mapVM->getUpgradeStarCoresPtr());
+
+    // 迭代 7：雷击特效 + 关卡统计数据指针
+    m_gameView->setThunderActivePtr(m_mapVM->getThunderActivePtr());
+    m_gameView->setEnemiesKilledPtr(m_mapVM->getEnemiesKilledPtr());
+    m_gameView->setShotsFiredPtr(m_mapVM->getShotsFiredPtr());
+    m_gameView->setShotsHitPtr(m_mapVM->getShotsHitPtr());
+    m_gameView->setBossesKilledPtr(m_mapVM->getBossesKilledPtr());
+    m_gameView->setWaveReachedPtr(m_mapVM->getWaveReachedPtr());
+    m_gameView->setTimePlayedPtr(m_mapVM->getTimePlayedPtr());
     // 升级等级指针注入（升级界面显示）
     m_gameView->setUpgradeFireLevelPtr(m_mapVM->getUpgradeFireLevelPtr());
     m_gameView->setUpgradeLivesLevelPtr(m_mapVM->getUpgradeLivesLevelPtr());

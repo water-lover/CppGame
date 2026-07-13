@@ -1,4 +1,5 @@
 #include "viewmodel/Player.hpp"
+#include "resource/Logger.hpp"
 
 Player::Player() { reset(); }
 
@@ -85,6 +86,7 @@ bool Player::canFire(float dt) {
     const float interval = getFireInterval();
     if (m_fireTimer >= interval) {
         m_fireTimer = 0.0f;
+        log("Player", "WeaponLevel=" + std::to_string(m_weaponLevel));
         return true;
     }
     return false;

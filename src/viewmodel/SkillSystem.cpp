@@ -1,4 +1,5 @@
 #include "viewmodel/SkillSystem.hpp"
+#include "resource/Logger.hpp"
 
 void SkillSystem::init(AircraftType aircraftType) {
     const auto& tmpl = AircraftStats::getTemplate(aircraftType);
@@ -7,6 +8,7 @@ void SkillSystem::init(AircraftType aircraftType) {
     m_durationTotal   = tmpl.skillDuration;
     m_cooldownRemaining = 0.0f;  // 初始就绪
     m_activeRemaining   = 0.0f;
+    log("Skill", "Initialized, cooldown=" + std::to_string(m_cooldownTotal) + "s");
 }
 
 void SkillSystem::update(float dt) {
@@ -33,7 +35,7 @@ bool SkillSystem::activate() {
     // 激活技能
     m_activeRemaining   = m_durationTotal;
     m_cooldownRemaining = m_cooldownTotal;
-
+    log("Skill", "Activated! Cooldown=" + std::to_string(m_cooldownTotal) + "s");
     return true;
 }
 

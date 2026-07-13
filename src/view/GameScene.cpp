@@ -3,6 +3,7 @@
 #include <QPainter>
 #include <QPixmap>
 #include <cmath>
+#include <cstdlib>
 #include <QTime>
 
 // ═══════════════════════════════════════════════════════════════════
@@ -267,10 +268,32 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
         painter->drawText(QRectF(sx, sy, sw, sh), Qt::AlignCenter,
                           QStringLiteral("[SPACE] 释放技能"));
     } else if (m_pSkillCD) {
-        int pct = static_cast<int>(*m_pSkillCD * 100.0f);
-        painter->setPen(QColor(150, 150, 150, 200));
-        painter->drawText(QRectF(sx, sy, sw, sh), Qt::AlignCenter,
-                          QString("技能冷却 %1%").arg(pct));
+        float pct = *m_pSkillCD;
+        // 环形进度条
+        float cx = sx + sw / 2, cy = sy + sh / 2;
+        float r = 30.0f;
+        // 背景圆环
+        painter->setBrush(Qt::NoBrush);
+        QPen bgPen(QColor(80, 80, 80, 150), 5);
+        painter->setPen(bgPen);
+        painter->drawEllipse(QPointF(cx, cy), r, r);
+        // 冷却进度弧
+        QPen arcPen(QColor(100, 180, 255, 220), 5);
+        painter->setPen(arcPen);
+        int startAngle = 90 * 16;  // 从12点方向开始
+        int spanAngle = static_cast<int>(360.0f * (1.0f - pct) * 16);
+        if (spanAngle > 0) {
+            painter->drawArc(QRectF(cx - r, cy - r, r * 2, r * 2),
+                             startAngle, -spanAngle);
+        }
+        // 冷却百分比文字
+        painter->setPen(QColor(180, 180, 180, 200));
+        QFont cf;
+        cf.setPixelSize(18);
+        cf.setBold(true);
+        painter->setFont(cf);
+        painter->drawText(QRectF(sx, sy + r + 8, sw, 20), Qt::AlignCenter,
+                          QString("%1%").arg(static_cast<int>(pct * 100.0f)));
     }
 
     // ── 技能激活特效 ────────────────────────────────────────────
@@ -361,6 +384,63 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
                 painter->drawEllipse(QPointF(px, py), r, r);
                 break;
             }
+        }
+    }
+
+    // ── 粒子系统（爆炸特效） ──────────────────────────────────
+    for (const auto& particle : m_particles) {
+        QColor c = particle.color;
+        c.setAlpha(static_cast<int>(255 * particle.life));
+        painter->setBrush(c);
+        painter->setPen(Qt::NoPen);
+        float sz = 2.0f + particle.life * 3.0f;
+        painter->drawEllipse(QPointF(particle.x, particle.y), sz, sz);
+    }
+
+    // ── 雷击闪电特效（全屏闪白 + 锯齿闪电） ──────────────────
+    if (m_pThunderActive && *m_pThunderActive) {
+        painter->fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, QColor(255, 255, 255, 60));
+        painter->setPen(QPen(QColor(255, 255, 255, 200), 3));
+        float time = QTime::currentTime().msecsTo(QTime()) * 0.001f;
+        for (int bolt = 0; bolt < 4; ++bolt) {
+            float startX = 100.0f + bolt * 200.0f + std::sin(time + bolt) * 50.0f;
+            float x = startX, y = 0;
+            while (y < SCREEN_HEIGHT) {
+                float nextY = y + 30.0f + std::sin(time * 5.0f + bolt + y * 0.01f) * 20.0f;
+                float nextX = x + (std::rand() % 40 - 20) + std::sin(time * 10.0f + bolt) * 15.0f;
+                painter->drawLine(QPointF(x, y), QPointF(nextX, nextY));
+                x = nextX; y = nextY;
+            }
+        }
+        // 闪电粒子
+        for (int i = 0; i < 3; ++i) {
+            Particle p;
+            p.x = std::rand() % SCREEN_WIDTH;
+            p.y = std::rand() % SCREEN_HEIGHT;
+            p.vx = (std::rand() % 200 - 100) * 0.5f;
+            p.vy = (std::rand() % 200 - 100) * 0.5f;
+            p.life = 0.3f + (std::rand() % 100) * 0.003f;
+            p.color = QColor(255, 255, 200);
+            m_particles.push_back(p);
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 粒子更新（由 GameView tick 调用）
+// ═══════════════════════════════════════════════════════════════════
+
+void GameScene::updateParticles(float dt) noexcept {
+    for (auto it = m_particles.begin(); it != m_particles.end(); ) {
+        it->x += it->vx * dt;
+        it->y += it->vy * dt;
+        it->life -= dt * 1.5f;  // 1.5 秒衰减
+        it->vx *= 0.95f;
+        it->vy *= 0.95f;
+        if (it->life <= 0.0f) {
+            it = m_particles.erase(it);
+        } else {
+            ++it;
         }
     }
 }

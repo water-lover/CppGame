@@ -1,5 +1,6 @@
 #include "viewmodel/CollisionSystem.hpp"
 #include "viewmodel/Geometry.hpp"
+#include "resource/Logger.hpp"
 #include <cmath>
 
 std::vector<int> CollisionSystem::checkBulletEnemy(
@@ -21,6 +22,7 @@ std::vector<int> CollisionSystem::checkBulletEnemy(
                 enemies[ei]->takeDamage();
                 if (enemies[ei]->isDead()) {
                     hitEnemies.push_back(static_cast<int>(ei));
+                    log("Collision", "Enemy destroyed by bullet");
                 }
                 break;  // 一颗子弹只能击中一个敌机
             }
@@ -43,6 +45,7 @@ int CollisionSystem::checkEnemyPlayer(
         Circle eCircle{enemies[ei]->getPos().x, enemies[ei]->getPos().y, enemies[ei]->getSize()};
 
         if (overlaps(pCircle, eCircle)) {
+            log("Collision", "Enemy hits player");
             return static_cast<int>(ei);
         }
     }

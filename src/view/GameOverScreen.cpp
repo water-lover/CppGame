@@ -96,13 +96,4 @@ void GameOverScreen::paintEvent(QPaintEvent* /*event*/) {
 
     // ── 背景 ───────────────────────────────────────────────────────
     painter.fillRect(0, 0, w, h, QColor(20, 10, 10));
-
-    // ── "GAME OVER" 标题 ───────────────────────────────────────────
-    painter.setPen(QColor(255, 60, 60));
-    QFont titleFont;
-    titleFont.setPixelSize(static_cast<int>(h * 0.10));
-    titleFont.setBold(true);
-    painter.setFont(titleFont);
-    painter.drawText(QRect(0, h * 0.14, w, h * 0.14),
-                     Qt::AlignCenter, QStringLiteral("GAME OVER"));
 }

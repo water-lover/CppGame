@@ -52,7 +52,7 @@ TEST_CASE("SkillSystem - init from Frost template sets correct shield duration",
 
     const auto& tmpl = AircraftStats::getTemplate(AircraftType::Frost);
     CHECK(skill.getType() == SkillType::FrostShield);
-    CHECK(skill.getCooldownTotal() == 20.0f);
+    CHECK(skill.getCooldownTotal() == tmpl.skillCooldown);  // 15s
     CHECK(skill.getCooldownRemaining() == 0.0f);
     CHECK(skill.isOnCooldown() == false);
 }
@@ -63,7 +63,7 @@ TEST_CASE("SkillSystem - init from Fortress template sets longest cooldown", "[s
 
     const auto& tmpl = AircraftStats::getTemplate(AircraftType::Fortress);
     CHECK(skill.getType() == SkillType::IronWall);
-    CHECK(skill.getCooldownTotal() == 22.0f);  // 最长冷却
+    CHECK(skill.getCooldownTotal() == tmpl.skillCooldown);  // 16s
     CHECK(skill.getCooldownRemaining() == 0.0f);
 }
 
@@ -103,23 +103,23 @@ TEST_CASE("SkillSystem - activate without init defaults to ThunderStrike", "[ski
 
 TEST_CASE("SkillSystem - update decreases cooldown", "[skill][update]") {
     SkillSystem skill;
-    skill.init(AircraftType::Thunder);  // 冷却 15s
+    skill.init(AircraftType::Thunder);  // 冷却 13s
     skill.activate();
 
     float remaining = skill.getCooldownRemaining();
-    CHECK(remaining == Approx(15.0f));
+    CHECK(remaining == Approx(13.0f));
 
     // 更新 1 秒（60 帧）
     for (int i = 0; i < 60; ++i)
         skill.update(DT);
 
-    CHECK(skill.getCooldownRemaining() == Approx(14.04f).epsilon(0.01f));
+    CHECK(skill.getCooldownRemaining() == Approx(12.04f).epsilon(0.01f));
     CHECK(skill.isOnCooldown() == true);
 }
 
 TEST_CASE("SkillSystem - cooldown reaches zero after enough updates", "[skill][update]") {
     SkillSystem skill;
-    skill.init(AircraftType::Thunder);  // 冷却 15s
+    skill.init(AircraftType::Thunder);  // 冷却 13s
     skill.activate();
 
     // 模拟 15 秒（900 tick）
@@ -152,7 +152,7 @@ TEST_CASE("SkillSystem - isActive false after duration expires", "[skill][active
     skill.activate();
 
     // 持续 2 秒（125 tick）
-    for (int i = 0; i < 130; ++i)
+    for (int i = 0; i < 160; ++i)
         skill.update(DT);
 
     CHECK(skill.isActive() == false);
@@ -170,7 +170,7 @@ TEST_CASE("SkillSystem - zero-duration skills never show active (ThunderStrike)"
 
 TEST_CASE("SkillSystem - getCooldownPercent returns correct ratio", "[skill][percent]") {
     SkillSystem skill;
-    skill.init(AircraftType::Frost);  // cooldown=20s
+    skill.init(AircraftType::Frost);  // cooldown=15s
 
     CHECK(skill.getCooldownPercent() == 0.0f);  // 冷却前=0
 
@@ -178,8 +178,8 @@ TEST_CASE("SkillSystem - getCooldownPercent returns correct ratio", "[skill][per
 
     CHECK(skill.getCooldownPercent() == Approx(1.0f).epsilon(0.01f));  // 刚冷却=100%
 
-    // 冷却 10 秒（600 tick）
-    for (int i = 0; i < 600; ++i)
+    // 冷却 7.5 秒（470 tick）
+    for (int i = 0; i < 470; ++i)
         skill.update(DT);
 
     CHECK(skill.getCooldownPercent() == Approx(0.5f).epsilon(0.05f));  // ~50%
@@ -202,7 +202,7 @@ TEST_CASE("SkillSystem - getCooldownPercent returns 0 when total is 0", "[skill]
 
 TEST_CASE("SkillSystem - full lifecycle: ready → activate → cooldown → ready", "[skill][lifecycle]") {
     SkillSystem skill;
-    skill.init(AircraftType::Flame);  // cooldown=18s, duration=2s
+    skill.init(AircraftType::Flame);  // cooldown=15s, duration=2.5s
 
     // 阶段 1: 就绪
     CHECK(skill.isOnCooldown() == false);
@@ -214,14 +214,14 @@ TEST_CASE("SkillSystem - full lifecycle: ready → activate → cooldown → rea
     CHECK(skill.isActive() == true);    // FlameStorm 持续 2s
     CHECK(skill.getCooldownRemaining() > 0.0f);
 
-    // 阶段 3: 持续结束
-    for (int i = 0; i < 130; ++i)
+    // 阶段 3: 持续结束（Flame 持续 2.5s = 157 tick）
+    for (int i = 0; i < 160; ++i)
         skill.update(DT);
     CHECK(skill.isActive() == false);
     CHECK(skill.isOnCooldown() == true);  // 冷却仍在继续
 
-    // 阶段 4: 冷却结束
-    for (int i = 0; i < 1000; ++i)
+    // 阶段 4: 冷却结束（Flame 冷却 15s ≈ 938 tick - 160 = 778 余量）
+    for (int i = 0; i < 1300; ++i)
         skill.update(DT);
     CHECK(skill.isOnCooldown() == false);
     CHECK(skill.getCooldownRemaining() == 0.0f);
@@ -233,7 +233,7 @@ TEST_CASE("SkillSystem - full lifecycle: ready → activate → cooldown → rea
 
 TEST_CASE("SkillSystem - init resets state from any previous state", "[skill][init][boundary]") {
     SkillSystem skill;
-    skill.init(AircraftType::Flame);   // cooldown=18s
+    skill.init(AircraftType::Flame);   // cooldown=15s
 
     // 激活并运行一段时间
     skill.activate();
@@ -253,7 +253,7 @@ TEST_CASE("SkillSystem - init resets state from any previous state", "[skill][in
 
 TEST_CASE("SkillSystem - multiple activate/recharge cycles", "[skill][stress]") {
     SkillSystem skill;
-    skill.init(AircraftType::Fortress);  // cooldown=22s
+    skill.init(AircraftType::Fortress);  // cooldown=16s
 
     for (int cycle = 0; cycle < 3; ++cycle) {
         // 激活

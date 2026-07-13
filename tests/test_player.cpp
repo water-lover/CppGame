@@ -12,11 +12,12 @@ TEST_CASE("Player - initial state", "[player]") {
 
 TEST_CASE("Player - reset restores state", "[player]") {
     Player player;
+    int initLives = player.getLives();
     player.takeDamage();
     for (int j = 0; j < 200; ++j)
         player.update(0.016f);  // 等待无敌结束
     player.takeDamage();
-    CHECK(player.getLives() == 1);
+    CHECK(player.getLives() == initLives - 2);
 
     player.reset();
     CHECK(player.getLives() == PLAYER_MAX_LIVES);
@@ -36,7 +37,8 @@ TEST_CASE("Player - invincible after damage", "[player]") {
 
 TEST_CASE("Player - dies when lives reach zero", "[player]") {
     Player player;
-    for (int i = 0; i < 3; ++i) {
+    int lives = player.getLives();
+    for (int i = 0; i < lives; ++i) {
         // 每次受伤后需要等无敌结束
         player.takeDamage();
         for (int j = 0; j < 200; ++j)

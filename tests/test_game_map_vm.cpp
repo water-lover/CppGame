@@ -48,9 +48,9 @@ static void tickN(GameMapVM& vm, int n, float dt = kFrameDur) {
 static void startAndWarmUp(GameMapVM& vm) {
     auto startCmd = vm.getStartGameCommand();
     startCmd();
-    // 等待超过 SPAWN_INTERVAL 确保第一波敌机出现
-    // 105 tick ≈ 1.75s > SPAWN_INTERVAL(1.5s)，敌机刚生成未被子弹击杀
-    tickN(vm, 105);
+    // 初始延迟 2s + 生成间隔 1.5s → 约 3.5s
+    // 230 tick ≈ 3.68s，确保敌机已生成
+    tickN(vm, 230);
 }
 
 // ── 测试用例 ─────────────────────────────────────────────────────────────────

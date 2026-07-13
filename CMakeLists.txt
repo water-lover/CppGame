@@ -91,6 +91,8 @@ add_library(thf_view OBJECT
     src/view/LevelSelectScreen.cpp
     src/view/AircraftSelectScreen.cpp
     src/view/UpgradeScreen.cpp
+    src/view/LevelCompleteScreen.cpp
+    src/view/SplashScreen.cpp
     include/view/GameView.hpp
     include/view/GameScene.hpp
     include/view/PlayerItem.hpp
@@ -106,6 +108,8 @@ add_library(thf_view OBJECT
     include/view/LevelSelectScreen.hpp
     include/view/AircraftSelectScreen.hpp
     include/view/UpgradeScreen.hpp
+    include/view/LevelCompleteScreen.hpp
+    include/view/SplashScreen.hpp
 )
 target_include_directories(thf_view PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(thf_view PUBLIC thf_common Qt5::Gui Qt5::Widgets)

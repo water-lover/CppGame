@@ -80,6 +80,7 @@ static void bindAll(GameView* v, GameMapVM* vm, SpiritVM* svm) {
     v->setWeaponLevelPtr(vm->getWeaponLevelPtr());
     v->setHasShieldPtr(vm->getHasShieldPtr());
     v->setAircraftNamePtr(vm->getAircraftName());
+    v->setThunderActivePtr(vm->getThunderActivePtr());
     v->setLevelClearedPtr(vm->isLevelClearedPtr());
     v->setStarCoresPtr(vm->getUpgradeStarCoresPtr());
     v->setUpgradeFireLevelPtr(vm->getUpgradeFireLevelPtr());
