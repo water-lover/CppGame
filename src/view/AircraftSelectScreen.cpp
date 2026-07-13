@@ -87,9 +87,9 @@ void AircraftSelectScreen::paintEvent(QPaintEvent* /*event*/) {
             p.drawText(QRectF(r.x(), rowY, r.width(), rowH), Qt::AlignCenter, card.name);
             rowY += rowH;
 
-            // ── 火力 ★ 条 ────────────────────────────────────────
+            // ── 火力 ★ ────────────────────────────────────────────
             {
-                QString s;
+                QString s = QStringLiteral("火力 ");
                 for (int i = 0; i < card.fire; ++i) s += QStringLiteral("★");
                 for (int i = card.fire; i < 5; ++i) s += QStringLiteral("☆");
                 p.setPen(QColor(255, 200, 50));
@@ -98,9 +98,9 @@ void AircraftSelectScreen::paintEvent(QPaintEvent* /*event*/) {
                 rowY += barSz;
             }
 
-            // ── 生命 ♥ 条 ────────────────────────────────────────
+            // ── 生命 ♥ ────────────────────────────────────────────
             {
-                QString s;
+                QString s = QStringLiteral("生命 ");
                 int nH = (card.lives > 7) ? 7 : card.lives;
                 for (int i = 0; i < nH; ++i) s += QStringLiteral("♥");
                 p.setPen(QColor(255, 107, 107));
