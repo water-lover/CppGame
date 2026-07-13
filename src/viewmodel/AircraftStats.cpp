@@ -81,7 +81,7 @@ static const AircraftTemplate kTemplates[] = {
         AircraftType::Fortress,
         "堡垒号",
         3,          // ★★★  火力
-        6,          // ♥♥♥♥♥♥ 生命
+        7,          // ♥♥♥♥♥♥♥ 生命
         0.75f,      // ★★   速度
         0.20f,      // 中等射速，V形双发
         SkillType::IronWall,
