@@ -19,7 +19,8 @@
                 "CMAKE_MAKE_PROGRAM":   "C:/Windows/mingw64/bin/mingw32-make.exe",
                 "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
                 "VCPKG_HOST_TRIPLET":   "x64-mingw-dynamic",
-                "VCPKG_DISABLE_AUTO_PROXY": "ON"
+                "VCPKG_DISABLE_AUTO_PROXY": "ON",
+                "Catch2_DIR": "$env{VCPKG_ROOT}/packages/catch2_x64-mingw-dynamic/share/catch2"
             }
         },
         {
@@ -35,7 +36,8 @@
                 "CMAKE_MAKE_PROGRAM":   "C:/Windows/mingw64/bin/mingw32-make.exe",
                 "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
                 "VCPKG_HOST_TRIPLET":   "x64-mingw-dynamic",
-                "VCPKG_DISABLE_AUTO_PROXY": "ON"
+                "VCPKG_DISABLE_AUTO_PROXY": "ON",
+                "Catch2_DIR": "$env{VCPKG_ROOT}/packages/catch2_x64-mingw-dynamic/share/catch2"
             }
         }
     ],
