@@ -298,8 +298,13 @@ void GameView::setMaxUnlockedLevelPtr(const int* p) noexcept {
 // ═══════════════════════════════════════════════════════════════════
 
 void GameView::tick() {
-    if (m_scene) m_scene->updateParticles(0.016f);
+    // 先执行游戏逻辑（tickImpl → syncMap 写入 AirMap 含爆炸标记）
     if (m_tickCommand) m_tickCommand(0.016f);
+    // 再同步读取 AirMap 中的爆炸标记生成粒子（此时标记还在，不会被异步 draw 遗漏）
+    if (m_scene) {
+        m_scene->processExplosions();
+        m_scene->updateParticles(0.016f);
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════

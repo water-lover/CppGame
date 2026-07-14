@@ -169,9 +169,6 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
         case ActorType::PowerUpStarCore:
             drawPixmapAt(painter, m_pPowerUpStarCoreImg, px, py, SPRITE_ENEMY_SIZE * SCREEN_WIDTH);
             break;
-        case ActorType::Explosion:
-            spawnExplosion(px, py);
-            break;
         default: break;
         }
     }
@@ -375,5 +372,21 @@ void GameScene::spawnExplosion(float x, float y, const QColor& color) {
         int b = std::min(255, color.blue() + (std::rand() % 40 - 20));
         p.color = QColor(r, g, b);
         m_particles.push_back(p);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 同步读取 AirMap 爆炸标记 — 在 tick() 中 tickCommand 之后立即调用
+// ═══════════════════════════════════════════════════════════════════
+
+void GameScene::processExplosions() {
+    if (!m_pMap) return;
+    for (size_t i = 0; i < m_pMap->size(); ++i) {
+        const Actor& actor = m_pMap->getAt(i);
+        if (actor.type == ActorType::Explosion) {
+            float px = normToPixel(actor.x, SCREEN_WIDTH);
+            float py = normToPixel(actor.y, SCREEN_HEIGHT);
+            spawnExplosion(px, py);
+        }
     }
 }

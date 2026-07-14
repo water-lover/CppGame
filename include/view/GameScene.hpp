@@ -67,11 +67,14 @@ public:
     /// 迭代 7 — 雷击特效标记
     void setThunderActivePtr(const bool* p) noexcept { m_pThunderActive = p; }
 
-    /// 迭代 7 — 每帧更新粒子（供 GameView tick 调用）
+    /// 迭代 8 — 每帧更新粒子（供 GameView tick 调用）
     void updateParticles(float dt) noexcept;
 
     /// 迭代 8 — 在指定位置生成爆炸粒子
     void spawnExplosion(float x, float y, const QColor& color = QColor(255, 200, 50));
+
+    /// 迭代 8 — 同步读取 AirMap 中的 Explosion 标记生成粒子（在 tick 中同步调用）
+    void processExplosions();
 
 protected:
     /// 绘制背景（星空 + 背景图）
