@@ -2,6 +2,7 @@
 #define GAMESCENE_HPP
 
 #include <QGraphicsScene>
+#include <QPixmap>
 #include <QColor>
 #include <cstdint>
 #include <vector>
@@ -69,6 +70,9 @@ public:
     /// 迭代 7 — 每帧更新粒子（供 GameView tick 调用）
     void updateParticles(float dt) noexcept;
 
+    /// 迭代 8 — 在指定位置生成爆炸粒子
+    void spawnExplosion(float x, float y, const QColor& color = QColor(255, 200, 50));
+
 protected:
     /// 绘制背景（星空 + 背景图）
     void drawBackground(QPainter* painter, const QRectF& rect) override;
@@ -132,6 +136,10 @@ private:
 
     // ── 粒子系统 ─────────────────────────────────────────────
     std::vector<Particle> m_particles;
+    float m_starTime = 0.0f;
+    QPixmap m_bgCache;
+    float   m_bgCacheFar  = -999.0f;
+    float   m_bgCacheNear = -999.0f;
 };
 
 #endif // GAMESCENE_HPP

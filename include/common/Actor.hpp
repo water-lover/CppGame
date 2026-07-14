@@ -14,7 +14,8 @@ enum class ActorType {
     PowerUpHp,      // 回血包道具
     PowerUpFire,    // 火力加强道具
     PowerUpShield,  // 护盾道具
-    PowerUpStarCore // 星核碎片道具 ⭐
+    PowerUpStarCore, // 星核碎片道具 ⭐
+    Explosion       // 爆炸标记（View 读取后生成粒子特效）
 };
 
 // ── Actor ───────────────────────────────────────────────────────────────────

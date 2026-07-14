@@ -104,6 +104,9 @@ public:
     const QPixmap* getBackgroundPixmap() const noexcept { return m_pBgImg; }
     const QPixmap* getStarfieldFarPixmap() const noexcept { return m_pStarfieldFar; }
     const QPixmap* getStarfieldNearPixmap() const noexcept { return m_pStarfieldNear; }
+    /// 预缩放到 800×600 的星域图（SpiritVM 自有缓存）
+    const QPixmap* getStarfieldFarScaled() const noexcept { return m_starfieldFarScaled.isNull() ? nullptr : &m_starfieldFarScaled; }
+    const QPixmap* getStarfieldNearScaled() const noexcept { return m_starfieldNearScaled.isNull() ? nullptr : &m_starfieldNearScaled; }
 
 private:
     // 5 架战机独立图片，由 App 按 AircraftType 索引注入
@@ -125,6 +128,9 @@ private:
     const QPixmap* m_pBgImg            = nullptr;
     const QPixmap* m_pStarfieldFar     = nullptr;
     const QPixmap* m_pStarfieldNear    = nullptr;
+    // SpiritVM 自有的预缩放星域图（值存储）
+    QPixmap m_starfieldFarScaled;
+    QPixmap m_starfieldNearScaled;
 };
 
 #endif // SPIRITVM_HPP

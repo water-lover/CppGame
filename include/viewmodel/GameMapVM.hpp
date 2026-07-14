@@ -239,6 +239,9 @@ private:
     float m_thunderTimer  = 0.0f;
     std::string m_aircraftNameBuf;
 
+    // 迭代 8：爆炸粒子位置队列（每帧清空）
+    std::vector<Vec2> m_explosionQueue;
+
     std::mt19937 m_rng;
 };
 

@@ -96,7 +96,18 @@ GameView::GameView(QWidget* parent)
     m_levelCompleteScreen = new LevelCompleteScreen(this);
     m_pageStack->addWidget(m_levelCompleteScreen);  // 8
     connect(m_levelCompleteScreen, &LevelCompleteScreen::nextLevelClicked, [this]() {
-        if (m_startLevelCommand && m_pCurrentLevel) m_startLevelCommand(*m_pCurrentLevel + 1);
+        // 先显示过渡画面
+        if (m_splashScreen && m_pCurrentLevel) {
+            m_splashScreen->setMessage(
+                QStringLiteral("Loading Level %1...").arg(*m_pCurrentLevel + 1));
+            m_splashScreen->setProgress(60);
+            m_pageStack->setCurrentIndex(9);
+        }
+        // 延迟启动下一关
+        QTimer::singleShot(600, this, [this]() {
+            if (m_startLevelCommand && m_pCurrentLevel)
+                m_startLevelCommand(*m_pCurrentLevel + 1);
+        });
     });
     connect(m_levelCompleteScreen, &LevelCompleteScreen::backToMenuClicked, [this]() {
         if (m_navigateCommand) m_navigateCommand(0);
@@ -140,8 +151,20 @@ GameView::GameView(QWidget* parent)
     });
 
     connect(m_aircraftSelectScreen, &AircraftSelectScreen::confirmed, [this]() {
-        m_pageStack->setCurrentIndex(4);  // GamePage
-        if (m_startGameCommand) m_startGameCommand();
+        // 先显示过渡画面（页面 9），再延迟启动游戏
+        if (m_splashScreen) {
+            m_splashScreen->setMessage(
+                m_pCurrentLevel
+                ? QStringLiteral("Loading Level %1...").arg(*m_pCurrentLevel)
+                : QStringLiteral("准备战斗..."));
+            m_splashScreen->setProgress(60);
+            m_pageStack->setCurrentIndex(9);
+        }
+        // 短暂延迟后正式进入游戏，让 SplashScreen 可见
+        QTimer::singleShot(600, this, [this]() {
+            m_pageStack->setCurrentIndex(4);  // GamePage
+            if (m_startGameCommand) m_startGameCommand();
+        });
     });
 
     connect(m_gameOverScreen, &GameOverScreen::restartClicked, [this]() {
@@ -436,7 +459,16 @@ void GameView::updatePage() {
         if (m_pLevelCleared && m_pCurrentLevel && *m_pLevelCleared)
             m_gameOverScreen->setLevelCleared(true, *m_pCurrentLevel);
         break;
-    case GameState::LevelComplete:  // 安全兜底
-        m_pageStack->setCurrentIndex(5); m_timer->stop(); break;
+    case GameState::LevelComplete:
+        m_pageStack->setCurrentIndex(8); m_timer->stop();
+        // 更新胜利界面数据
+        if (m_pScore) m_levelCompleteScreen->setScore(*m_pScore);
+        if (m_pHighScore) m_levelCompleteScreen->setHighScore(*m_pHighScore);
+        if (m_pCurrentLevel) m_levelCompleteScreen->setLevel(*m_pCurrentLevel);
+        if (m_pEnemiesKilled && m_pBossesKilled && m_pTimePlayed) {
+            m_levelCompleteScreen->setStats(
+                *m_pEnemiesKilled, *m_pBossesKilled, *m_pTimePlayed);
+        }
+        break;
     }
 }

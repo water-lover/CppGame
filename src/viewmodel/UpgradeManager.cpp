@@ -28,6 +28,7 @@ bool UpgradeManager::upgrade(UpgradeType type) {
     if (m_starCores < cost) return false;
     m_starCores -= cost;
     level++;
+    syncCurrentLevels();
     return true;
 }
 

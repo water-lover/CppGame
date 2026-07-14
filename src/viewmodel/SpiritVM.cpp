@@ -18,6 +18,12 @@ bool SpiritVM::initialize() {
     setStarfieldFarPixmap(assets.getImage("starfieldFar"));
     setStarfieldNearPixmap(assets.getImage("starfieldNear"));
 
+    // 预缩放星域图到 800×600（空间背景可拉伸，忽略宽高比）
+    if (m_pStarfieldFar && !m_pStarfieldFar->isNull())
+        m_starfieldFarScaled = m_pStarfieldFar->scaled(800, 600, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    if (m_pStarfieldNear && !m_pStarfieldNear->isNull())
+        m_starfieldNearScaled = m_pStarfieldNear->scaled(800, 600, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
     setEnemyMediumPixmap(assets.getImage("enemyMedium"));
     setEnemyLargePixmap(assets.getImage("enemyLarge"));
     setBossPixmap(assets.getImage("bossShip"));

@@ -58,8 +58,8 @@ void AppAgent::init() {
     m_gameView->setEnemySmallPixmap(m_spriteVM->getEnemySmallPixmap());
     m_gameView->setBulletPixmap(m_spriteVM->getPlayerBulletPixmap());
     m_gameView->setBackgroundPixmap(m_spriteVM->getBackgroundPixmap());
-    m_gameView->setStarfieldFarPixmap(m_spriteVM->getStarfieldFarPixmap());
-    m_gameView->setStarfieldNearPixmap(m_spriteVM->getStarfieldNearPixmap());
+    m_gameView->setStarfieldFar(m_spriteVM->getStarfieldFarScaled());
+    m_gameView->setStarfieldNear(m_spriteVM->getStarfieldNearScaled());
 
     m_gameView->setEnemyMediumPixmap(m_spriteVM->getEnemyMediumPixmap());
     m_gameView->setEnemyLargePixmap(m_spriteVM->getEnemyLargePixmap());
@@ -218,7 +218,8 @@ static void loadGameFont() {
     if (id >= 0) {
         QStringList families = QFontDatabase::applicationFontFamilies(id);
         if (!families.isEmpty()) {
-            QFont::setDefaultFont(QFont(families.first(), 14));
+            QFont f(families.first(), 14);
+            qApp->setFont(f);
             log("AppAgent", "Font loaded: " + families.first().toStdString());
         }
     }

@@ -122,6 +122,9 @@ void GameMapVM::startGameImpl() {
 void GameMapVM::tickImpl(float dt) {
     if (m_state != GameState::Playing) return;
 
+    // 清空上一帧的爆炸位置队列
+    m_explosionQueue.clear();
+
     m_elapsed += dt;
 
     // 1. 更新玩家
@@ -130,12 +133,6 @@ void GameMapVM::tickImpl(float dt) {
     // 2. 更新技能冷却/持续
     m_skill.update(dt);
     applySkillEffects(dt);
-
-    // 雷击特效计时（迭代7）
-    if (m_thunderActive) {
-        m_thunderTimer -= dt;
-        if (m_thunderTimer <= 0.0f) m_thunderActive = false;
-    }
 
     // 3. 玩家自动射击
     if (m_player.canFire(dt)) {
@@ -215,6 +212,8 @@ void GameMapVM::tickImpl(float dt) {
             m_upgradeMgr.addStarCores(STAR_CORE_PER_BOSS);
             fireChange(PROP_ID_SCORE);
             fireChange(PROP_ID_STAR_CORES);
+            // BOSS 死亡爆炸
+            m_explosionQueue.push_back(boss->getPos());
             break;
         }
     }
@@ -274,7 +273,7 @@ void GameMapVM::tickImpl(float dt) {
         if (nextLevel <= 7) {
             emit saveCampaignRequested(nextLevel);
         }
-        m_state = GameState::GameOver;  // 复用 GameOver 显示通关信息
+        m_state = GameState::LevelComplete;  // 使用专用胜利状态
         fireChange(PROP_ID_GAME_STATE);
         return;
     }
@@ -580,6 +579,7 @@ void GameMapVM::handleThunderStrike() {
             if (!e->isDead()) e->takeDamage();
         }
         if (e->isDead()) {
+            m_explosionQueue.push_back(e->getPos());
             m_powerUpMgr.onEnemyDestroyed(e->getPos(), m_rng);
         }
     }
@@ -610,6 +610,7 @@ void GameMapVM::handleTimeDash(float dt) {
                 std::abs(ex - m_player.getPos().x) < 0.25f) {
                 e->takeDamage();
                 if (e->isDead()) {
+                    m_explosionQueue.push_back(e->getPos());
                     m_powerUpMgr.onEnemyDestroyed(e->getPos(), m_rng);
                 } else {
                     // 没死的再补一刀
@@ -681,6 +682,8 @@ void GameMapVM::checkCollisions() {
                     // 星核掉落
                     m_upgradeMgr.addStarCores(STAR_CORE_PER_KILL);
                     fireChange(PROP_ID_STAR_CORES);
+                    // 爆炸粒子位置
+                    m_explosionQueue.push_back(m_enemies[ei]->getPos());
                     m_powerUpMgr.onEnemyDestroyed(m_enemies[ei]->getPos(), m_rng);
                 }
                 m_bullets[bi].markDead();
@@ -814,6 +817,16 @@ void GameMapVM::syncMap() {
         a.x = pu.pos.x;
         a.y = pu.pos.y;
         a.hp = 1; a.maxHp = 1;
+        m_map.append(a);
+    }
+
+    // 爆炸标记（View 读取后生成粒子特效，每帧自动清空）
+    for (const auto& ep : m_explosionQueue) {
+        Actor a;
+        a.type  = ActorType::Explosion;
+        a.x     = ep.x;
+        a.y     = ep.y;
+        a.hp    = 1; a.maxHp = 1;
         m_map.append(a);
     }
 }
