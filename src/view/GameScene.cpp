@@ -380,13 +380,13 @@ void GameScene::spawnExplosion(float x, float y, const QColor& color) {
 // ═══════════════════════════════════════════════════════════════════
 
 void GameScene::processExplosions() {
-    if (!m_pMap) return;
-    for (size_t i = 0; i < m_pMap->size(); ++i) {
-        const Actor& actor = m_pMap->getAt(i);
-        if (actor.type == ActorType::Explosion) {
-            float px = normToPixel(actor.x, SCREEN_WIDTH);
-            float py = normToPixel(actor.y, SCREEN_HEIGHT);
-            spawnExplosion(px, py);
-        }
+    if (!m_pExplosionData || !m_pExplosionCount) return;
+    int count = *m_pExplosionCount;
+    for (int i = 0; i < count && i < 32; ++i) {
+        float nx = m_pExplosionData[i * 2 + 0];
+        float ny = m_pExplosionData[i * 2 + 1];
+        float px = normToPixel(nx, SCREEN_WIDTH);
+        float py = normToPixel(ny, SCREEN_HEIGHT);
+        spawnExplosion(px, py);
     }
 }

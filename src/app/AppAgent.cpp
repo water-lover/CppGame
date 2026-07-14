@@ -96,6 +96,9 @@ void AppAgent::init() {
 
     // 迭代 7：雷击特效 + 关卡统计数据指针
     m_gameView->setThunderActivePtr(m_mapVM->getThunderActivePtr());
+    // 迭代 8：爆炸粒子数据
+    m_gameView->setExplosionDataPtr(m_mapVM->getExplosionDataPtr());
+    m_gameView->setExplosionCountPtr(m_mapVM->getExplosionCountPtr());
     m_gameView->setEnemiesKilledPtr(m_mapVM->getEnemiesKilledPtr());
     m_gameView->setShotsFiredPtr(m_mapVM->getShotsFiredPtr());
     m_gameView->setShotsHitPtr(m_mapVM->getShotsHitPtr());

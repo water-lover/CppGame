@@ -67,6 +67,10 @@ public:
     /// 迭代 7 — 雷击特效标记
     void setThunderActivePtr(const bool* p) noexcept { m_pThunderActive = p; }
 
+    /// 迭代 8 — 爆炸粒子数据（独立于 AirMap，保证同步读取）
+    void setExplosionDataPtr(const float* p)  noexcept { m_pExplosionData = p; }
+    void setExplosionCountPtr(const int* p)   noexcept { m_pExplosionCount = p; }
+
     /// 迭代 8 — 每帧更新粒子（供 GameView tick 调用）
     void updateParticles(float dt) noexcept;
 
@@ -136,6 +140,10 @@ private:
 
     // ── 迭代 7 特效 ──────────────────────────────────────────
     const bool* m_pThunderActive = nullptr;
+
+    // ── 迭代 8 爆炸数据（独立于 AirMap） ────────────────────────
+    const float* m_pExplosionData  = nullptr;
+    const int*   m_pExplosionCount = nullptr;
 
     // ── 粒子系统 ─────────────────────────────────────────────
     std::vector<Particle> m_particles;

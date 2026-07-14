@@ -821,6 +821,8 @@ void GameMapVM::syncMap() {
     }
 
     // 爆炸标记（View 读取后生成粒子特效，每帧自动清空）
+    // 同时写入 float 数组供 View 直接读取（不受 AirMap 异步绘制 timing 影响）
+    m_explosionCount = 0;
     for (const auto& ep : m_explosionQueue) {
         Actor a;
         a.type  = ActorType::Explosion;
@@ -828,6 +830,12 @@ void GameMapVM::syncMap() {
         a.y     = ep.y;
         a.hp    = 1; a.maxHp = 1;
         m_map.append(a);
+        // 同步写入 float 数组
+        if (m_explosionCount < MAX_EXPLOSION_DATA) {
+            m_explosionData[m_explosionCount * 2 + 0] = ep.x;
+            m_explosionData[m_explosionCount * 2 + 1] = ep.y;
+            m_explosionCount++;
+        }
     }
 }
 

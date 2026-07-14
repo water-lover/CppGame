@@ -73,6 +73,10 @@ public:
     // 迭代 7：雷击特效标记
     const bool*     getThunderActivePtr() const noexcept { return &m_thunderActive; }
 
+    // 迭代 8：爆炸粒子数据（View 直接读取，独立于 AirMap）
+    const float*    getExplosionDataPtr()  const noexcept { return m_explosionData; }
+    const int*      getExplosionCountPtr() const noexcept { return &m_explosionCount; }
+
     // 迭代 7：关卡统计数据（转调 ScoreManager）
     const int*      getEnemiesKilledPtr()  const noexcept { return m_scoreMgr.getEnemiesKilledPtr(); }
     const int*      getShotsFiredPtr()     const noexcept { return m_scoreMgr.getShotsFiredPtr(); }
@@ -241,6 +245,11 @@ private:
 
     // 迭代 8：爆炸粒子位置队列（每帧清空）
     std::vector<Vec2> m_explosionQueue;
+
+    // 迭代 8：爆炸数据暴露数组（独立于 AirMap，供 View 直接读取）
+    static constexpr int MAX_EXPLOSION_DATA = 32;
+    float  m_explosionData[MAX_EXPLOSION_DATA * 2] = {};  // x0,y0,x1,y1,...
+    int    m_explosionCount = 0;
 
     std::mt19937 m_rng;
 };

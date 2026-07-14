@@ -88,6 +88,8 @@ public:
     void setHighScorePtr(const int* p) noexcept { m_pHighScore = p; if (m_scene) m_scene->setHudHighScore(p); }
     void setGameStatePtr(const GameState* p) noexcept { m_pGameState = p; }
     void setThunderActivePtr(const bool* p) noexcept { m_pThunderActive = p; if (m_scene) m_scene->setThunderActivePtr(p); }
+    void setExplosionDataPtr(const float* p) noexcept { if (m_scene) m_scene->setExplosionDataPtr(p); }
+    void setExplosionCountPtr(const int* p) noexcept { if (m_scene) m_scene->setExplosionCountPtr(p); }
     void setEnemiesKilledPtr(const int* p) noexcept { m_pEnemiesKilled = p; }
     void setBossesKilledPtr(const int* p) noexcept { m_pBossesKilled = p; }
     void setShotsFiredPtr(const int* p) noexcept { m_pShotsFired = p; }
