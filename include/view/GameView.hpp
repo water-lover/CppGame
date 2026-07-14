@@ -66,6 +66,8 @@ public:
 
     /// 设置背景图片
     void setBackgroundPixmap(const QPixmap* p) noexcept;
+    void setStarfieldFar(const QPixmap* p)  noexcept { if (m_scene) m_scene->setStarfieldFar(p); }
+    void setStarfieldNear(const QPixmap* p) noexcept { if (m_scene) m_scene->setStarfieldNear(p); }
 
     /// 迭代3 新图片
     void setEnemyMediumPixmap(const QPixmap* p) noexcept;

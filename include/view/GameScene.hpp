@@ -44,7 +44,9 @@ public:
     void setPowerUpFirePixmap(const QPixmap* p) noexcept { m_pPowerUpFireImg = p; }
     void setPowerUpShieldPixmap(const QPixmap* p) noexcept { m_pPowerUpShieldImg = p; }
     void setPowerUpStarCorePixmap(const QPixmap* p) noexcept { m_pPowerUpStarCoreImg = p; }
-    void setBackgroundPixmap(const QPixmap* p) noexcept { m_pBgImg = p; }
+    void setBackgroundPixmap(const QPixmap* p)  noexcept { m_pBgImg = p; }
+    void setStarfieldFar(const QPixmap* p)       noexcept { m_pStarfieldFar  = p; }
+    void setStarfieldNear(const QPixmap* p)      noexcept { m_pStarfieldNear = p; }
 
     // ── HUD 数据注入（在场景坐标中直接绘制，避免 QWidget 覆盖层尺寸问题） ─
     void setHudScore(const int* p)     noexcept { m_pScore = p; }
@@ -103,6 +105,10 @@ private:
     const QPixmap*  m_pPowerUpHpImg    = nullptr;
     const QPixmap*  m_pPowerUpFireImg  = nullptr;
     const QPixmap*  m_pPowerUpShieldImg = nullptr;
+    const QPixmap* m_pStarfieldFar   = nullptr;
+    const QPixmap* m_pStarfieldNear  = nullptr;
+    float m_scrollFar  = 0.0f;
+    float m_scrollNear = 0.0f;
     const QPixmap*  m_pPowerUpStarCoreImg = nullptr;
     const QPixmap*  m_pBgImg     = nullptr;
     // ── HUD 指针 ────────────────────────────────────────────────

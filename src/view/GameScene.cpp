@@ -86,8 +86,20 @@ static const StarData kStars[] = {
 // ═══════════════════════════════════════════════════════════════════
 
 void GameScene::drawBackground(QPainter* painter, const QRectF& /*rect*/) {
-    // 1. 背景图
-    if (m_pBgImg && !m_pBgImg->isNull()) {
+// 1. 视差滚动星空背景
+    if (m_pStarfieldFar && m_pStarfieldNear && !m_pStarfieldFar->isNull()) {
+        int fh = m_pStarfieldFar->height();
+        int fw = m_pStarfieldFar->width();
+        int farOff = static_cast<int>(m_scrollFar) % fh;
+        painter->drawPixmap(0, farOff - fh, fw, fh, *m_pStarfieldFar);
+        painter->drawPixmap(0, farOff, fw, fh, *m_pStarfieldFar);
+
+        int nh = m_pStarfieldNear->height();
+        int nw = m_pStarfieldNear->width();
+        int nearOff = static_cast<int>(m_scrollNear) % nh;
+        painter->drawPixmap(0, nearOff - nh, nw, nh, *m_pStarfieldNear);
+        painter->drawPixmap(0, nearOff, nw, nh, *m_pStarfieldNear);
+    } else if (m_pBgImg && !m_pBgImg->isNull()) {
         painter->drawPixmap(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, *m_pBgImg);
     } else {
         // 深空渐变背景
@@ -97,7 +109,6 @@ void GameScene::drawBackground(QPainter* painter, const QRectF& /*rect*/) {
         grad.setColorAt(1.0, QColor(15, 10, 25));
         painter->fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, grad);
     }
-
     // 2. 星空粒子（多彩闪烁）
     painter->setPen(Qt::NoPen);
     float time = QTime::currentTime().msecsTo(QTime()) * 0.001f;  // 当前秒数
@@ -431,6 +442,10 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
 // ═══════════════════════════════════════════════════════════════════
 
 void GameScene::updateParticles(float dt) noexcept {
+    // 星空视差偏移
+    m_scrollFar  += dt * 30.0f;   // 远景 ~30 px/秒
+    m_scrollNear += dt * 90.0f;   // 近景 ~90 px/秒
+
     for (auto it = m_particles.begin(); it != m_particles.end(); ) {
         it->x += it->vx * dt;
         it->y += it->vy * dt;
