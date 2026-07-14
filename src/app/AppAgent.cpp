@@ -7,6 +7,7 @@
 #include "resource/Logger.hpp"
 
 #include <QApplication>
+#include <QFontDatabase>
 
 // ═══════════════════════════════════════════════════════════════════
 // 构造 / 析构
@@ -57,6 +58,8 @@ void AppAgent::init() {
     m_gameView->setEnemySmallPixmap(m_spriteVM->getEnemySmallPixmap());
     m_gameView->setBulletPixmap(m_spriteVM->getPlayerBulletPixmap());
     m_gameView->setBackgroundPixmap(m_spriteVM->getBackgroundPixmap());
+    m_gameView->setStarfieldFarPixmap(m_spriteVM->getStarfieldFarPixmap());
+    m_gameView->setStarfieldNearPixmap(m_spriteVM->getStarfieldNearPixmap());
 
     m_gameView->setEnemyMediumPixmap(m_spriteVM->getEnemyMediumPixmap());
     m_gameView->setEnemyLargePixmap(m_spriteVM->getEnemyLargePixmap());
@@ -207,6 +210,18 @@ void AppAgent::init() {
 
     log("AppAgent", "三绑定建立完成");
     log("AppAgent", "=== 初始化完成 ===");
+}
+
+static void loadGameFont() {
+    int id = QFontDatabase::addApplicationFont(
+        QStringLiteral(":/fonts/PressStart2P-Regular.ttf"));
+    if (id >= 0) {
+        QStringList families = QFontDatabase::applicationFontFamilies(id);
+        if (!families.isEmpty()) {
+            QFont::setDefaultFont(QFont(families.first(), 14));
+            log("AppAgent", "Font loaded: " + families.first().toStdString());
+        }
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════

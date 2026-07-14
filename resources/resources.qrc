@@ -34,5 +34,10 @@
 
         <!-- ── 背景 ────────────────────────────── -->
         <file alias="background">images/Backgrounds/darkPurple.png</file>
+        <file alias="starfieldFar">images/starfield_far.png</file>
+        <file alias="starfieldNear">images/starfield_near.png</file>
+    </qresource>
+    <qresource prefix="/fonts">
+        <file alias="PressStart2P-Regular.ttf">Press_Start_2P/PressStart2P-Regular.ttf</file>
     </qresource>
 </RCC>

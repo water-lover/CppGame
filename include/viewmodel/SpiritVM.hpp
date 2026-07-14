@@ -62,6 +62,8 @@ public:
 
     /// 设置背景图片
     void setBackgroundPixmap(const QPixmap* p)    noexcept { m_pBgImg = p; }
+    void setStarfieldFarPixmap(const QPixmap* p)  noexcept { m_pStarfieldFar = p; }
+    void setStarfieldNearPixmap(const QPixmap* p) noexcept { m_pStarfieldNear = p; }
 
     // ── getter ──────────────────────────────────────────────────
 
@@ -100,6 +102,8 @@ public:
 
     /// 游戏背景图片
     const QPixmap* getBackgroundPixmap() const noexcept { return m_pBgImg; }
+    const QPixmap* getStarfieldFarPixmap() const noexcept { return m_pStarfieldFar; }
+    const QPixmap* getStarfieldNearPixmap() const noexcept { return m_pStarfieldNear; }
 
 private:
     // 5 架战机独立图片，由 App 按 AircraftType 索引注入
@@ -119,6 +123,8 @@ private:
     const QPixmap* m_pPowerUpShieldImg = nullptr;
     const QPixmap* m_pPowerUpStarCoreImg = nullptr;
     const QPixmap* m_pBgImg            = nullptr;
+    const QPixmap* m_pStarfieldFar     = nullptr;
+    const QPixmap* m_pStarfieldNear    = nullptr;
 };
 
 #endif // SPIRITVM_HPP

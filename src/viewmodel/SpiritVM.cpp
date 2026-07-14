@@ -15,6 +15,8 @@ bool SpiritVM::initialize() {
     setPlayerBulletPixmap(assets.getImage("playerBullet"));
     setEnemyBulletPixmap(assets.getImage("enemyBullet"));
     setBackgroundPixmap(assets.getImage("background"));
+    setStarfieldFarPixmap(assets.getImage("starfieldFar"));
+    setStarfieldNearPixmap(assets.getImage("starfieldNear"));
 
     setEnemyMediumPixmap(assets.getImage("enemyMedium"));
     setEnemyLargePixmap(assets.getImage("enemyLarge"));
