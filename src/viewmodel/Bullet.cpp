@@ -14,6 +14,6 @@ void Bullet::update(float dt) {
 bool Bullet::isOffScreen() const {
     bool off = pos_.x < -0.1f || pos_.x > 1.1f ||
                pos_.y < -0.1f || pos_.y > 1.1f;
-    if (off) log("Bullet", "Destroyed — off screen");
+    if (off) log("Bullet", "Destroyed - off screen");
     return off;
 }

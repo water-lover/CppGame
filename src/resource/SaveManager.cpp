@@ -92,10 +92,13 @@ void SaveManager::saveCampaignHighScore(int level, int score) {
     QJsonObject obj = loadObject(filePath_);
     QJsonArray arr = obj.value("campaignScores").toArray();
     while (arr.size() < 7) arr.append(0);
-    arr[level - 1] = score;
-    obj["campaignScores"] = arr;
-    obj["highScore"] = score;  // 保留旧字段兼容
-    saveObject(filePath_, obj);
+    // 不降级：仅当新分数更高时才覆盖
+    if (score > arr[level - 1].toInt(0)) {
+        arr[level - 1] = score;
+        obj["campaignScores"] = arr;
+        obj["highScore"] = score;  // 保留旧字段兼容
+        saveObject(filePath_, obj);
+    }
 }
 
 int SaveManager::loadEndlessHighScore() {

@@ -260,9 +260,9 @@ void GameMapVM::tickImpl(float dt) {
         if (m_scoreMgr.getScore() > m_scoreMgr.getHighScore(hsSlot2)) {
             m_scoreMgr.setHighScore(hsSlot2, m_scoreMgr.getScore());
             m_scoreMgr.setActiveHighScoreSlot(hsSlot2);
+            emit saveHighScoreRequested(m_scoreMgr.getScore(), hsSlot2);
         }
         m_lastScore = m_scoreMgr.getScore();
-        emit saveHighScoreRequested(m_scoreMgr.getScore(), hsSlot2);
 
         // 更新最大已解锁关卡（ViewModel 自身业务逻辑，不依赖 App）
         if (nextLevel <= 7 && nextLevel > m_maxUnlockedLevel) {
@@ -703,7 +703,7 @@ void GameMapVM::checkCollisions() {
             b.markDead();
             if (m_player.isDead()) {
                 m_state = GameState::GameOver;
-                log("GameMapVM", "Player died — Game Over");
+                log("GameMapVM", "Player died - Game Over");
                 return;
             }
         }
@@ -720,7 +720,7 @@ void GameMapVM::checkCollisions() {
             e->takeDamage();
             if (m_player.isDead()) {
                 m_state = GameState::GameOver;
-                log("GameMapVM", "Player died — Game Over");
+                log("GameMapVM", "Player died - Game Over");
                 return;
             }
         }
