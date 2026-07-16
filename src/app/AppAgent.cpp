@@ -15,7 +15,9 @@
 
 AppAgent::AppAgent() = default;
 
-AppAgent::~AppAgent() = default;
+AppAgent::~AppAgent() {
+    delete m_saveMgr;
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // 初始化 — 创建所有 Agent + 建立三绑定
@@ -28,6 +30,7 @@ void AppAgent::init() {
     m_mapVM    = new GameMapVM();
     m_spriteVM = new SpiritVM();
     m_gameView = new GameView();
+    m_saveMgr  = new SaveManager();
     m_gameView->setWindowTitle(QStringLiteral("雷霆战机 — Thunder Fighter"));
 
     // ── 2. 初始化 SpiritVM（内部调用 AssetManager 加载图片） ───
@@ -122,17 +125,17 @@ void AppAgent::init() {
     // ── 从存档加载最高分（每关独立+无尽） ──────────────────────
     {
         for (int lv = 1; lv <= 7; ++lv) {
-            int hs = SaveManager().loadCampaignHighScore(lv);
+            int hs = m_saveMgr->loadCampaignHighScore(lv);
             m_mapVM->setSlotHighScore(lv - 1, hs);
         }
-        int ehs = SaveManager().loadEndlessHighScore();
+        int ehs = m_saveMgr->loadEndlessHighScore();
         m_mapVM->setSlotHighScore(7, ehs);
         log("AppAgent", "High scores loaded (7 campaign + endless)");
     }
 
     // 迭代 6：从存档读取升级数据
     {
-        auto upgradeData = SaveManager().loadUpgradeData();
+        auto upgradeData = m_saveMgr->loadUpgradeData();
         m_mapVM->initUpgradeData(upgradeData.starCores, upgradeData.levelsPacked);
         log("AppAgent", "Upgrade data loaded: cores=" + std::to_string(upgradeData.starCores));
     }
@@ -170,21 +173,21 @@ void AppAgent::init() {
 
     // ── 持久化绑定（ViewModel 发出保存请求 → App 调 SaveManager）─
     QObject::connect(m_mapVM, &GameMapVM::saveHighScoreRequested,
-                     [](int score, int modeSlot) {
+                     [this](int score, int modeSlot) {
                          if (modeSlot == 7)
-                             SaveManager().saveEndlessHighScore(score);
+                             m_saveMgr->saveEndlessHighScore(score);
                          else if (modeSlot >= 0 && modeSlot < 7)
-                             SaveManager().saveCampaignHighScore(modeSlot + 1, score);
+                             m_saveMgr->saveCampaignHighScore(modeSlot + 1, score);
                          log("AppAgent", "High score saved: slot=" + std::to_string(modeSlot));
                      });
     QObject::connect(m_mapVM, &GameMapVM::saveCampaignRequested,
-                     [](int level) {
-                         SaveManager().saveCampaignProgress(level);
+                     [this](int level) {
+                         m_saveMgr->saveCampaignProgress(level);
                          // 解锁逻辑已由 GameMapVM 在 tickImpl 中完成
                          log("AppAgent", "Campaign progress saved: level " + std::to_string(level));
                      });
     QObject::connect(m_mapVM, &GameMapVM::saveUpgradeRequested,
-                     [](int starCores, int p0, int p1, int p2, int p3, int p4) {
+                     [this](int starCores, int p0, int p1, int p2, int p3, int p4) {
                          SaveManager::UpgradeData d;
                          d.starCores = starCores;
                          d.levelsPacked[0] = p0;
@@ -192,12 +195,12 @@ void AppAgent::init() {
                          d.levelsPacked[2] = p2;
                          d.levelsPacked[3] = p3;
                          d.levelsPacked[4] = p4;
-                         SaveManager().saveUpgradeData(d);
+                         m_saveMgr->saveUpgradeData(d);
                          log("AppAgent", "Upgrade data saved");
                      });
     QObject::connect(m_mapVM, &GameMapVM::resetAllRequested,
-                     []() {
-                         SaveManager().resetAllData();
+                     [this]() {
+                         m_saveMgr->resetAllData();
                          log("AppAgent", "All save data cleared");
                      });
 

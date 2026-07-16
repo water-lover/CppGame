@@ -46,11 +46,11 @@ public:
     const AirMap* getMap()        const noexcept { return &m_map; }
     int   getScore()              const noexcept { return m_scoreMgr.getScore(); }
     int   getLives()              const noexcept { return m_player.getLives(); }
-    int   getHighScore()          const noexcept { return m_scoreMgr.getScore(); }
+    int   getHighScore()          const noexcept { return *m_scoreMgr.getActiveHighScorePtr(); }
     GameState getGameState()      const noexcept { return m_state; }
     int   getScoreValue()         const noexcept { return m_scoreMgr.getScore(); }
     int   getLivesValue()         const noexcept { return m_player.getLives(); }
-    int   getHighScoreValue()     const noexcept { return m_scoreMgr.getScore(); }
+    int   getHighScoreValue()     const noexcept { return *m_scoreMgr.getActiveHighScorePtr(); }
 
     // ── const T* 属性绑定指针（View 只读持有，无需 App 桥接） ──
     const int*      getScorePtr()        const noexcept { return &m_lastScore; }

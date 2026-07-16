@@ -525,7 +525,6 @@ void GameMapVM::useSkillImpl() {
     case SkillType::ThunderStrike:
         handleThunderStrike();
         m_thunderActive = true;
-        m_thunderTimer = 0.4f;
         break;
     case SkillType::FrostShield:   break;
     case SkillType::IronWall:      break;

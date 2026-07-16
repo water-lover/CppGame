@@ -96,6 +96,11 @@ GameView::GameView(QWidget* parent)
     m_levelCompleteScreen = new LevelCompleteScreen(this);
     m_pageStack->addWidget(m_levelCompleteScreen);  // 8
     connect(m_levelCompleteScreen, &LevelCompleteScreen::nextLevelClicked, [this]() {
+        // 第 7 关通关后无下一关，返回主菜单
+        if (m_pCurrentLevel && *m_pCurrentLevel >= 7) {
+            if (m_navigateCommand) m_navigateCommand(0);
+            return;
+        }
         // 先显示过渡画面
         if (m_splashScreen && m_pCurrentLevel) {
             m_splashScreen->setMessage(

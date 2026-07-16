@@ -19,9 +19,9 @@ public:
     void setHighScore(int modeSlot, int hs);
     const int* getHighScorePtr(int modeSlot) const { return &m_highScores[modeSlot]; }
 
-    // 快捷：读取全局最高分缓存指针（由 GameMapVM 按当前模式切换）
-    const int* getActiveHighScorePtr() const { return &m_activeHighScore; }
-    void setActiveHighScoreSlot(int slot) { m_activeHighScore = m_highScores[slot]; }
+    // 快捷：指向当前最高分数组元素的指针（由 GameMapVM 按当前模式切换）
+    const int* getActiveHighScorePtr() const { return &m_highScores[m_activeHighScoreSlot]; }
+    void setActiveHighScoreSlot(int slot) { m_activeHighScoreSlot = slot; }
 
     // ── P7: 关卡统计 ──────────────────────────────────────────────
     int  getEnemiesKilled() const { return m_enemiesKilled; }
@@ -47,8 +47,8 @@ public:
 
 private:
     int   score_          = 0;
-    int   m_highScores[8] = {};  // 0-6 闯关, 7 无尽
-    int   m_activeHighScore = 0;
+    int   m_highScores[8]      = {};  // 0-6 闯关, 7 无尽
+    int   m_activeHighScoreSlot = 0;
     int   m_enemiesKilled = 0;
     int   m_shotsFired    = 0;
     int   m_shotsHit      = 0;

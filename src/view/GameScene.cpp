@@ -381,8 +381,9 @@ void GameScene::spawnExplosion(float x, float y, const QColor& color) {
 
 void GameScene::processExplosions() {
     if (!m_pExplosionData || !m_pExplosionCount) return;
+    constexpr int MAX_VIEW_EXPLOSIONS = 32;
     int count = *m_pExplosionCount;
-    for (int i = 0; i < count && i < 32; ++i) {
+    for (int i = 0; i < count && i < MAX_VIEW_EXPLOSIONS; ++i) {
         float nx = m_pExplosionData[i * 2 + 0];
         float ny = m_pExplosionData[i * 2 + 1];
         float px = normToPixel(nx, SCREEN_WIDTH);

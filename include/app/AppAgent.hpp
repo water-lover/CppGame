@@ -9,6 +9,7 @@
 class GameView;
 class GameMapVM;
 class SpiritVM;
+class SaveManager;
 
 /// 应用生命周期层 — 唯一组装者
 ///
@@ -36,6 +37,7 @@ private:
     GameMapVM*        m_mapVM     = nullptr;
     SpiritVM*   m_spriteVM  = nullptr;
     GameView*         m_gameView  = nullptr;
+    SaveManager*      m_saveMgr   = nullptr;
 };
 
 #endif // APPAGENT_HPP
