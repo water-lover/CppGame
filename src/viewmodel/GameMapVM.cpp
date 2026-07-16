@@ -409,6 +409,8 @@ void GameMapVM::startLevelImpl(int levelId) {
 void GameMapVM::selectLevelImpl(int levelId) {
     if (levelId < 1 || levelId > 7) return;
     m_currentLevel = levelId;
+    m_scoreMgr.setActiveHighScoreSlot(
+        (m_mode == GameMode::Endless) ? 7 : (levelId - 1));
     log("GameMapVM", "Level " + std::to_string(levelId) + " selected, waiting for aircraft");
 }
 
