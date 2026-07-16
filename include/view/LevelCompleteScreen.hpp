@@ -24,6 +24,7 @@ signals:
 
 protected:
     void paintEvent(QPaintEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
 
 private:
     QLabel* m_titleLabel = nullptr;

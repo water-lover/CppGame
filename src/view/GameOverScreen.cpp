@@ -10,6 +10,9 @@ GameOverScreen::GameOverScreen(QWidget* parent)
 {
     // 尺寸由 QStackedWidget 管理，不设 setFixedSize
 
+    // 布局基线的缩放因子
+    m_baseScale = 1.0f;
+
     // ── 布局 ───────────────────────────────────────────────────────
     auto* layout = new QVBoxLayout(this);
     layout->setAlignment(Qt::AlignCenter);
@@ -62,6 +65,34 @@ GameOverScreen::GameOverScreen(QWidget* parent)
     layout->addWidget(m_restartButton, 0, Qt::AlignCenter);
 
     connect(m_restartButton, &QPushButton::clicked, this, &GameOverScreen::restartClicked);
+}
+
+void GameOverScreen::resizeEvent(QResizeEvent* e) {
+    QWidget::resizeEvent(e);
+    m_baseScale = qMin(width(), height()) / 600.0f;
+    int titleSz = static_cast<int>(36 * m_baseScale);
+    int scoreSz = static_cast<int>(28 * m_baseScale);
+    int highSz  = static_cast<int>(18 * m_baseScale);
+    int btnSz   = static_cast<int>(22 * m_baseScale);
+    int btnW    = static_cast<int>(240 * m_baseScale);
+    int btnH    = static_cast<int>(64 * m_baseScale);
+
+    m_titleLabel->setStyleSheet(
+        QString("font-size: %1px; font-weight: bold; padding: 6px 0px;").arg(titleSz));
+    m_scoreLabel->setStyleSheet(
+        QString("font-size: %1px; font-weight: bold; color: #FFD700; padding: 4px 0px;").arg(scoreSz));
+    m_highScoreLabel->setStyleSheet(
+        QString("font-size: %1px; color: #AABBCC; padding: 4px 0px;").arg(highSz));
+    m_restartButton->setFixedSize(btnW, btnH);
+    m_restartButton->setStyleSheet(
+        QString("QPushButton {"
+                "  background-color: rgba(200, 50, 50, 200); color: white;"
+                "  font-size: %1px; font-weight: bold;"
+                "  border: 2px solid white; border-radius: 10px;"
+                "}"
+                "QPushButton:hover { background-color: rgba(230, 70, 70, 220); }"
+                "QPushButton:pressed { background-color: rgba(160, 30, 30, 200); }")
+            .arg(btnSz));
 }
 
 void GameOverScreen::setLevelCleared(bool cleared, int level) {

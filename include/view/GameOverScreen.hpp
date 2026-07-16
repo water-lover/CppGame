@@ -29,6 +29,7 @@ signals:
 
 protected:
     void paintEvent(QPaintEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
 
 private:
     QLabel* m_scoreLabel = nullptr;
@@ -38,6 +39,7 @@ private:
 
     int m_score = 0;
     int m_highScore = 0;
+    float m_baseScale = 1.0f;
 };
 
 #endif // GAMEOVERSCREEN_HPP

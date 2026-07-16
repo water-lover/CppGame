@@ -2,41 +2,50 @@
 #include "view/ViewConstants.hpp"
 
 #include <QPainter>
-#include <QFont>
+#include <QResizeEvent>
 
 SplashScreen::SplashScreen(QWidget* parent)
     : QWidget(parent)
 {
-    setFixedSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-    setAttribute(Qt::WA_TranslucentBackground, false);
 }
 
 void SplashScreen::setMessage(const QString& msg) { m_message = msg; update(); }
 void SplashScreen::setProgress(int percent) { m_progress = percent; update(); }
 
 void SplashScreen::paintEvent(QPaintEvent* /*event*/) {
-    QPainter painter(this);
-    painter.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, QColor(5, 5, 20));
+    QPainter p(this);
+    float w = width(), h = height();
 
-    painter.setPen(QColor(200, 200, 255, 200));
-    QFont font(QStringLiteral("Microsoft YaHei"), 24);
-    painter.setFont(font);
-    painter.drawText(QRect(0, SCREEN_HEIGHT / 2 - 60, SCREEN_WIDTH, 50),
-                     Qt::AlignCenter, m_message);
+    // 深色渐变背景
+    QLinearGradient bg(0, 0, 0, h);
+    bg.setColorAt(0.0f, QColor(8, 8, 32));
+    bg.setColorAt(0.5f, QColor(18, 12, 48));
+    bg.setColorAt(1.0f, QColor(8, 8, 32));
+    p.fillRect(0, 0, static_cast<int>(w), static_cast<int>(h), bg);
 
-    int barW = 300, barH = 8;
-    int barX = (SCREEN_WIDTH - barW) / 2;
-    int barY = SCREEN_HEIGHT / 2 + 10;
-    painter.fillRect(barX, barY, barW, barH, QColor(40, 40, 60));
+    // 加载文字
+    QFont tf; tf.setPixelSize(static_cast<int>(h * 0.045f));
+    p.setFont(tf);
+    p.setPen(QColor(200, 220, 255));
+    p.drawText(QRectF(0, h * 0.38f, w, h * 0.08f),
+               Qt::AlignCenter, m_message);
 
-    int fillW = barW * m_progress / 100;
-    if (fillW > 0) {
-        painter.fillRect(barX, barY, fillW, barH, QColor(100, 200, 255));
-    }
+    // 进度条背景
+    float barW = w * 0.45f, barH = h * 0.025f;
+    float barX = (w - barW) * 0.5f, barY = h * 0.50f;
+    p.setPen(Qt::NoPen);
+    p.setBrush(QColor(40, 50, 70));
+    p.drawRoundedRect(QRectF(barX, barY, barW, barH), barH * 0.5f, barH * 0.5f);
 
-    painter.setPen(QColor(150, 150, 180, 180));
-    QFont pf(QStringLiteral("Microsoft YaHei"), 13);
-    painter.setFont(pf);
-    painter.drawText(QRect(0, barY + 15, SCREEN_WIDTH, 30), Qt::AlignCenter,
-                     QString("%1%").arg(m_progress));
+    // 进度条填充
+    float fillW = barW * (m_progress / 100.0f);
+    p.setBrush(QColor(80, 180, 255));
+    p.drawRoundedRect(QRectF(barX, barY, fillW, barH), barH * 0.5f, barH * 0.5f);
+
+    // 百分比文字
+    QFont pf; pf.setPixelSize(static_cast<int>(h * 0.028f));
+    p.setFont(pf);
+    p.setPen(QColor(180, 200, 220));
+    p.drawText(QRectF(0, barY + barH + h * 0.02f, w, h * 0.05f),
+               Qt::AlignCenter, QStringLiteral("%1%").arg(m_progress));
 }
