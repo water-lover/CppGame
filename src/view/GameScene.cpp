@@ -114,7 +114,7 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
     for (const auto& s : kStars) {
         float twinkle = 0.6f + 0.4f * std::sin(m_starTime * s.twinkleSpeed * 3.0f + s.x * 10.0f);
         QColor c = starColor(s.colorSeed);
-        c.setAlpha(static_cast<int>(180 * twinkle));
+        c.setAlpha(std::min(255, static_cast<int>(180 * twinkle)));
         painter->setBrush(c);
         painter->drawEllipse(QPointF(s.x * SCREEN_WIDTH, s.y * SCREEN_HEIGHT), s.size, s.size);
     }
@@ -311,7 +311,7 @@ void GameScene::drawForeground(QPainter* painter, const QRectF& /*rect*/) {
     // ── 粒子效果 ──────────────────────────────────────────────────
     for (const auto& p : m_particles) {
         QColor c = p.color;
-        c.setAlpha(static_cast<int>(255 * p.life));
+        c.setAlpha(std::min(255, static_cast<int>(255 * p.life)));
         painter->setBrush(c);
         painter->setPen(Qt::NoPen);
         painter->drawEllipse(QPointF(p.x, p.y), 2.0f + p.life * 3.0f, 2.0f + p.life * 3.0f);

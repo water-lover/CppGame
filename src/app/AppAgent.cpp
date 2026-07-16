@@ -24,7 +24,7 @@ AppAgent::~AppAgent() {
 // ═══════════════════════════════════════════════════════════════════
 
 void AppAgent::init() {
-    log("AppAgent", "=== Thunder Fighter 初始化 ===");
+    log("AppAgent", "=== Thunder Fighter Init ===");
 
     // ── 1. 创建所有 Agent 实例 ──────────────────────────────────
     m_mapVM    = new GameMapVM();
@@ -214,8 +214,8 @@ void AppAgent::init() {
                          }
                      });
 
-    log("AppAgent", "三绑定建立完成");
-    log("AppAgent", "=== 初始化完成 ===");
+    log("AppAgent", "3-binding setup complete");
+    log("AppAgent", "=== Init Complete ===");
 }
 
 static void loadGameFont() {
@@ -237,6 +237,6 @@ static void loadGameFont() {
 
 int AppAgent::run() {
     m_gameView->show();
-    log("AppAgent", "进入事件循环");
+    log("AppAgent", "Entering event loop");
     return qApp->exec();
 }
