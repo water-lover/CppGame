@@ -28,6 +28,9 @@ int ScoreManager::getHighScore(int modeSlot) const {
 void ScoreManager::setHighScore(int modeSlot, int hs) {
     if (modeSlot < 0 || modeSlot > 7) return;
     m_highScores[modeSlot] = hs;
+    // 如果更新的是当前激活槽位，同步刷新缓存，保证 View 的稳定指针读到最新值
+    if (modeSlot == m_activeHighScoreSlot)
+        m_activeHighScore = hs;
     log("Score", "High score set for slot " + std::to_string(modeSlot)
         + " = " + std::to_string(hs));
 }
